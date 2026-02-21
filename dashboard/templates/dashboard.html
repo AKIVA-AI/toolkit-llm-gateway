@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toolkit LLM Gateway - Analytics Dashboard</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1>Toolkit LLM Gateway</h1>
+                <p class="subtitle">Real-time Cost Analytics and Budget Management</p>
+            </div>
+            <div class="header-actions">
+                <button class="refresh-btn" onclick="refreshDashboard()">Refresh</button>
+                <select id="time-range" onchange="changeTimeRange()">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="summary-cards">
+            <div class="card">
+                <div class="card-content">
+                    <h3>Total Cost</h3>
+                    <p class="metric" id="total-cost">$0.00</p>
+                    <span class="card-label">Last 30 days</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-content">
+                    <h3>Total Requests</h3>
+                    <p class="metric" id="total-requests">0</p>
+                    <span class="card-label">API calls</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-content">
+                    <h3>Avg Latency</h3>
+                    <p class="metric" id="avg-latency">0ms</p>
+                    <span class="card-label">Response time</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-content">
+                    <h3>Success Rate</h3>
+                    <p class="metric" id="success-rate">0%</p>
+                    <span class="card-label">Error rate</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-card">
+                <h2>Cost Over Time</h2>
+                <canvas id="timeSeriesChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h2>Cost by Model</h2>
+                <canvas id="modelChart"></canvas>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-card">
+                <h2>Top Users</h2>
+                <canvas id="userChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h2>Top Teams</h2>
+                <canvas id="teamChart"></canvas>
+            </div>
+        </div>
+
+        <div class="tables-row">
+            <div class="table-card">
+                <h2>Webhooks Status</h2>
+                <div id="webhooks-table" class="table-container">
+                    <p class="loading">Loading webhooks...</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="dashboard-footer">
+            <p>Toolkit LLM Gateway v1.0.0 | Last updated: <span id="last-updated">Never</span></p>
+        </footer>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

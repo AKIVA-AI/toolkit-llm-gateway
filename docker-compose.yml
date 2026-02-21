@@ -1,0 +1,49 @@
+# Toolkit LLM Gateway - Docker Compose Configuration
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: toolkit-gateway-db
+    environment:
+      POSTGRES_DB: gateway
+      POSTGRES_USER: gateway_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gateway_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Toolkit LLM Gateway Dashboard
+  dashboard:
+    build: .
+    container_name: toolkit-gateway-dashboard
+    environment:
+      DATABASE_URL: postgresql://gateway_user:${POSTGRES_PASSWORD:-changeme}@postgres:5432/gateway
+      HOST: 0.0.0.0
+      PORT: 12000
+    ports:
+      - "12000:12000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:12000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+

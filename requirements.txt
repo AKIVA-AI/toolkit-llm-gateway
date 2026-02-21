@@ -1,0 +1,25 @@
+# Toolkit LLM Gateway - Production Dependencies
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+
+# HTTP Clients
+httpx>=0.24.0
+
+# Utilities
+fastuuid>=0.2.0
+python-dotenv>=1.0.0
+
+# LLM Integration
+openai>=1.0.0
+tiktoken>=0.5.0
+
+# Web Framework (Dashboard)
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+jinja2>=3.1.0
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.1.0

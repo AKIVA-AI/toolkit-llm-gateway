@@ -1,0 +1,130 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toolkit-llm-gateway"
+version = "1.0.0"
+description = "Toolkit LLM Gateway - LLM proxy with cost tracking and analytics (fork of LiteLLM)"
+authors = [{name = "Toolkit Contributors"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9,<4.0"
+keywords = ["llm", "gateway", "proxy", "cost-tracking", "openai", "anthropic", "ai", "ml"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "fastuuid>=0.13.0",
+    "httpx>=0.23.0",
+    "litellm>=1.0.0",
+    "openai>=2.8.0",
+    "python-dotenv>=0.2.0",
+    "tiktoken>=0.7.0",
+    "importlib-metadata>=6.8.0",
+    "tokenizers",
+    "click",
+    "jinja2>=3.1.2",
+    "aiohttp>=3.10",
+    "pydantic>=2.5.0",
+    "jsonschema>=4.22.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",  # PostgreSQL adapter
+    "alembic>=1.13.0",  # Database migrations
+]
+
+[project.optional-dependencies]
+proxy = [
+    "uvicorn>=0.31.1",
+    "gunicorn>=23.0.0",
+    "fastapi>=0.120.1",
+    "backoff",
+    "pyyaml>=6.0.1",
+    "orjson>=3.9.7",
+    "apscheduler>=3.10.4",
+    "fastapi-sso>=0.16.0",
+    "PyJWT>=2.10.1",
+    "python-multipart>=0.0.18",
+    "cryptography",
+]
+
+analytics = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "plotly>=5.0.0",
+]
+
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio",
+    "pytest-cov",
+    "black",
+    "ruff",
+    "mypy",
+    "types-pyyaml",
+]
+
+all = [
+    "toolkit-llm-gateway[proxy,analytics,dev]",
+]
+
+[project.urls]
+Homepage = ""
+Repository = ""
+Documentation = ""
+"Bug Tracker" = ""
+
+[project.scripts]
+toolkit-gateway = "litellm.proxy.proxy_cli:run_server"
+toolkit-llm-proxy = "litellm.proxy.proxy_cli:run_server"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+litellm = ["py.typed", "*.json", "*.yaml", "*.yml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --cov=litellm --cov-report=term-missing --cov-report=html"
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]  # Line too long (handled by black)
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
