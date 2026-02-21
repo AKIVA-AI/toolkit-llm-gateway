@@ -99,7 +99,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-v --cov=litellm --cov-report=term-missing --cov-report=html"
+addopts = "-v --cov=toolkit_extensions --cov-report=term-missing --cov-report=html"
 
 [tool.black]
 line-length = 100
