@@ -79,10 +79,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = ""
-Repository = ""
-Documentation = ""
-"Bug Tracker" = ""
+Homepage = "https://github.com/AKIVA-AI/toolkit-llm-gateway"
+Repository = "https://github.com/AKIVA-AI/toolkit-llm-gateway"
+Documentation = "https://github.com/AKIVA-AI/toolkit-llm-gateway#readme"
+"Bug Tracker" = "https://github.com/AKIVA-AI/toolkit-llm-gateway/issues"
 
 [project.scripts]
 toolkit-gateway = "litellm.proxy.proxy_cli:run_server"
