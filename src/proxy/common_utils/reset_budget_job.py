@@ -88,9 +88,7 @@ class ResetBudgetJob:
 
             if budgets_to_reset is not None and len(budgets_to_reset) > 0:
                 for budget in budgets_to_reset:
-                    budget = await ResetBudgetJob._reset_budget_reset_at_date(
-                        budget, now
-                    )
+                    budget = await ResetBudgetJob._reset_budget_reset_at_date(budget, now)
 
                 await self.prisma_client.update_data(
                     query_type="update_many",
@@ -108,17 +106,13 @@ class ResetBudgetJob:
                     ],
                 )
 
-                await self.reset_budget_for_litellm_team_members(
-                    budgets_to_reset=budgets_to_reset
-                )
+                await self.reset_budget_for_litellm_team_members(budgets_to_reset=budgets_to_reset)
 
             if endusers_to_reset is not None and len(endusers_to_reset) > 0:
                 for enduser in endusers_to_reset:
                     try:
-                        updated_enduser = (
-                            await ResetBudgetJob._reset_budget_for_enduser(
-                                enduser=enduser
-                            )
+                        updated_enduser = await ResetBudgetJob._reset_budget_for_enduser(
+                            enduser=enduser
                         )
                         if updated_enduser is not None:
                             updated_endusers.append(updated_enduser)
@@ -160,26 +154,14 @@ class ResetBudgetJob:
                     start_time=start_time,
                     end_time=end_time,
                     event_metadata={
-                        "num_budgets_found": (
-                            len(budgets_to_reset) if budgets_to_reset else 0
-                        ),
-                        "budgets_found": json.dumps(
-                            budgets_to_reset, indent=4, default=str
-                        ),
-                        "num_endusers_found": (
-                            len(endusers_to_reset) if endusers_to_reset else 0
-                        ),
-                        "endusers_found": json.dumps(
-                            endusers_to_reset, indent=4, default=str
-                        ),
+                        "num_budgets_found": (len(budgets_to_reset) if budgets_to_reset else 0),
+                        "budgets_found": json.dumps(budgets_to_reset, indent=4, default=str),
+                        "num_endusers_found": (len(endusers_to_reset) if endusers_to_reset else 0),
+                        "endusers_found": json.dumps(endusers_to_reset, indent=4, default=str),
                         "num_endusers_updated": len(updated_endusers),
-                        "endusers_updated": json.dumps(
-                            updated_endusers, indent=4, default=str
-                        ),
+                        "endusers_updated": json.dumps(updated_endusers, indent=4, default=str),
                         "num_endusers_failed": len(failed_endusers),
-                        "endusers_failed": json.dumps(
-                            failed_endusers, indent=4, default=str
-                        ),
+                        "endusers_failed": json.dumps(failed_endusers, indent=4, default=str),
                     },
                 )
             )
@@ -194,18 +176,10 @@ class ResetBudgetJob:
                     start_time=start_time,
                     end_time=end_time,
                     event_metadata={
-                        "num_budgets_found": (
-                            len(budgets_to_reset) if budgets_to_reset else 0
-                        ),
-                        "budgets_found": json.dumps(
-                            budgets_to_reset, indent=4, default=str
-                        ),
-                        "num_endusers_found": (
-                            len(endusers_to_reset) if endusers_to_reset else 0
-                        ),
-                        "endusers_found": json.dumps(
-                            endusers_to_reset, indent=4, default=str
-                        ),
+                        "num_budgets_found": (len(budgets_to_reset) if budgets_to_reset else 0),
+                        "budgets_found": json.dumps(budgets_to_reset, indent=4, default=str),
+                        "num_endusers_found": (len(endusers_to_reset) if endusers_to_reset else 0),
+                        "endusers_found": json.dumps(endusers_to_reset, indent=4, default=str),
                     },
                 )
             )
@@ -243,9 +217,7 @@ class ResetBudgetJob:
                             )
                     except Exception as e:
                         failed_keys.append({"key": key, "error": str(e)})
-                        verbose_proxy_logger.exception(
-                            "Failed to reset budget for key: %s", key
-                        )
+                        verbose_proxy_logger.exception("Failed to reset budget for key: %s", key)
 
                 verbose_proxy_logger.debug(
                     "Updated keys %s", json.dumps(updated_keys, indent=4, default=str)
@@ -329,9 +301,7 @@ class ResetBudgetJob:
                             )
                     except Exception as e:
                         failed_users.append({"user": user, "error": str(e)})
-                        verbose_proxy_logger.exception(
-                            "Failed to reset budget for user: %s", user
-                        )
+                        verbose_proxy_logger.exception("Failed to reset budget for user: %s", user)
 
                 verbose_proxy_logger.debug(
                     "Updated users %s", json.dumps(updated_users, indent=4, default=str)
@@ -358,13 +328,9 @@ class ResetBudgetJob:
                     end_time=end_time,
                     event_metadata={
                         "num_users_found": len(users_to_reset) if users_to_reset else 0,
-                        "users_found": json.dumps(
-                            users_to_reset, indent=4, default=str
-                        ),
+                        "users_found": json.dumps(users_to_reset, indent=4, default=str),
                         "num_users_updated": len(updated_users),
-                        "users_updated": json.dumps(
-                            updated_users, indent=4, default=str
-                        ),
+                        "users_updated": json.dumps(updated_users, indent=4, default=str),
                         "num_users_failed": len(failed_users),
                         "users_failed": json.dumps(failed_users, indent=4, default=str),
                     },
@@ -382,9 +348,7 @@ class ResetBudgetJob:
                     end_time=end_time,
                     event_metadata={
                         "num_users_found": len(users_to_reset) if users_to_reset else 0,
-                        "users_found": json.dumps(
-                            users_to_reset, indent=4, default=str
-                        ),
+                        "users_found": json.dumps(users_to_reset, indent=4, default=str),
                     },
                 )
             )
@@ -420,9 +384,7 @@ class ResetBudgetJob:
                             )
                     except Exception as e:
                         failed_teams.append({"team": team, "error": str(e)})
-                        verbose_proxy_logger.exception(
-                            "Failed to reset budget for team: %s", team
-                        )
+                        verbose_proxy_logger.exception("Failed to reset budget for team: %s", team)
 
                 verbose_proxy_logger.debug(
                     "Updated teams %s", json.dumps(updated_teams, indent=4, default=str)
@@ -449,13 +411,9 @@ class ResetBudgetJob:
                     end_time=end_time,
                     event_metadata={
                         "num_teams_found": len(teams_to_reset) if teams_to_reset else 0,
-                        "teams_found": json.dumps(
-                            teams_to_reset, indent=4, default=str
-                        ),
+                        "teams_found": json.dumps(teams_to_reset, indent=4, default=str),
                         "num_teams_updated": len(updated_teams),
-                        "teams_updated": json.dumps(
-                            updated_teams, indent=4, default=str
-                        ),
+                        "teams_updated": json.dumps(updated_teams, indent=4, default=str),
                         "num_teams_failed": len(failed_teams),
                         "teams_failed": json.dumps(failed_teams, indent=4, default=str),
                     },
@@ -473,9 +431,7 @@ class ResetBudgetJob:
                     end_time=end_time,
                     event_metadata={
                         "num_teams_found": len(teams_to_reset) if teams_to_reset else 0,
-                        "teams_found": json.dumps(
-                            teams_to_reset, indent=4, default=str
-                        ),
+                        "teams_found": json.dumps(teams_to_reset, indent=4, default=str),
                     },
                 )
             )
@@ -500,9 +456,7 @@ class ResetBudgetJob:
                     get_budget_reset_time,
                 )
 
-                item.budget_reset_at = get_budget_reset_time(
-                    budget_duration=item.budget_duration
-                )
+                item.budget_reset_at = get_budget_reset_time(budget_duration=item.budget_duration)
             return item
         except Exception as e:
             verbose_proxy_logger.exception(
@@ -558,13 +512,9 @@ class ResetBudgetJob:
                     budget.budget_reset_at is None
                     and budget.created_at + timedelta(seconds=duration_s) > current_time
                 ):
-                    budget.budget_reset_at = budget.created_at + timedelta(
-                        seconds=duration_s
-                    )
+                    budget.budget_reset_at = budget.created_at + timedelta(seconds=duration_s)
                 else:
-                    budget.budget_reset_at = current_time + timedelta(
-                        seconds=duration_s
-                    )
+                    budget.budget_reset_at = current_time + timedelta(seconds=duration_s)
         except Exception as e:
             verbose_proxy_logger.exception(
                 "Error resetting budget_reset_at for budget: %s. Item: %s", e, budget

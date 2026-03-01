@@ -3,7 +3,6 @@ from copy import deepcopy
 from typing import Any, Callable, List, Optional, Union, cast
 
 import httpx
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.litellm_core_utils.asyncify import asyncify
@@ -21,8 +20,8 @@ from litellm.utils import (
 )
 
 from ..common_utils import AWSEventStreamDecoder, SagemakerError
-from .transformation import SagemakerConfig
 from ..embedding.transformation import SagemakerEmbeddingConfig
+from .transformation import SagemakerConfig
 
 sagemaker_config = SagemakerConfig()
 
@@ -63,15 +62,11 @@ class SagemakerLLM(BaseAWSLLM):
             # check env #
             litellm_aws_region_name = get_secret("AWS_REGION_NAME", None)
 
-            if litellm_aws_region_name is not None and isinstance(
-                litellm_aws_region_name, str
-            ):
+            if litellm_aws_region_name is not None and isinstance(litellm_aws_region_name, str):
                 aws_region_name = litellm_aws_region_name
 
             standard_aws_region_name = get_secret("AWS_REGION", None)
-            if standard_aws_region_name is not None and isinstance(
-                standard_aws_region_name, str
-            ):
+            if standard_aws_region_name is not None and isinstance(standard_aws_region_name, str):
                 aws_region_name = standard_aws_region_name
 
             if aws_region_name is None:
@@ -125,9 +120,7 @@ class SagemakerLLM(BaseAWSLLM):
             optional_params=optional_params,
             litellm_params=litellm_params,
         )
-        request = AWSRequest(
-            method="POST", url=api_base, data=encoded_data, headers=headers
-        )
+        request = AWSRequest(method="POST", url=api_base, data=encoded_data, headers=headers)
         sigv4.add_auth(request)
         if (
             extra_headers is not None and "Authorization" in extra_headers
@@ -226,9 +219,7 @@ class SagemakerLLM(BaseAWSLLM):
 
                 decoder = AWSEventStreamDecoder(model="")
 
-                completion_stream = decoder.iter_bytes(
-                    sync_response.iter_bytes(chunk_size=1024)
-                )
+                completion_stream = decoder.iter_bytes(sync_response.iter_bytes(chunk_size=1024))
                 streaming_response = CustomStreamWrapper(
                     completion_stream=completion_stream,
                     model=model,
@@ -287,9 +278,7 @@ class SagemakerLLM(BaseAWSLLM):
             if model_id is not None:
                 # Add model_id as InferenceComponentName header
                 # boto3 doc: https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html
-                prepared_request.headers.update(
-                    {"X-Amzn-SageMaker-Inference-Component": model_id}
-                )
+                prepared_request.headers.update({"X-Amzn-SageMaker-Inference-Component": model_id})
 
             ## LOGGING
             timeout = 300.0
@@ -331,15 +320,13 @@ class SagemakerLLM(BaseAWSLLM):
         except Exception as e:
             verbose_logger.error("Sagemaker error %s", str(e))
             status_code = (
-                getattr(e, "response", {})
-                .get("ResponseMetadata", {})
-                .get("HTTPStatusCode", 500)
+                getattr(e, "response", {}).get("ResponseMetadata", {}).get("HTTPStatusCode", 500)
             )
-            error_message = (
-                getattr(e, "response", {}).get("Error", {}).get("Message", str(e))
-            )
+            error_message = getattr(e, "response", {}).get("Error", {}).get("Message", str(e))
             if "Inference Component Name header is required" in error_message:
-                error_message += "\n pass in via `litellm.completion(..., model_id={InferenceComponentName})`"
+                error_message += (
+                    "\n pass in via `litellm.completion(..., model_id={InferenceComponentName})`"
+                )
             raise SagemakerError(status_code=status_code, message=error_message)
 
         return sagemaker_config.transform_response(
@@ -375,14 +362,10 @@ class SagemakerLLM(BaseAWSLLM):
             )
 
             if response.status_code != 200:
-                raise SagemakerError(
-                    status_code=response.status_code, message=response.text
-                )
+                raise SagemakerError(status_code=response.status_code, message=response.text)
 
             decoder = AWSEventStreamDecoder(model="")
-            completion_stream = decoder.aiter_bytes(
-                response.aiter_bytes(chunk_size=1024)
-            )
+            completion_stream = decoder.aiter_bytes(response.aiter_bytes(chunk_size=1024))
 
             return completion_stream
 
@@ -437,9 +420,7 @@ class SagemakerLLM(BaseAWSLLM):
         }
         prepared_request = await asyncified_prepare_request(**prepared_request_args)
         if model_id is not None:  # Fixes https://github.com/BerriAI/litellm/issues/8889
-            prepared_request.headers.update(
-                {"X-Amzn-SageMaker-Inference-Component": model_id}
-            )
+            prepared_request.headers.update({"X-Amzn-SageMaker-Inference-Component": model_id})
 
         if not prepared_request.body:
             raise ValueError("Prepared request body is empty")
@@ -484,9 +465,7 @@ class SagemakerLLM(BaseAWSLLM):
         litellm_params: dict,
     ):
         timeout = 300.0
-        async_handler = get_async_httpx_client(
-            llm_provider=litellm.LlmProviders.SAGEMAKER
-        )
+        async_handler = get_async_httpx_client(llm_provider=litellm.LlmProviders.SAGEMAKER)
 
         data = await sagemaker_config.async_transform_request(
             model=model,
@@ -522,9 +501,7 @@ class SagemakerLLM(BaseAWSLLM):
             if model_id is not None:
                 # Add model_id as InferenceComponentName header
                 # boto3 doc: https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html
-                prepared_request.headers.update(
-                    {"X-Amzn-SageMaker-Inference-Component": model_id}
-                )
+                prepared_request.headers.update({"X-Amzn-SageMaker-Inference-Component": model_id})
             # make async httpx post request here
             try:
                 response = await async_handler.post(
@@ -535,9 +512,7 @@ class SagemakerLLM(BaseAWSLLM):
                 )
 
                 if response.status_code != 200:
-                    raise SagemakerError(
-                        status_code=response.status_code, message=response.text
-                    )
+                    raise SagemakerError(status_code=response.status_code, message=response.text)
             except Exception as e:
                 ## LOGGING
                 logging_obj.post_call(
@@ -550,7 +525,9 @@ class SagemakerLLM(BaseAWSLLM):
         except Exception as e:
             error_message = f"{str(e)}"
             if "Inference Component Name header is required" in error_message:
-                error_message += "\n pass in via `litellm.completion(..., model_id={InferenceComponentName})`"
+                error_message += (
+                    "\n pass in via `litellm.completion(..., model_id={InferenceComponentName})`"
+                )
             raise SagemakerError(status_code=500, message=error_message)
         return sagemaker_config.transform_response(
             model=model,
@@ -628,7 +605,9 @@ class SagemakerLLM(BaseAWSLLM):
         #### EMBEDDING LOGIC
         # Transform request based on model type
         provider_config = SagemakerEmbeddingConfig.get_model_config(model)
-        request_data = provider_config.transform_embedding_request(model, input, optional_params, {})
+        request_data = provider_config.transform_embedding_request(
+            model, input, optional_params, {}
+        )
         data = json.dumps(request_data).encode("utf-8")
 
         ## LOGGING
@@ -654,13 +633,9 @@ class SagemakerLLM(BaseAWSLLM):
             )
         except Exception as e:
             status_code = (
-                getattr(e, "response", {})
-                .get("ResponseMetadata", {})
-                .get("HTTPStatusCode", 500)
+                getattr(e, "response", {}).get("ResponseMetadata", {}).get("HTTPStatusCode", 500)
             )
-            error_message = (
-                getattr(e, "response", {}).get("Error", {}).get("Message", str(e))
-            )
+            error_message = getattr(e, "response", {}).get("Error", {}).get("Message", str(e))
             raise SagemakerError(status_code=status_code, message=error_message)
 
         response = json.loads(response["Body"].read().decode("utf8"))
@@ -673,19 +648,19 @@ class SagemakerLLM(BaseAWSLLM):
         )
 
         print_verbose(f"raw model_response: {response}")
-        
+
         # Transform response based on model type
         from httpx import Response as HttpxResponse
-        
+
         # Create a mock httpx Response object for the transformation
         mock_response = HttpxResponse(
             status_code=200,
-            content=json.dumps(response).encode('utf-8'),
-            headers={"content-type": "application/json"}
+            content=json.dumps(response).encode("utf-8"),
+            headers={"content-type": "application/json"},
         )
-        
+
         model_response = EmbeddingResponse()
-        
+
         # Use the request_data that was already transformed above
         return provider_config.transform_embedding_response(
             model=model,
@@ -695,5 +670,5 @@ class SagemakerLLM(BaseAWSLLM):
             api_key=None,
             request_data=request_data,
             optional_params=optional_params,
-            litellm_params=litellm_params or {}
+            litellm_params=litellm_params or {},
         )

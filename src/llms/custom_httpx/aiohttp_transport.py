@@ -9,9 +9,8 @@ import aiohttp
 import aiohttp.client_exceptions
 import aiohttp.http_exceptions
 import httpx
-from aiohttp.client import ClientResponse, ClientSession
-
 import litellm
+from aiohttp.client import ClientResponse, ClientSession
 from litellm._logging import verbose_logger
 from litellm.secret_managers.main import str_to_bool
 
@@ -100,7 +99,9 @@ class AiohttpResponseStream(httpx.AsyncByteStream):
             # with message "Connection closed.". Treat this as a graceful
             # end-of-stream so downstream consumers don't error.
             if "Connection closed" in str(e):
-                verbose_logger.debug("Upstream closed streaming connection; ending iterator gracefully")
+                verbose_logger.debug(
+                    "Upstream closed streaming connection; ending iterator gracefully"
+                )
                 return
             raise
         except aiohttp.http_exceptions.TransferEncodingError as e:
@@ -281,7 +282,9 @@ class LiteLLMAiohttpTransport(AiohttpTransport):
         except RuntimeError as e:
             # Handle the case where session was closed between our check and actual use
             if "Session is closed" in str(e):
-                verbose_logger.debug(f"Session closed during request, retrying with new session: {e}")
+                verbose_logger.debug(
+                    f"Session closed during request, retrying with new session: {e}"
+                )
                 # Force creation of a new session
                 if hasattr(self, "_client_factory") and callable(self._client_factory):
                     self.client = self._client_factory()
@@ -311,7 +314,10 @@ class LiteLLMAiohttpTransport(AiohttpTransport):
 
     async def _get_proxy_settings(self, request: httpx.Request):
         proxy = None
-        if not (litellm.disable_aiohttp_trust_env or str_to_bool(os.getenv("DISABLE_AIOHTTP_TRUST_ENV", "False"))):
+        if not (
+            litellm.disable_aiohttp_trust_env
+            or str_to_bool(os.getenv("DISABLE_AIOHTTP_TRUST_ENV", "False"))
+        ):
             try:
                 proxy = self._proxy_from_env(request.url)
             except Exception as e:  # pragma: no cover - best effort

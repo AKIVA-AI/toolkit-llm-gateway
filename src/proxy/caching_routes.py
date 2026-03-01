@@ -1,8 +1,7 @@
 from typing import Any, Dict, List, Tuple
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-
 import litellm
+from fastapi import APIRouter, Depends, HTTPException, Request
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import RedisCache
 from litellm.litellm_core_utils.safe_json_dumps import safe_dumps
@@ -40,9 +39,7 @@ def _extract_cache_params() -> Dict[str, Any]:
         return {}
     try:
         cache_params = vars(litellm.cache.cache)
-        cleaned_params = (
-            HealthCheckCacheParams(**cache_params).model_dump() if cache_params else {}
-        )
+        cleaned_params = HealthCheckCacheParams(**cache_params).model_dump() if cache_params else {}
         return masker.mask_dict(cleaned_params)
     except (AttributeError, TypeError) as e:
         verbose_proxy_logger.debug(f"Error extracting cache params: {str(e)}")
@@ -72,9 +69,7 @@ async def cache_ping():
 
         if litellm.cache.type == "redis":
             ping_response = await litellm.cache.ping()
-            verbose_proxy_logger.debug(
-                "/cache/ping: ping_response: " + str(ping_response)
-            )
+            verbose_proxy_logger.debug("/cache/ping: ping_response: " + str(ping_response))
             # add cache does not return anything
             await litellm.cache.async_add_cache(
                 result="test_key",
@@ -190,10 +185,7 @@ async def cache_redis_info():
                 status_code=503, detail="Cache not initialized. litellm.cache is None"
             )
 
-        if not (
-            litellm.cache.type == "redis"
-            and isinstance(litellm.cache.cache, RedisCache)
-        ):
+        if not (litellm.cache.type == "redis" and isinstance(litellm.cache.cache, RedisCache)):
             raise HTTPException(
                 status_code=500,
                 detail=f"Cache type {litellm.cache.type} does not support redis info",
@@ -238,9 +230,7 @@ async def cache_flushall():
             raise HTTPException(
                 status_code=503, detail="Cache not initialized. litellm.cache is None"
             )
-        if litellm.cache.type == "redis" and isinstance(
-            litellm.cache.cache, RedisCache
-        ):
+        if litellm.cache.type == "redis" and isinstance(litellm.cache.cache, RedisCache):
             litellm.cache.cache.flushall()
             return {
                 "status": "success",

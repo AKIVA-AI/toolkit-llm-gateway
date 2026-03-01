@@ -45,6 +45,7 @@ class OpenAIRealtime(OpenAIChatCompletion):
     ):
         import websockets
         from websockets.asyncio.client import ClientConnection
+
         if api_base is None:
             api_base = "https://api.openai.com/"
         if api_key is None:
@@ -75,17 +76,11 @@ class OpenAIRealtime(OpenAIChatCompletion):
             await websocket.close(code=e.status_code, reason=str(e))
         except Exception as e:
             try:
-                await websocket.close(
-                    code=1011, reason=f"Internal server error: {str(e)}"
-                )
+                await websocket.close(code=1011, reason=f"Internal server error: {str(e)}")
             except RuntimeError as close_error:
-                if "already completed" in str(close_error) or "websocket.close" in str(
-                    close_error
-                ):
+                if "already completed" in str(close_error) or "websocket.close" in str(close_error):
                     # The WebSocket is already closed or the response is completed, so we can ignore this error
                     pass
                 else:
                     # If it's a different RuntimeError, we might want to log it or handle it differently
-                    raise Exception(
-                        f"Unexpected error while closing WebSocket: {close_error}"
-                    )
+                    raise Exception(f"Unexpected error while closing WebSocket: {close_error}")

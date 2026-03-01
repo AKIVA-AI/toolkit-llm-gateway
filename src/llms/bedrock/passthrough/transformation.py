@@ -2,7 +2,6 @@ import json
 from typing import TYPE_CHECKING, List, Optional, Tuple, cast
 
 from httpx import Response
-
 from litellm.litellm_core_utils.litellm_logging import Logging
 from litellm.llms.base_llm.passthrough.transformation import BasePassthroughConfig
 
@@ -155,9 +154,7 @@ class BedrockPassthroughConfig(
         if "invoke" in endpoint:
             invoke_provider = AmazonInvokeConfig.get_bedrock_invoke_provider(model)
             if invoke_provider is None:
-                raise ValueError(
-                    f"Invalid invoke provider: {invoke_provider}, for model: {model}"
-                )
+                raise ValueError(f"Invalid invoke provider: {invoke_provider}, for model: {model}")
             obj = get_bedrock_event_stream_decoder(
                 invoke_provider=invoke_provider,
                 model=model,
@@ -178,9 +175,9 @@ class BedrockPassthroughConfig(
             message = json.loads(chunk)
             translated_chunk = obj._chunk_parser(chunk_data=message)
 
-            if isinstance(
-                translated_chunk, dict
-            ) and generic_chunk_has_all_required_fields(cast(dict, translated_chunk)):
+            if isinstance(translated_chunk, dict) and generic_chunk_has_all_required_fields(
+                cast(dict, translated_chunk)
+            ):
                 chunk_obj = convert_generic_chunk_to_model_response_stream(
                     cast(GenericStreamingChunk, translated_chunk)
                 )

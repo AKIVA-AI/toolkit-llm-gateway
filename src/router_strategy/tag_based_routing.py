@@ -19,9 +19,7 @@ else:
     LitellmRouter = Any
 
 
-def is_valid_deployment_tag(
-    deployment_tags: List[str], request_tags: List[str]
-) -> bool:
+def is_valid_deployment_tag(deployment_tags: List[str], request_tags: List[str]) -> bool:
     """
     Check if a tag is valid
     """
@@ -72,9 +70,7 @@ async def get_deployments_for_tag(
         new_healthy_deployments = []
         default_deployments = []
         if request_tags:
-            verbose_logger.debug(
-                "get_deployments_for_tag routing: router_keys: %s", request_tags
-            )
+            verbose_logger.debug("get_deployments_for_tag routing: router_keys: %s", request_tags)
             # example this can be router_keys=["free", "custom"]
             # get all deployments that have a superset of these router keys
             for deployment in healthy_deployments:
@@ -101,7 +97,9 @@ async def get_deployments_for_tag(
                     f"{RouterErrors.no_deployments_with_tag_routing.value}. Passed model={model} and tags={request_tags}"
                 )
 
-            return new_healthy_deployments if len(new_healthy_deployments) > 0 else default_deployments
+            return (
+                new_healthy_deployments if len(new_healthy_deployments) > 0 else default_deployments
+            )
 
     # for Untagged requests use default deployments if set
     _default_deployments_with_tags = []

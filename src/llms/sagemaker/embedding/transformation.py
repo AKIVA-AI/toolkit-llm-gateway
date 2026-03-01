@@ -10,11 +10,10 @@ if TYPE_CHECKING:
     from litellm.types.llms.openai import AllEmbeddingInputValues
 
 from httpx._models import Headers, Response
-
-from litellm.llms.base_llm.embedding.transformation import BaseEmbeddingConfig
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
-from litellm.types.utils import Usage, EmbeddingResponse
+from litellm.llms.base_llm.embedding.transformation import BaseEmbeddingConfig
 from litellm.llms.voyage.embedding.transformation import VoyageEmbeddingConfig
+from litellm.types.utils import EmbeddingResponse, Usage
 
 from ..common_utils import SagemakerError
 
@@ -23,7 +22,7 @@ class SagemakerEmbeddingConfig(BaseEmbeddingConfig):
     """
     SageMaker embedding configuration factory for supporting embedding parameters
     """
-    
+
     def __init__(self) -> None:
         pass
 
@@ -31,10 +30,10 @@ class SagemakerEmbeddingConfig(BaseEmbeddingConfig):
     def get_model_config(cls, model: str) -> "BaseEmbeddingConfig":
         """
         Factory method to get the appropriate embedding config based on model type
-        
+
         Args:
             model: The model name
-            
+
         Returns:
             Appropriate embedding config instance
         """
@@ -57,15 +56,13 @@ class SagemakerEmbeddingConfig(BaseEmbeddingConfig):
         model: str,
         drop_params: bool,
     ) -> dict:
-    
+
         return optional_params
 
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, Headers]
     ) -> BaseLLMException:
-        return SagemakerError(
-            message=error_message, status_code=status_code, headers=headers
-        )
+        return SagemakerError(message=error_message, status_code=status_code, headers=headers)
 
     def transform_embedding_request(
         self,
@@ -98,14 +95,11 @@ class SagemakerEmbeddingConfig(BaseEmbeddingConfig):
             response_data = raw_response.json()
         except Exception as e:
             raise SagemakerError(
-                message=f"Failed to parse response: {str(e)}", 
-                status_code=raw_response.status_code
+                message=f"Failed to parse response: {str(e)}", status_code=raw_response.status_code
             )
 
         if "embedding" not in response_data:
-            raise SagemakerError(
-                status_code=500, message="HF response missing 'embedding' field"
-            )
+            raise SagemakerError(status_code=500, message="HF response missing 'embedding' field")
         embeddings = response_data["embedding"]
 
         if not isinstance(embeddings, list):
@@ -116,9 +110,7 @@ class SagemakerEmbeddingConfig(BaseEmbeddingConfig):
 
         output_data = []
         for idx, embedding in enumerate(embeddings):
-            output_data.append(
-                {"object": "embedding", "index": idx, "embedding": embedding}
-            )
+            output_data.append({"object": "embedding", "index": idx, "embedding": embedding})
 
         model_response.object = "list"
         model_response.data = output_data

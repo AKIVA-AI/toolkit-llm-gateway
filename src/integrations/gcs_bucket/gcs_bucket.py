@@ -1,12 +1,12 @@
 import asyncio
 import json
 import os
-from litellm._uuid import uuid
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from urllib.parse import quote
 
 from litellm._logging import verbose_logger
+from litellm._uuid import uuid
 from litellm.integrations.additional_logging_utils import AdditionalLoggingUtils
 from litellm.integrations.gcs_bucket.gcs_bucket_base import GCSBucketBase
 from litellm.proxy._types import CommonProxyErrors
@@ -67,9 +67,7 @@ class GCSBucketLogger(GCSBucketBase, AdditionalLoggingUtils):
                 raise ValueError("standard_logging_object not found in kwargs")
             # Add to logging queue - this will be flushed periodically
             self.log_queue.append(
-                GCSLogQueueItem(
-                    payload=logging_payload, kwargs=kwargs, response_obj=response_obj
-                )
+                GCSLogQueueItem(payload=logging_payload, kwargs=kwargs, response_obj=response_obj)
             )
 
         except Exception as e:
@@ -90,9 +88,7 @@ class GCSBucketLogger(GCSBucketBase, AdditionalLoggingUtils):
                 raise ValueError("standard_logging_object not found in kwargs")
             # Add to logging queue - this will be flushed periodically
             self.log_queue.append(
-                GCSLogQueueItem(
-                    payload=logging_payload, kwargs=kwargs, response_obj=response_obj
-                )
+                GCSLogQueueItem(payload=logging_payload, kwargs=kwargs, response_obj=response_obj)
             )
 
         except Exception as e:
@@ -118,9 +114,7 @@ class GCSBucketLogger(GCSBucketBase, AdditionalLoggingUtils):
             kwargs = log_item["kwargs"]
             response_obj = log_item.get("response_obj", None) or {}
 
-            gcs_logging_config: GCSLoggingConfig = await self.get_gcs_logging_config(
-                kwargs
-            )
+            gcs_logging_config: GCSLoggingConfig = await self.get_gcs_logging_config(kwargs)
 
             headers = await self.construct_request_headers(
                 vertex_instance=gcs_logging_config["vertex_instance"],
@@ -182,9 +176,7 @@ class GCSBucketLogger(GCSBucketBase, AdditionalLoggingUtils):
         Tries current day, next day, and previous day until it finds the payload
         """
         if start_time_utc is None:
-            raise ValueError(
-                "start_time_utc is required for getting a payload from GCS Bucket"
-            )
+            raise ValueError("start_time_utc is required for getting a payload from GCS Bucket")
 
         # Try current day, next day, and previous day
         dates_to_try = [
@@ -207,9 +199,7 @@ class GCSBucketLogger(GCSBucketBase, AdditionalLoggingUtils):
                     loaded_response = json.loads(response)
                     return loaded_response
             except Exception as e:
-                verbose_logger.debug(
-                    f"Failed to fetch payload for date {date_str}: {str(e)}"
-                )
+                verbose_logger.debug(f"Failed to fetch payload for date {date_str}: {str(e)}")
                 continue
 
         return None

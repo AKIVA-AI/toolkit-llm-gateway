@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import httpx
-
 from litellm.llms.base_llm.vector_store.transformation import BaseVectorStoreConfig
 from litellm.llms.bedrock.base_aws_llm import BaseAWSLLM
 from litellm.types.integrations.rag.bedrock_knowledgebase import (
@@ -13,9 +12,9 @@ from litellm.types.integrations.rag.bedrock_knowledgebase import (
 )
 from litellm.types.router import GenericLiteLLMParams
 from litellm.types.vector_stores import (
+    VECTOR_STORE_OPENAI_PARAMS,
     BaseVectorStoreAuthCredentials,
     VectorStoreIndexEndpoints,
-    VECTOR_STORE_OPENAI_PARAMS,
     VectorStoreResultContent,
     VectorStoreSearchOptionalRequestParams,
     VectorStoreSearchResponse,
@@ -35,9 +34,7 @@ class BedrockVectorStoreConfig(BaseVectorStoreConfig, BaseAWSLLM):
         BaseVectorStoreConfig.__init__(self)
         BaseAWSLLM.__init__(self)
 
-    def get_auth_credentials(
-        self, litellm_params: dict
-    ) -> BaseVectorStoreAuthCredentials:
+    def get_auth_credentials(self, litellm_params: dict) -> BaseVectorStoreAuthCredentials:
         return {}
 
     def get_vector_store_endpoints_by_type(self) -> VectorStoreIndexEndpoints:
@@ -46,9 +43,7 @@ class BedrockVectorStoreConfig(BaseVectorStoreConfig, BaseAWSLLM):
             "write": [],
         }
 
-    def get_supported_openai_params(
-        self, model: str
-    ) -> List[VECTOR_STORE_OPENAI_PARAMS]:
+    def get_supported_openai_params(self, model: str) -> List[VECTOR_STORE_OPENAI_PARAMS]:
         return ["filters", "max_num_results", "ranking_options"]
 
     def _map_operator_to_aws(self, operator: str) -> str:
@@ -185,9 +180,7 @@ class BedrockVectorStoreConfig(BaseVectorStoreConfig, BaseAWSLLM):
         aws_region_name = litellm_params.get("aws_region_name")
         endpoint_url, _ = self.get_runtime_endpoint(
             api_base=api_base,
-            aws_bedrock_runtime_endpoint=litellm_params.get(
-                "aws_bedrock_runtime_endpoint"
-            ),
+            aws_bedrock_runtime_endpoint=litellm_params.get("aws_bedrock_runtime_endpoint"),
             aws_region_name=self.get_aws_region_name_for_non_llm_api_calls(
                 aws_region_name=aws_region_name
             ),
@@ -221,9 +214,7 @@ class BedrockVectorStoreConfig(BaseVectorStoreConfig, BaseAWSLLM):
             ] = max_results
         filters = vector_store_search_optional_params.get("filters")
         if filters is not None:
-            retrieval_config.setdefault("vectorSearchConfiguration", {})[
-                "filter"
-            ] = filters
+            retrieval_config.setdefault("vectorSearchConfiguration", {})["filter"] = filters
         if retrieval_config:
             # Create a properly typed retrieval configuration
             typed_retrieval_config: BedrockKBRetrievalConfiguration = {}
@@ -262,11 +253,7 @@ class BedrockVectorStoreConfig(BaseVectorStoreConfig, BaseAWSLLM):
         if source_uri:
             return source_uri
 
-        chunk_id = (
-            metadata.get("x-amz-bedrock-kb-chunk-id", "unknown")
-            if metadata
-            else "unknown"
-        )
+        chunk_id = metadata.get("x-amz-bedrock-kb-chunk-id", "unknown") if metadata else "unknown"
         return f"bedrock-kb-{chunk_id}"
 
     def _get_filename_from_metadata(self, metadata: Dict[str, Any]) -> str:
@@ -291,9 +278,7 @@ class BedrockVectorStoreConfig(BaseVectorStoreConfig, BaseAWSLLM):
                 return source_uri
 
         data_source_id = (
-            metadata.get("x-amz-bedrock-kb-data-source-id", "unknown")
-            if metadata
-            else "unknown"
+            metadata.get("x-amz-bedrock-kb-data-source-id", "unknown") if metadata else "unknown"
         )
         return f"bedrock-kb-document-{data_source_id}"
 

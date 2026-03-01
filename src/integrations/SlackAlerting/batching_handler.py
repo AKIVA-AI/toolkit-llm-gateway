@@ -40,9 +40,7 @@ def squash_payloads(queue):
     return squashed
 
 
-def _print_alerting_payload_warning(
-    payload: dict, slackAlertingInstance: SlackAlertingType
-):
+def _print_alerting_payload_warning(payload: dict, slackAlertingInstance: SlackAlertingType):
     """
     Print the payload to the console when
     slackAlertingInstance.alerting_args.log_to_console is True
@@ -76,6 +74,4 @@ async def send_to_webhook(slackAlertingInstance: SlackAlertingType, item, count)
     except Exception as e:
         verbose_proxy_logger.debug(f"Error sending slack alert: {str(e)}")
     finally:
-        _print_alerting_payload_warning(
-            payload, slackAlertingInstance=slackAlertingInstance
-        )
+        _print_alerting_payload_warning(payload, slackAlertingInstance=slackAlertingInstance)

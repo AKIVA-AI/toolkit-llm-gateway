@@ -1,10 +1,9 @@
 from typing import TYPE_CHECKING, Optional, Union, cast
 
 import httpx
+import litellm
 from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
-
-import litellm
 
 if TYPE_CHECKING:
     from aiohttp import ClientSession
@@ -38,10 +37,8 @@ class OpenAIAudioTranscription(OpenAIChatCompletion):
         """
         try:
 
-            raw_response = (
-                await openai_aclient.audio.transcriptions.with_raw_response.create(
-                    **data, timeout=timeout
-                )
+            raw_response = await openai_aclient.audio.transcriptions.with_raw_response.create(
+                **data, timeout=timeout
             )  # type: ignore
             headers = dict(raw_response.headers)
             response = raw_response.parse()
@@ -63,10 +60,8 @@ class OpenAIAudioTranscription(OpenAIChatCompletion):
         """
         try:
             if litellm.return_response_headers is True:
-                raw_response = (
-                    openai_client.audio.transcriptions.with_raw_response.create(
-                        **data, timeout=timeout
-                    )
+                raw_response = openai_client.audio.transcriptions.with_raw_response.create(
+                    **data, timeout=timeout
                 )  # type: ignore
                 headers = dict(raw_response.headers)
                 response = raw_response.parse()

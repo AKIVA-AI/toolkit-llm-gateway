@@ -45,9 +45,7 @@ class OpenAIImageGenerationHandler(BaseTranslation):
         """
         prompt = data.get("prompt")
         if prompt is None:
-            verbose_proxy_logger.debug(
-                "OpenAI Image Generation: No prompt found in request data"
-            )
+            verbose_proxy_logger.debug("OpenAI Image Generation: No prompt found in request data")
             return data
 
         # Apply guardrail to the prompt

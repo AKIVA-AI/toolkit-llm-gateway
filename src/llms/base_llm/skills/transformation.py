@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 import httpx
-
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.types.llms.anthropic_skills import (
     CreateSkillRequest,
@@ -43,11 +42,11 @@ class BaseSkillsAPIConfig(ABC):
     ) -> dict:
         """
         Validate and update headers with provider-specific requirements
-        
+
         Args:
             headers: Base headers dictionary
             litellm_params: LiteLLM parameters
-            
+
         Returns:
             Updated headers dictionary
         """
@@ -62,12 +61,12 @@ class BaseSkillsAPIConfig(ABC):
     ) -> str:
         """
         Get the complete URL for the API request
-        
+
         Args:
             api_base: Base API URL
             endpoint: API endpoint (e.g., 'skills', 'skills/{id}')
             skill_id: Optional skill ID for specific skill operations
-            
+
         Returns:
             Complete URL
         """
@@ -84,12 +83,12 @@ class BaseSkillsAPIConfig(ABC):
     ) -> Dict:
         """
         Transform create skill request to provider-specific format
-        
+
         Args:
             create_request: Skill creation parameters
             litellm_params: LiteLLM parameters
             headers: Request headers
-            
+
         Returns:
             Provider-specific request body
         """
@@ -103,11 +102,11 @@ class BaseSkillsAPIConfig(ABC):
     ) -> Skill:
         """
         Transform provider response to Skill object
-        
+
         Args:
             raw_response: Raw HTTP response
             logging_obj: Logging object
-            
+
         Returns:
             Skill object
         """
@@ -122,12 +121,12 @@ class BaseSkillsAPIConfig(ABC):
     ) -> Tuple[str, Dict]:
         """
         Transform list skills request parameters
-        
+
         Args:
             list_params: List parameters (pagination, filters)
             litellm_params: LiteLLM parameters
             headers: Request headers
-            
+
         Returns:
             Tuple of (url, query_params)
         """
@@ -141,11 +140,11 @@ class BaseSkillsAPIConfig(ABC):
     ) -> ListSkillsResponse:
         """
         Transform provider response to ListSkillsResponse
-        
+
         Args:
             raw_response: Raw HTTP response
             logging_obj: Logging object
-            
+
         Returns:
             ListSkillsResponse object
         """
@@ -161,13 +160,13 @@ class BaseSkillsAPIConfig(ABC):
     ) -> Tuple[str, Dict]:
         """
         Transform get skill request
-        
+
         Args:
             skill_id: Skill ID
             api_base: Base API URL
             litellm_params: LiteLLM parameters
             headers: Request headers
-            
+
         Returns:
             Tuple of (url, headers)
         """
@@ -181,11 +180,11 @@ class BaseSkillsAPIConfig(ABC):
     ) -> Skill:
         """
         Transform provider response to Skill object
-        
+
         Args:
             raw_response: Raw HTTP response
             logging_obj: Logging object
-            
+
         Returns:
             Skill object
         """
@@ -201,13 +200,13 @@ class BaseSkillsAPIConfig(ABC):
     ) -> Tuple[str, Dict]:
         """
         Transform delete skill request
-        
+
         Args:
             skill_id: Skill ID
             api_base: Base API URL
             litellm_params: LiteLLM parameters
             headers: Request headers
-            
+
         Returns:
             Tuple of (url, headers)
         """
@@ -221,11 +220,11 @@ class BaseSkillsAPIConfig(ABC):
     ) -> DeleteSkillResponse:
         """
         Transform provider response to DeleteSkillResponse
-        
+
         Args:
             raw_response: Raw HTTP response
             logging_obj: Logging object
-            
+
         Returns:
             DeleteSkillResponse object
         """
@@ -243,4 +242,3 @@ class BaseSkillsAPIConfig(ABC):
             message=error_message,
             headers=headers,
         )
-

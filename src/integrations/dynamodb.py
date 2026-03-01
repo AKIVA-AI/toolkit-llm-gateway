@@ -3,10 +3,10 @@
 
 import os
 import traceback
-from litellm._uuid import uuid
 from typing import Any
 
 import litellm
+from litellm._uuid import uuid
 
 
 class DyanmoDBLogger:
@@ -16,25 +16,19 @@ class DyanmoDBLogger:
         # Instance variables
         import boto3
 
-        self.dynamodb: Any = boto3.resource(
-            "dynamodb", region_name=os.environ["AWS_REGION_NAME"]
-        )
+        self.dynamodb: Any = boto3.resource("dynamodb", region_name=os.environ["AWS_REGION_NAME"])
         if litellm.dynamodb_table_name is None:
             raise ValueError(
                 "LiteLLM Error, trying to use DynamoDB but not table name passed. Create a table and set `litellm.dynamodb_table_name=<your-table>`"
             )
         self.table_name = litellm.dynamodb_table_name
 
-    async def _async_log_event(
-        self, kwargs, response_obj, start_time, end_time, print_verbose
-    ):
+    async def _async_log_event(self, kwargs, response_obj, start_time, end_time, print_verbose):
         self.log_event(kwargs, response_obj, start_time, end_time, print_verbose)
 
     def log_event(self, kwargs, response_obj, start_time, end_time, print_verbose):
         try:
-            print_verbose(
-                f"DynamoDB Logging - Enters logging function for model {kwargs}"
-            )
+            print_verbose(f"DynamoDB Logging - Enters logging function for model {kwargs}")
 
             # construct payload to send to DynamoDB
             # follows the same params as langfuse.py
@@ -80,9 +74,7 @@ class DyanmoDBLogger:
 
             print_verbose(f"Response from DynamoDB:{str(response)}")
 
-            print_verbose(
-                f"DynamoDB Layer Logging - final response object: {response_obj}"
-            )
+            print_verbose(f"DynamoDB Layer Logging - final response object: {response_obj}")
             return response
         except Exception:
             print_verbose(f"DynamoDB Layer Error - {traceback.format_exc()}")

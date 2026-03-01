@@ -1,7 +1,6 @@
 from typing import Optional
 
 import httpx
-
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 
 API_BASE = "https://api.bytez.com/models/v2"

@@ -69,9 +69,7 @@ class IBMWatsonXChatConfig(IBMWatsonXMixin, OpenAIGPTConfig):
             optional_params["tool_choice_option"] = _tool_choice
         elif _tool_choice is not None:
             optional_params["tool_choice"] = _tool_choice
-        return super().map_openai_params(
-            non_default_params, optional_params, model, drop_params
-        )
+        return super().map_openai_params(non_default_params, optional_params, model, drop_params)
 
     def _get_openai_compatible_provider_info(
         self, api_base: Optional[str], api_key: Optional[str]
@@ -102,9 +100,7 @@ class IBMWatsonXChatConfig(IBMWatsonXMixin, OpenAIGPTConfig):
             endpoint = endpoint.format(deployment_id=deployment_id)
         else:
             endpoint = (
-                WatsonXAIEndpoint.CHAT_STREAM.value
-                if stream
-                else WatsonXAIEndpoint.CHAT.value
+                WatsonXAIEndpoint.CHAT_STREAM.value if stream else WatsonXAIEndpoint.CHAT.value
             )
         url = url.rstrip("/") + endpoint
 
@@ -176,9 +172,7 @@ class IBMWatsonXChatConfig(IBMWatsonXMixin, OpenAIGPTConfig):
         return None
 
     @staticmethod
-    async def aapply_prompt_template(
-        model: str, messages: List[Dict[str, str]]
-    ) -> Optional[str]:
+    async def aapply_prompt_template(model: str, messages: List[Dict[str, str]]) -> Optional[str]:
         """Apply prompt template (async version)"""
         import litellm
         from litellm.litellm_core_utils.prompt_templates.factory import (
@@ -232,9 +226,7 @@ class IBMWatsonXChatConfig(IBMWatsonXMixin, OpenAIGPTConfig):
         return None
 
     @staticmethod
-    def apply_prompt_template(
-        model: str, messages: List[Dict[str, str]]
-    ) -> Optional[str]:
+    def apply_prompt_template(model: str, messages: List[Dict[str, str]]) -> Optional[str]:
         """Apply prompt template (sync version)"""
         from litellm.litellm_core_utils.prompt_templates.factory import (
             hf_chat_template,

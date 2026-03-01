@@ -1,8 +1,7 @@
 from typing import Dict, List, Optional
 
-from typing_extensions import TypedDict
-
 from litellm.types.llms.openai import AllMessageValues
+from typing_extensions import TypedDict
 
 
 class LakeraAIRequest(TypedDict, total=False):

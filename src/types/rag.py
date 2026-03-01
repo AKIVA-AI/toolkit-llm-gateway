@@ -167,6 +167,7 @@ class RAGIngestOptions(TypedDict, total=False):
     embedding: Optional[RAGIngestEmbeddingOptions]  # Embedding model config
     vector_store: RAGIngestVectorStoreOptions  # OpenAI or Bedrock config
 
+
 class RAGIngestResponse(TypedDict, total=False):
     """Response from RAG ingest API."""
 
@@ -177,7 +178,6 @@ class RAGIngestResponse(TypedDict, total=False):
     error: Optional[str]  # Error message if status is "failed"
 
 
-
 class RAGIngestRequest(BaseModel):
     """Request body for RAG ingest API (for validation)."""
 
@@ -186,4 +186,3 @@ class RAGIngestRequest(BaseModel):
     ingest_options: Dict[str, Any]  # RAGIngestOptions as dict for flexibility
 
     model_config = ConfigDict(extra="allow")  # Allow additional fields
-

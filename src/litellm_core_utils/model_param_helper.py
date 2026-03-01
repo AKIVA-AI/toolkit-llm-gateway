@@ -1,5 +1,7 @@
 from typing import Set
 
+from litellm._logging import verbose_logger
+from litellm.types.rerank import RerankRequest
 from openai.types.chat.completion_create_params import (
     CompletionCreateParamsNonStreaming,
     CompletionCreateParamsStreaming,
@@ -12,9 +14,6 @@ from openai.types.completion_create_params import (
 )
 from openai.types.embedding_create_params import EmbeddingCreateParams
 
-from litellm._logging import verbose_logger
-from litellm.types.rerank import RerankRequest
-
 
 class ModelParamHelper:
     @staticmethod
@@ -23,9 +22,7 @@ class ModelParamHelper:
     ) -> dict:
         """ """
         standard_logging_model_parameters: dict = {}
-        supported_model_parameters = (
-            ModelParamHelper._get_relevant_args_to_use_for_logging()
-        )
+        supported_model_parameters = ModelParamHelper._get_relevant_args_to_use_for_logging()
 
         for key, value in model_parameters.items():
             if key in supported_model_parameters:
@@ -53,16 +50,10 @@ class ModelParamHelper:
         """
         Gets the supported kwargs for each call type and combines them
         """
-        chat_completion_kwargs = (
-            ModelParamHelper._get_litellm_supported_chat_completion_kwargs()
-        )
-        text_completion_kwargs = (
-            ModelParamHelper._get_litellm_supported_text_completion_kwargs()
-        )
+        chat_completion_kwargs = ModelParamHelper._get_litellm_supported_chat_completion_kwargs()
+        text_completion_kwargs = ModelParamHelper._get_litellm_supported_text_completion_kwargs()
         embedding_kwargs = ModelParamHelper._get_litellm_supported_embedding_kwargs()
-        transcription_kwargs = (
-            ModelParamHelper._get_litellm_supported_transcription_kwargs()
-        )
+        transcription_kwargs = ModelParamHelper._get_litellm_supported_transcription_kwargs()
         rerank_kwargs = ModelParamHelper._get_litellm_supported_rerank_kwargs()
         exclude_kwargs = ModelParamHelper._get_exclude_kwargs()
 
@@ -95,9 +86,9 @@ class ModelParamHelper:
         litellm_provider_specific_params: Set[str] = (
             ModelParamHelper.get_litellm_provider_specific_params_for_chat_params()
         )
-        all_chat_completion_kwargs: Set[str] = non_streaming_params.union(
-            streaming_params
-        ).union(litellm_provider_specific_params)
+        all_chat_completion_kwargs: Set[str] = non_streaming_params.union(streaming_params).union(
+            litellm_provider_specific_params
+        )
         return all_chat_completion_kwargs
 
     @staticmethod
@@ -108,16 +99,8 @@ class ModelParamHelper:
         This follows the OpenAI API Spec
         """
         all_text_completion_kwargs = set(
-            getattr(
-                TextCompletionCreateParamsNonStreaming, "__annotations__", {}
-            ).keys()
-        ).union(
-            set(
-                getattr(
-                    TextCompletionCreateParamsStreaming, "__annotations__", {}
-                ).keys()
-            )
-        )
+            getattr(TextCompletionCreateParamsNonStreaming, "__annotations__", {}).keys()
+        ).union(set(getattr(TextCompletionCreateParamsStreaming, "__annotations__", {}).keys()))
         return all_text_completion_kwargs
 
     @staticmethod
@@ -150,14 +133,10 @@ class ModelParamHelper:
             )
 
             non_streaming_kwargs = set(
-                getattr(
-                    TranscriptionCreateParamsNonStreaming, "__annotations__", {}
-                ).keys()
+                getattr(TranscriptionCreateParamsNonStreaming, "__annotations__", {}).keys()
             )
             streaming_kwargs = set(
-                getattr(
-                    TranscriptionCreateParamsStreaming, "__annotations__", {}
-                ).keys()
+                getattr(TranscriptionCreateParamsStreaming, "__annotations__", {}).keys()
             )
 
             all_transcription_kwargs = non_streaming_kwargs.union(streaming_kwargs)

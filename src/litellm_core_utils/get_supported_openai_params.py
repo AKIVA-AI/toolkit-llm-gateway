@@ -8,9 +8,7 @@ from litellm.types.utils import LlmProviders, LlmProvidersSet
 def get_supported_openai_params(  # noqa: PLR0915
     model: str,
     custom_llm_provider: Optional[str] = None,
-    request_type: Literal[
-        "chat_completion", "embeddings", "transcription"
-    ] = "chat_completion",
+    request_type: Literal["chat_completion", "embeddings", "transcription"] = "chat_completion",
 ) -> Optional[list]:
     """
     Returns the supported openai params for a given model + provider
@@ -62,9 +60,7 @@ def get_supported_openai_params(  # noqa: PLR0915
         return litellm.AnthropicTextConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "fireworks_ai":
         if request_type == "embeddings":
-            return litellm.FireworksAIEmbeddingConfig().get_supported_openai_params(
-                model=model
-            )
+            return litellm.FireworksAIEmbeddingConfig().get_supported_openai_params(model=model)
         elif request_type == "transcription":
             return litellm.FireworksAIAudioTranscriptionConfig().get_supported_openai_params(
                 model=model
@@ -105,12 +101,8 @@ def get_supported_openai_params(  # noqa: PLR0915
                     model=model, provider=LlmProviders.OPENAI
                 )
             )
-            if isinstance(
-                transcription_provider_config, litellm.OpenAIGPTAudioTranscriptionConfig
-            ):
-                return transcription_provider_config.get_supported_openai_params(
-                    model=model
-                )
+            if isinstance(transcription_provider_config, litellm.OpenAIGPTAudioTranscriptionConfig):
+                return transcription_provider_config.get_supported_openai_params(model=model)
             else:
                 raise ValueError(
                     f"Unsupported provider config: {transcription_provider_config} for model: {model}"
@@ -123,13 +115,9 @@ def get_supported_openai_params(  # noqa: PLR0915
             return litellm.GenAIHubEmbeddingConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "azure":
         if litellm.AzureOpenAIO1Config().is_o_series_model(model=model):
-            return litellm.AzureOpenAIO1Config().get_supported_openai_params(
-                model=model
-            )
+            return litellm.AzureOpenAIO1Config().get_supported_openai_params(model=model)
         elif litellm.AzureOpenAIGPT5Config.is_model_gpt_5_model(model=model):
-            return litellm.AzureOpenAIGPT5Config().get_supported_openai_params(
-                model=model
-            )
+            return litellm.AzureOpenAIGPT5Config().get_supported_openai_params(model=model)
         else:
             return litellm.AzureOpenAIConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "openrouter":
@@ -143,9 +131,7 @@ def get_supported_openai_params(  # noqa: PLR0915
         elif request_type == "embeddings":
             return litellm.MistralEmbeddingConfig().get_supported_openai_params()
     elif custom_llm_provider == "text-completion-codestral":
-        return litellm.CodestralTextCompletionConfig().get_supported_openai_params(
-            model=model
-        )
+        return litellm.CodestralTextCompletionConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "sambanova":
         if request_type == "embeddings":
             litellm.SambaNovaEmbeddingConfig().get_supported_openai_params(model=model)
@@ -163,9 +149,7 @@ def get_supported_openai_params(  # noqa: PLR0915
         return litellm.HuggingFaceChatConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "jina_ai":
         if request_type == "embeddings":
-            return litellm.JinaAIEmbeddingConfig().get_supported_openai_params(
-                model=model
-            )
+            return litellm.JinaAIEmbeddingConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "together_ai":
         return litellm.TogetherAIConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "databricks":
@@ -174,9 +158,7 @@ def get_supported_openai_params(  # noqa: PLR0915
         elif request_type == "embeddings":
             return litellm.DatabricksEmbeddingConfig().get_supported_openai_params()
     elif custom_llm_provider == "palm" or custom_llm_provider == "gemini":
-        return litellm.GoogleAIStudioGeminiConfig().get_supported_openai_params(
-            model=model
-        )
+        return litellm.GoogleAIStudioGeminiConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "novita":
         return litellm.NovitaConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "vertex_ai" or custom_llm_provider == "vertex_ai_beta":
@@ -184,23 +166,15 @@ def get_supported_openai_params(  # noqa: PLR0915
             if model.startswith("mistral"):
                 return litellm.MistralConfig().get_supported_openai_params(model=model)
             elif model.startswith("codestral"):
-                return (
-                    litellm.CodestralTextCompletionConfig().get_supported_openai_params(
-                        model=model
-                    )
+                return litellm.CodestralTextCompletionConfig().get_supported_openai_params(
+                    model=model
                 )
             elif model.startswith("claude"):
-                return litellm.VertexAIAnthropicConfig().get_supported_openai_params(
-                    model=model
-                )
+                return litellm.VertexAIAnthropicConfig().get_supported_openai_params(model=model)
             elif model.startswith("gemini"):
-                return litellm.VertexGeminiConfig().get_supported_openai_params(
-                    model=model
-                )
+                return litellm.VertexGeminiConfig().get_supported_openai_params(model=model)
             else:
-                return litellm.VertexAILlama3Config().get_supported_openai_params(
-                    model=model
-                )
+                return litellm.VertexAILlama3Config().get_supported_openai_params(model=model)
         elif request_type == "embeddings":
             return litellm.VertexAITextEmbeddingConfig().get_supported_openai_params()
     elif custom_llm_provider == "sagemaker":
@@ -242,34 +216,23 @@ def get_supported_openai_params(  # noqa: PLR0915
         return litellm.IBMWatsonXChatConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "watsonx_text":
         return litellm.IBMWatsonXAIConfig().get_supported_openai_params(model=model)
-    elif (
-        custom_llm_provider == "custom_openai"
-        or custom_llm_provider == "text-completion-openai"
-    ):
-        return litellm.OpenAITextCompletionConfig().get_supported_openai_params(
-            model=model
-        )
+    elif custom_llm_provider == "custom_openai" or custom_llm_provider == "text-completion-openai":
+        return litellm.OpenAITextCompletionConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "predibase":
         return litellm.PredibaseConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "voyage":
         return litellm.VoyageEmbeddingConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "infinity":
-        return litellm.InfinityEmbeddingConfig().get_supported_openai_params(
-            model=model
-        )
+        return litellm.InfinityEmbeddingConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "triton":
         if request_type == "embeddings":
-            return litellm.TritonEmbeddingConfig().get_supported_openai_params(
-                model=model
-            )
+            return litellm.TritonEmbeddingConfig().get_supported_openai_params(model=model)
         else:
             return litellm.TritonConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "deepgram":
         if request_type == "transcription":
-            return (
-                litellm.DeepgramAudioTranscriptionConfig().get_supported_openai_params(
-                    model=model
-                )
+            return litellm.DeepgramAudioTranscriptionConfig().get_supported_openai_params(
+                model=model
             )
     elif custom_llm_provider == "ovhcloud":
         if request_type == "transcription":
@@ -277,18 +240,14 @@ def get_supported_openai_params(  # noqa: PLR0915
                 OVHCloudAudioTranscriptionConfig,
             )
 
-            return OVHCloudAudioTranscriptionConfig().get_supported_openai_params(
-                model=model
-            )
+            return OVHCloudAudioTranscriptionConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider == "elevenlabs":
         if request_type == "transcription":
             from litellm.llms.elevenlabs.audio_transcription.transformation import (
                 ElevenLabsAudioTranscriptionConfig,
             )
 
-            return ElevenLabsAudioTranscriptionConfig().get_supported_openai_params(
-                model=model
-            )
+            return ElevenLabsAudioTranscriptionConfig().get_supported_openai_params(model=model)
     elif custom_llm_provider in litellm._custom_providers:
         if request_type == "chat_completion":
             provider_config = litellm.ProviderConfigManager.get_provider_chat_config(

@@ -28,9 +28,7 @@ class ResponsesToCompletionBridgeHandler:
         super().__init__()
         self.transformation_handler = LiteLLMResponsesTransformationHandler()
 
-    def validate_input_kwargs(
-        self, kwargs: dict
-    ) -> ResponsesToCompletionBridgeHandlerInputKwargs:
+    def validate_input_kwargs(self, kwargs: dict) -> ResponsesToCompletionBridgeHandlerInputKwargs:
         from litellm import LiteLLMLoggingObj
         from litellm.types.utils import ModelResponse
 
@@ -141,9 +139,7 @@ class ResponsesToCompletionBridgeHandler:
             )
             return streamwrapper
 
-    async def acompletion(
-        self, *args, **kwargs
-    ) -> Union["ModelResponse", "CustomStreamWrapper"]:
+    async def acompletion(self, *args, **kwargs) -> Union["ModelResponse", "CustomStreamWrapper"]:
         from litellm import aresponses
         from litellm.litellm_core_utils.streaming_handler import CustomStreamWrapper
         from litellm.types.llms.openai import ResponsesAPIResponse

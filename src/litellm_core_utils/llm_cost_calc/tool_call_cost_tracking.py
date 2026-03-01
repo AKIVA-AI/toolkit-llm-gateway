@@ -93,11 +93,7 @@ class StandardBuiltInToolCostTracking:
         if custom_llm_provider is None and model_info is not None:
             custom_llm_provider = model_info["litellm_provider"]
 
-        if (
-            model_info is not None
-            and usage is not None
-            and custom_llm_provider is not None
-        ):
+        if model_info is not None and usage is not None and custom_llm_provider is not None:
             result = get_cost_for_web_search_request(
                 custom_llm_provider=custom_llm_provider,
                 usage=usage,
@@ -107,9 +103,7 @@ class StandardBuiltInToolCostTracking:
                 return result
 
         return StandardBuiltInToolCostTracking.get_cost_for_web_search(
-            web_search_options=standard_built_in_tools_params.get(
-                "web_search_options", None
-            ),
+            web_search_options=standard_built_in_tools_params.get("web_search_options", None),
             model_info=model_info,
         )
 
@@ -202,16 +196,12 @@ class StandardBuiltInToolCostTracking:
         standard_built_in_tools_params: StandardBuiltInToolsParams,
     ) -> float:
         """Calculate vector store cost."""
-        vector_store_usage = standard_built_in_tools_params.get(
-            "vector_store_usage", None
-        )
+        vector_store_usage = standard_built_in_tools_params.get("vector_store_usage", None)
         if not vector_store_usage:
             return 0.0
 
         model_info_dict = dict(model_info) if model_info is not None else None
-        vector_store_dict = (
-            vector_store_usage if isinstance(vector_store_usage, dict) else {}
-        )
+        vector_store_dict = vector_store_usage if isinstance(vector_store_usage, dict) else {}
 
         return StandardBuiltInToolCostTracking.get_cost_for_vector_store(
             vector_store_usage=vector_store_dict,
@@ -226,15 +216,13 @@ class StandardBuiltInToolCostTracking:
         standard_built_in_tools_params: StandardBuiltInToolsParams,
     ) -> float:
         """Calculate computer use cost."""
-        computer_use_usage = standard_built_in_tools_params.get(
-            "computer_use_usage", {}
-        )
+        computer_use_usage = standard_built_in_tools_params.get("computer_use_usage", {})
         if not computer_use_usage:
             return 0.0
 
         model_info_dict = dict(model_info) if model_info is not None else None
-        input_tokens, output_tokens = (
-            StandardBuiltInToolCostTracking._extract_token_counts(computer_use_usage)
+        input_tokens, output_tokens = StandardBuiltInToolCostTracking._extract_token_counts(
+            computer_use_usage
         )
 
         return StandardBuiltInToolCostTracking.get_cost_for_computer_use(
@@ -258,9 +246,7 @@ class StandardBuiltInToolCostTracking:
             return 0.0
 
         model_info_dict = dict(model_info) if model_info is not None else None
-        sessions = StandardBuiltInToolCostTracking._safe_convert_to_int(
-            code_interpreter_sessions
-        )
+        sessions = StandardBuiltInToolCostTracking._safe_convert_to_int(code_interpreter_sessions)
 
         return StandardBuiltInToolCostTracking.get_cost_for_code_interpreter(
             sessions=sessions,
@@ -280,12 +266,8 @@ class StandardBuiltInToolCostTracking:
             input_tokens_val = computer_use_usage.get("input_tokens")
             output_tokens_val = computer_use_usage.get("output_tokens")
 
-            input_tokens = StandardBuiltInToolCostTracking._safe_convert_to_int(
-                input_tokens_val
-            )
-            output_tokens = StandardBuiltInToolCostTracking._safe_convert_to_int(
-                output_tokens_val
-            )
+            input_tokens = StandardBuiltInToolCostTracking._safe_convert_to_int(input_tokens_val)
+            output_tokens = StandardBuiltInToolCostTracking._safe_convert_to_int(output_tokens_val)
 
         return input_tokens, output_tokens
 
@@ -423,9 +405,7 @@ class StandardBuiltInToolCostTracking:
         model: str, custom_llm_provider: Optional[str] = None
     ) -> Optional[ModelInfo]:
         try:
-            return litellm.get_model_info(
-                model=model, custom_llm_provider=custom_llm_provider
-            )
+            return litellm.get_model_info(model=model, custom_llm_provider=custom_llm_provider)
         except Exception:
             return None
 
@@ -453,9 +433,7 @@ class StandardBuiltInToolCostTracking:
             return search_context_pricing.get("search_context_size_medium", 0.0)
         elif web_search_options.get("search_context_size", None) == "high":
             return search_context_pricing.get("search_context_size_high", 0.0)
-        return StandardBuiltInToolCostTracking.get_default_cost_for_web_search(
-            model_info
-        )
+        return StandardBuiltInToolCostTracking.get_default_cost_for_web_search(model_info)
 
     @staticmethod
     def get_default_cost_for_web_search(
@@ -494,11 +472,7 @@ class StandardBuiltInToolCostTracking:
             return 0.0
 
         # Check if model-specific pricing is available
-        if (
-            model_info
-            and "file_search_cost_per_gb_per_day" in model_info
-            and provider == "azure"
-        ):
+        if model_info and "file_search_cost_per_gb_per_day" in model_info and provider == "azure":
             if storage_gb and days:
                 return storage_gb * days * model_info["file_search_cost_per_gb_per_day"]
         elif model_info and "file_search_cost_per_1k_calls" in model_info:
@@ -561,12 +535,8 @@ class StandardBuiltInToolCostTracking:
         if provider == "azure" and (input_tokens or output_tokens):
             # Check if model-specific pricing is available
             if model_info:
-                input_cost = model_info.get(
-                    "computer_use_input_cost_per_1k_tokens", 0.0
-                )
-                output_cost = model_info.get(
-                    "computer_use_output_cost_per_1k_tokens", 0.0
-                )
+                input_cost = model_info.get("computer_use_input_cost_per_1k_tokens", 0.0)
+                output_cost = model_info.get("computer_use_output_cost_per_1k_tokens", 0.0)
                 if input_cost or output_cost:
                     total_cost = 0.0
                     if input_tokens:
@@ -583,9 +553,7 @@ class StandardBuiltInToolCostTracking:
 
             total_cost = 0.0
             if input_tokens:
-                total_cost += (
-                    input_tokens / 1000.0
-                ) * AZURE_COMPUTER_USE_INPUT_COST_PER_1K_TOKENS
+                total_cost += (input_tokens / 1000.0) * AZURE_COMPUTER_USE_INPUT_COST_PER_1K_TOKENS
             if output_tokens:
                 total_cost += (
                     output_tokens / 1000.0
@@ -603,21 +571,22 @@ class StandardBuiltInToolCostTracking:
         Get code interpreter cost per session from model cost map.
         """
         import litellm
-        
+
         try:
             container_model = f"{provider}/container"
-            model_info = litellm.get_model_info(
-                model=container_model,
-                custom_llm_provider=provider
+            model_info = litellm.get_model_info(model=container_model, custom_llm_provider=provider)
+            model_key = (
+                model_info.get("key")
+                if isinstance(model_info, dict)
+                else getattr(model_info, "key", None)
             )
-            model_key = model_info.get("key") if isinstance(model_info, dict) else getattr(model_info, "key", None)
-            
+
             if model_key and model_key in litellm.model_cost:
                 return litellm.model_cost[model_key].get("code_interpreter_cost_per_session")
-            
+
         except Exception:
             pass
-        
+
         return None
 
     @staticmethod
@@ -641,12 +610,13 @@ class StandardBuiltInToolCostTracking:
 
         # Try to get cost from model cost map for any provider
         if provider:
-            cost_per_session = StandardBuiltInToolCostTracking._get_code_interpreter_cost_from_model_map(
-                provider=provider
+            cost_per_session = (
+                StandardBuiltInToolCostTracking._get_code_interpreter_cost_from_model_map(
+                    provider=provider
+                )
             )
             if cost_per_session is not None:
                 return sessions * cost_per_session
-            
 
         return 0.0
 
@@ -691,9 +661,7 @@ class StandardBuiltInToolCostTracking:
 
     @staticmethod
     def _get_file_search_tool_call(kwargs: Dict) -> Optional[FileSearchTool]:
-        tools = StandardBuiltInToolCostTracking._get_tools_from_kwargs(
-            kwargs, "file_search"
-        )
+        tools = StandardBuiltInToolCostTracking._get_tools_from_kwargs(kwargs, "file_search")
         if tools:
             for tool in tools:
                 if isinstance(tool, dict):

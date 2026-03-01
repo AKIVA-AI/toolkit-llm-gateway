@@ -1,13 +1,13 @@
 """
 Main OCR function for LiteLLM.
 """
+
 import asyncio
 import contextvars
 from functools import partial
 from typing import Any, Coroutine, Dict, Optional, Union
 
 import httpx
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.constants import request_timeout
@@ -35,7 +35,7 @@ async def aocr(
 ) -> OCRResponse:
     """
     Async OCR function.
-    
+
     Args:
         model: Model name (e.g., "mistral/mistral-ocr-latest")
         document: Document to process in Mistral format:
@@ -47,14 +47,14 @@ async def aocr(
         custom_llm_provider: Optional custom LLM provider
         extra_headers: Optional extra headers
         **kwargs: Additional parameters (e.g., include_image_base64, pages, image_limit)
-        
+
     Returns:
         OCRResponse in Mistral OCR format with pages, model, usage_info, etc.
-        
+
     Example:
         ```python
         import litellm
-        
+
         # OCR with PDF
         response = await litellm.aocr(
             model="mistral/mistral-ocr-latest",
@@ -64,7 +64,7 @@ async def aocr(
             },
             include_image_base64=True
         )
-        
+
         # OCR with image
         response = await litellm.aocr(
             model="mistral/mistral-ocr-latest",
@@ -73,7 +73,7 @@ async def aocr(
                 "image_url": "https://example.com/image.png"
             }
         )
-        
+
         # OCR with base64 encoded PDF
         response = await litellm.aocr(
             model="mistral/mistral-ocr-latest",
@@ -91,9 +91,7 @@ async def aocr(
 
         # Get custom llm provider
         if custom_llm_provider is None:
-            _, custom_llm_provider, _, _ = litellm.get_llm_provider(
-                model=model, api_base=api_base
-            )
+            _, custom_llm_provider, _, _ = litellm.get_llm_provider(model=model, api_base=api_base)
 
         func = partial(
             ocr,
@@ -117,9 +115,7 @@ async def aocr(
             response = init_response
 
         if response is None:
-            raise ValueError(
-                f"Got an unexpected None response from the OCR API: {response}"
-            )
+            raise ValueError(f"Got an unexpected None response from the OCR API: {response}")
 
         return response
     except Exception as e:
@@ -145,7 +141,7 @@ def ocr(
 ) -> Union[OCRResponse, Coroutine[Any, Any, OCRResponse]]:
     """
     Synchronous OCR function.
-    
+
     Args:
         model: Model name (e.g., "mistral/mistral-ocr-latest")
         document: Document to process in Mistral format:
@@ -157,14 +153,14 @@ def ocr(
         custom_llm_provider: Optional custom LLM provider
         extra_headers: Optional extra headers
         **kwargs: Additional parameters (e.g., include_image_base64, pages, image_limit)
-        
+
     Returns:
         OCRResponse in Mistral OCR format with pages, model, usage_info, etc.
-        
+
     Example:
         ```python
         import litellm
-        
+
         # OCR with PDF
         response = litellm.ocr(
             model="mistral/mistral-ocr-latest",
@@ -174,7 +170,7 @@ def ocr(
             },
             include_image_base64=True
         )
-        
+
         # OCR with image
         response = litellm.ocr(
             model="mistral/mistral-ocr-latest",
@@ -183,7 +179,7 @@ def ocr(
                 "image_url": "https://example.com/image.png"
             }
         )
-        
+
         # OCR with base64 encoded PDF
         response = litellm.ocr(
             model="mistral/mistral-ocr-latest",
@@ -192,7 +188,7 @@ def ocr(
                 "document_url": f"data:application/pdf;base64,{base64_pdf}"
             }
         )
-        
+
         # Access pages
         for page in response.pages:
             print(f"Page {page.index}: {page.markdown}")
@@ -203,24 +199,26 @@ def ocr(
         litellm_logging_obj: LiteLLMLoggingObj = kwargs.pop("litellm_logging_obj")  # type: ignore
         litellm_call_id: Optional[str] = kwargs.get("litellm_call_id", None)
         _is_async = kwargs.pop("aocr", False) is True
-        
+
         # Validate document parameter format (Mistral spec)
         if not isinstance(document, dict):
-            raise ValueError(f"document must be a dict with 'type' and URL field, got {type(document)}")
-        
+            raise ValueError(
+                f"document must be a dict with 'type' and URL field, got {type(document)}"
+            )
+
         doc_type = document.get("type")
         if doc_type not in ["document_url", "image_url"]:
-            raise ValueError(f"Invalid document type: {doc_type}. Must be 'document_url' or 'image_url'")
-
-        model, custom_llm_provider, dynamic_api_key, dynamic_api_base = (
-            litellm.get_llm_provider(
-                model=model,
-                custom_llm_provider=custom_llm_provider,
-                api_base=api_base,
-                api_key=api_key,
+            raise ValueError(
+                f"Invalid document type: {doc_type}. Must be 'document_url' or 'image_url'"
             )
+
+        model, custom_llm_provider, dynamic_api_key, dynamic_api_base = litellm.get_llm_provider(
+            model=model,
+            custom_llm_provider=custom_llm_provider,
+            api_base=api_base,
+            api_key=api_key,
         )
-        
+
         # Update with dynamic values if available
         if dynamic_api_key:
             api_key = dynamic_api_key
@@ -236,31 +234,27 @@ def ocr(
         )
 
         if ocr_provider_config is None:
-            raise ValueError(
-                f"OCR is not supported for provider: {custom_llm_provider}"
-            )
+            raise ValueError(f"OCR is not supported for provider: {custom_llm_provider}")
 
-        verbose_logger.debug(
-            f"OCR call - model: {model}, provider: {custom_llm_provider}"
-        )
+        verbose_logger.debug(f"OCR call - model: {model}, provider: {custom_llm_provider}")
 
         # Get litellm params using GenericLiteLLMParams (same as responses API)
         litellm_params = GenericLiteLLMParams(**kwargs)
-        
+
         # Extract OCR-specific parameters from kwargs
         supported_params = ocr_provider_config.get_supported_ocr_params(model=model)
         non_default_params = {}
         for param in supported_params:
             if param in kwargs:
                 non_default_params[param] = kwargs.pop(param)
-        
+
         # Map parameters to provider-specific format
         optional_params = ocr_provider_config.map_ocr_params(
             non_default_params=non_default_params,
             optional_params={},
             model=model,
         )
-        
+
         verbose_logger.debug(f"OCR optional_params after mapping: {optional_params}")
 
         # Pre Call logging
@@ -299,4 +293,3 @@ def ocr(
             completion_kwargs=local_vars,
             extra_kwargs=kwargs,
         )
-

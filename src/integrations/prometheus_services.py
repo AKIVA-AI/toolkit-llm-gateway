@@ -31,9 +31,7 @@ class PrometheusServicesLogger:
                 from prometheus_client import REGISTRY, Counter, Gauge, Histogram
                 from prometheus_client.gc_collector import Collector
             except ImportError:
-                raise Exception(
-                    "Missing prometheus_client. Run `pip install prometheus-client`"
-                )
+                raise Exception("Missing prometheus_client. Run `pip install prometheus-client`")
 
             self.Histogram = Histogram
             self.Counter = Counter
@@ -53,9 +51,7 @@ class PrometheusServicesLogger:
 
                 # Initialize only the configured metrics for each service
                 if ServiceMetrics.HISTOGRAM in metrics_to_initialize:
-                    histogram = self.create_histogram(
-                        service.value, type_of_request="latency"
-                    )
+                    histogram = self.create_histogram(service.value, type_of_request="latency")
                     if histogram:
                         service_metrics.append(histogram)
 
@@ -91,9 +87,7 @@ class PrometheusServicesLogger:
             print_verbose(f"Got exception on init prometheus client {str(e)}")
             raise e
 
-    def _get_service_metrics_initialize(
-        self, service: ServiceTypes
-    ) -> List[ServiceMetrics]:
+    def _get_service_metrics_initialize(self, service: ServiceTypes) -> List[ServiceMetrics]:
         DEFAULT_METRICS = [ServiceMetrics.COUNTER, ServiceMetrics.HISTOGRAM]
         if service not in DEFAULT_SERVICE_CONFIGS:
             return DEFAULT_METRICS
@@ -133,9 +127,7 @@ class PrometheusServicesLogger:
         is_registered = self.is_metric_registered(metric_name)
         if is_registered:
             return self._get_metric(metric_name)
-        return self.Gauge(
-            metric_name, "Gauge for {} service".format(service), labelnames=[service]
-        )
+        return self.Gauge(metric_name, "Gauge for {} service".format(service), labelnames=[service])
 
     def create_counter(
         self,

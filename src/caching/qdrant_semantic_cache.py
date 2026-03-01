@@ -45,9 +45,7 @@ class QdrantSemanticCache(BaseCache):
             raise Exception("collection_name must be provided, passed None")
 
         self.collection_name = collection_name
-        print_verbose(
-            f"qdrant semantic-cache initializing COLLECTION - {self.collection_name}"
-        )
+        print_verbose(f"qdrant semantic-cache initializing COLLECTION - {self.collection_name}")
 
         if similarity_threshold is None:
             raise Exception("similarity_threshold must be provided, passed None")
@@ -57,19 +55,13 @@ class QdrantSemanticCache(BaseCache):
 
         # check if defined as os.environ/ variable
         if qdrant_api_base:
-            if isinstance(qdrant_api_base, str) and qdrant_api_base.startswith(
-                "os.environ/"
-            ):
+            if isinstance(qdrant_api_base, str) and qdrant_api_base.startswith("os.environ/"):
                 qdrant_api_base = get_secret_str(qdrant_api_base)
         if qdrant_api_key:
-            if isinstance(qdrant_api_key, str) and qdrant_api_key.startswith(
-                "os.environ/"
-            ):
+            if isinstance(qdrant_api_key, str) and qdrant_api_key.startswith("os.environ/"):
                 qdrant_api_key = get_secret_str(qdrant_api_key)
 
-        qdrant_api_base = (
-            qdrant_api_base or os.getenv("QDRANT_URL") or os.getenv("QDRANT_API_BASE")
-        )
+        qdrant_api_base = qdrant_api_base or os.getenv("QDRANT_URL") or os.getenv("QDRANT_API_BASE")
         qdrant_api_key = qdrant_api_key or os.getenv("QDRANT_API_KEY")
         headers = {"Content-Type": "application/json"}
         if qdrant_api_key:
@@ -85,9 +77,7 @@ class QdrantSemanticCache(BaseCache):
         self.headers = headers
 
         self.sync_client = _get_httpx_client()
-        self.async_client = get_async_httpx_client(
-            llm_provider=httpxSpecialProvider.Caching
-        )
+        self.async_client = get_async_httpx_client(llm_provider=httpxSpecialProvider.Caching)
 
         if quantization_config is None:
             print_verbose(
@@ -108,9 +98,7 @@ class QdrantSemanticCache(BaseCache):
                 headers=self.headers,
             )
             self.collection_info = collection_details.json()
-            print_verbose(
-                f"Collection already exists.\nCollection details:{self.collection_info}"
-            )
+            print_verbose(f"Collection already exists.\nCollection details:{self.collection_info}")
         else:
             if quantization_config is None or quantization_config == "binary":
                 quantization_params = {
@@ -127,9 +115,7 @@ class QdrantSemanticCache(BaseCache):
                     }
                 }
             elif quantization_config == "product":
-                quantization_params = {
-                    "product": {"compression": "x16", "always_ram": False}
-                }
+                quantization_params = {"product": {"compression": "x16", "always_ram": False}}
             else:
                 raise Exception(
                     "Quantization config must be one of 'scalar', 'binary' or 'product'"
@@ -149,9 +135,7 @@ class QdrantSemanticCache(BaseCache):
                     headers=self.headers,
                 )
                 self.collection_info = collection_details.json()
-                print_verbose(
-                    f"New collection created.\nCollection details:{self.collection_info}"
-                )
+                print_verbose(f"New collection created.\nCollection details:{self.collection_info}")
             else:
                 raise Exception("Error while creating new collection")
 
@@ -159,9 +143,7 @@ class QdrantSemanticCache(BaseCache):
         if cached_response is None:
             return cached_response
         try:
-            cached_response = json.loads(
-                cached_response
-            )  # Convert string to dictionary
+            cached_response = json.loads(cached_response)  # Convert string to dictionary
         except Exception:
             cached_response = ast.literal_eval(cached_response)
         return cached_response
@@ -280,7 +262,6 @@ class QdrantSemanticCache(BaseCache):
 
     async def async_set_cache(self, key, value, **kwargs):
         from litellm._uuid import uuid
-
         from litellm.proxy.proxy_server import llm_model_list, llm_router
 
         print_verbose(f"async qdrant semantic-cache set_cache, kwargs: {kwargs}")
@@ -292,9 +273,7 @@ class QdrantSemanticCache(BaseCache):
             prompt += message["content"]
         # create an embedding for prompt
         router_model_names = (
-            [m["model_name"] for m in llm_model_list]
-            if llm_model_list is not None
-            else []
+            [m["model_name"] for m in llm_model_list] if llm_model_list is not None else []
         )
         if llm_router is not None and self.embedding_model in router_model_names:
             user_api_key = kwargs.get("metadata", {}).get("user_api_key", "")
@@ -353,9 +332,7 @@ class QdrantSemanticCache(BaseCache):
             prompt += message["content"]
 
         router_model_names = (
-            [m["model_name"] for m in llm_model_list]
-            if llm_model_list is not None
-            else []
+            [m["model_name"] for m in llm_model_list] if llm_model_list is not None else []
         )
         if llm_router is not None and self.embedding_model in router_model_names:
             user_api_key = kwargs.get("metadata", {}).get("user_api_key", "")

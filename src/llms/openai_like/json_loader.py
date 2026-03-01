@@ -36,7 +36,7 @@ class JSONProviderRegistry:
             return
 
         json_path = Path(__file__).parent / "providers.json"
-        
+
         if not json_path.exists():
             # No JSON file yet, that's okay
             cls._loaded = True

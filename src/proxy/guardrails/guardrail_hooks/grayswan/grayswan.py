@@ -4,7 +4,6 @@ import os
 from typing import Any, Dict, Literal, Optional, Union
 
 from fastapi import HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import (
     CustomGuardrail,
@@ -124,9 +123,7 @@ class GraySwanGuardrail(CustomGuardrail):
         ],
     ) -> Optional[Union[Exception, str, dict]]:
         if (
-            self.should_run_guardrail(
-                data=data, event_type=GuardrailEventHooks.pre_call
-            )
+            self.should_run_guardrail(data=data, event_type=GuardrailEventHooks.pre_call)
             is not True
         ):
             return data
@@ -142,9 +139,7 @@ class GraySwanGuardrail(CustomGuardrail):
 
         payload = self._prepare_payload(messages, dynamic_body)
         if payload is None:
-            verbose_proxy_logger.debug(
-                "Gray Swan Guardrail: no content to scan; skipping request"
-            )
+            verbose_proxy_logger.debug("Gray Swan Guardrail: no content to scan; skipping request")
             return data
 
         await self.run_grayswan_guardrail(payload, data, GuardrailEventHooks.pre_call)
@@ -170,9 +165,7 @@ class GraySwanGuardrail(CustomGuardrail):
         ],
     ) -> Optional[Union[Exception, str, dict]]:
         if (
-            self.should_run_guardrail(
-                data=data, event_type=GuardrailEventHooks.during_call
-            )
+            self.should_run_guardrail(data=data, event_type=GuardrailEventHooks.during_call)
             is not True
         ):
             return data
@@ -188,14 +181,10 @@ class GraySwanGuardrail(CustomGuardrail):
 
         payload = self._prepare_payload(messages, dynamic_body)
         if payload is None:
-            verbose_proxy_logger.debug(
-                "Gray Swan Guardrail: no content to scan; skipping request"
-            )
+            verbose_proxy_logger.debug("Gray Swan Guardrail: no content to scan; skipping request")
             return data
 
-        await self.run_grayswan_guardrail(
-            payload, data, GuardrailEventHooks.during_call
-        )
+        await self.run_grayswan_guardrail(payload, data, GuardrailEventHooks.during_call)
         add_guardrail_to_applied_guardrails_header(
             request_data=data, guardrail_name=self.guardrail_name
         )
@@ -209,9 +198,7 @@ class GraySwanGuardrail(CustomGuardrail):
         response: LLMResponseTypes,
     ) -> LLMResponseTypes:
         if (
-            self.should_run_guardrail(
-                data=data, event_type=GuardrailEventHooks.post_call
-            )
+            self.should_run_guardrail(data=data, event_type=GuardrailEventHooks.post_call)
             is not True
         ):
             return response
@@ -237,18 +224,14 @@ class GraySwanGuardrail(CustomGuardrail):
 
         payload = self._prepare_payload(response_messages, dynamic_body)
         if payload is None:
-            verbose_proxy_logger.debug(
-                "Gray Swan Guardrail: no content to scan; skipping request"
-            )
+            verbose_proxy_logger.debug("Gray Swan Guardrail: no content to scan; skipping request")
             return response
 
         await self.run_grayswan_guardrail(payload, data, GuardrailEventHooks.post_call)
 
         # If passthrough mode and detection info exists, replace response content with violation message
         if self.on_flagged_action == "passthrough" and "metadata" in data:
-            guardrail_detections = data.get("metadata", {}).get(
-                "guardrail_detections", []
-            )
+            guardrail_detections = data.get("metadata", {}).get("guardrail_detections", [])
             if guardrail_detections:
                 # Replace the model response content with guardrail violation message
                 violation_message = self._format_violation_message(
@@ -264,8 +247,10 @@ class GraySwanGuardrail(CustomGuardrail):
                     for choice in response.choices:
                         # Handle chat completion format (message.content)
                         # Choices has message attribute, StreamingChoices has delta
-                        if isinstance(choice, Choices) and hasattr(choice, "message") and hasattr(
-                            choice.message, "content"
+                        if (
+                            isinstance(choice, Choices)
+                            and hasattr(choice, "message")
+                            and hasattr(choice.message, "content")
                         ):
                             choice.message.content = violation_message
                         # Handle text completion format (text)
@@ -283,9 +268,7 @@ class GraySwanGuardrail(CustomGuardrail):
                         "Gray Swan Guardrail: Replacing response content in Anthropic Messages format"
                     )
                     # Replace content blocks with text block containing violation message
-                    response.content = [  # type: ignore
-                        {"type": "text", "text": violation_message}
-                    ]
+                    response.content = [{"type": "text", "text": violation_message}]  # type: ignore
                     # Update stop_reason if present
                     if hasattr(response, "stop_reason"):
                         response.stop_reason = "end_turn"  # type: ignore
@@ -329,9 +312,7 @@ class GraySwanGuardrail(CustomGuardrail):
         except HTTPException:
             raise
         except Exception as exc:  # pragma: no cover - depends on HTTP client behaviour
-            verbose_proxy_logger.exception(
-                "Gray Swan Guardrail: API request failed: %s", exc
-            )
+            verbose_proxy_logger.exception("Gray Swan Guardrail: API request failed: %s", exc)
             raise GraySwanGuardrailAPIError(str(exc)) from exc
 
         self._process_grayswan_response(result, data, hook_type)
@@ -395,11 +376,7 @@ class GraySwanGuardrail(CustomGuardrail):
 
         if self.on_flagged_action == "block":
             # Determine if violation was in input or output
-            violation_location = (
-                "output"
-                if hook_type == GuardrailEventHooks.post_call
-                else "input"
-            )
+            violation_location = "output" if hook_type == GuardrailEventHooks.post_call else "input"
             raise HTTPException(
                 status_code=400,
                 detail={
@@ -454,9 +431,7 @@ class GraySwanGuardrail(CustomGuardrail):
                     data["metadata"]["guardrail_detections"] = []
                 data["metadata"]["guardrail_detections"].append(detection_info)
 
-    def _format_violation_message(
-        self, guardrail_detections: list, is_output: bool = False
-    ) -> str:
+    def _format_violation_message(self, guardrail_detections: list, is_output: bool = False) -> str:
         """
         Format guardrail detections into a user-friendly violation message.
 

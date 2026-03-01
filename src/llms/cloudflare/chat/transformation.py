@@ -3,7 +3,6 @@ import time
 from typing import AsyncIterator, Iterator, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.llms.base_llm.base_model_iterator import BaseModelResponseIterator
 from litellm.llms.base_llm.chat.transformation import (
@@ -86,9 +85,7 @@ class CloudflareChatConfig(BaseConfig):
     ) -> str:
         if api_base is None:
             account_id = get_secret_str("CLOUDFLARE_ACCOUNT_ID")
-            api_base = (
-                f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/"
-            )
+            api_base = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/"
         return api_base + model
 
     def get_supported_openai_params(self, model: str) -> List[str]:

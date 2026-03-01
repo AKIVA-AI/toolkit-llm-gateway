@@ -17,8 +17,6 @@ from typing import (
 )
 
 import httpx
-from pydantic import BaseModel
-
 from litellm._logging import verbose_logger
 from litellm.caching.caching import DualCache
 from litellm.constants import (
@@ -28,6 +26,7 @@ from litellm.constants import (
 )
 from litellm.litellm_core_utils.dd_tracing import tracer
 from litellm.secret_managers.main import get_secret, get_secret_str
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from botocore.awsrequest import AWSPreparedRequest
@@ -200,11 +199,7 @@ class BaseAWSLLM:
             # 1. We have AWS_ROLE_ARN set (current role)
             # 2. We have AWS_WEB_IDENTITY_TOKEN_FILE set (IRSA environment)
             # 3. The current role matches the requested role
-            if (
-                current_role_arn
-                and web_identity_token_file
-                and current_role_arn == aws_role_name
-            ):
+            if current_role_arn and web_identity_token_file and current_role_arn == aws_role_name:
                 verbose_logger.debug(
                     "Using IRSA same-role optimization: calling _auth_with_env_vars"
                 )
@@ -212,14 +207,10 @@ class BaseAWSLLM:
                 # Use the default boto3 credentials (which will use the IRSA credentials)
                 credentials, _cache_ttl = self._auth_with_env_vars()
             else:
-                verbose_logger.debug(
-                    "Using role assumption: calling _auth_with_aws_role"
-                )
+                verbose_logger.debug("Using role assumption: calling _auth_with_aws_role")
                 # If aws_session_name is not provided, generate a default one
                 if aws_session_name is None:
-                    aws_session_name = (
-                        f"litellm-session-{int(datetime.now().timestamp())}"
-                    )
+                    aws_session_name = f"litellm-session-{int(datetime.now().timestamp())}"
                 credentials, _cache_ttl = self._auth_with_aws_role(
                     aws_access_key_id=aws_access_key_id,
                     aws_secret_access_key=aws_secret_access_key,
@@ -346,17 +337,11 @@ class BaseAWSLLM:
 
         model_id = model_id.replace("invoke/", "", 1)
         if provider == "llama" and "llama/" in model_id:
-            model_id = BaseAWSLLM._get_model_id_from_model_with_spec(
-                model_id, spec="llama"
-            )
+            model_id = BaseAWSLLM._get_model_id_from_model_with_spec(model_id, spec="llama")
         elif provider == "deepseek_r1" and "deepseek_r1/" in model_id:
-            model_id = BaseAWSLLM._get_model_id_from_model_with_spec(
-                model_id, spec="deepseek_r1"
-            )
+            model_id = BaseAWSLLM._get_model_id_from_model_with_spec(model_id, spec="deepseek_r1")
         elif provider == "openai" and "openai/" in model_id:
-            model_id = BaseAWSLLM._get_model_id_from_model_with_spec(
-                model_id, spec="openai"
-            )
+            model_id = BaseAWSLLM._get_model_id_from_model_with_spec(model_id, spec="openai")
         return model_id
 
     @staticmethod
@@ -400,7 +385,7 @@ class BaseAWSLLM:
         if "nova" in model.lower():
             if "nova" in get_args(BEDROCK_EMBEDDING_PROVIDERS_LITERAL):
                 return cast(BEDROCK_EMBEDDING_PROVIDERS_LITERAL, "nova")
-        
+
         # Handle regional models like us.twelvelabs.marengo-embed-2-7-v1:0
         if "." in model:
             parts = model.split(".")
@@ -413,9 +398,7 @@ class BaseAWSLLM:
                     return cast(BEDROCK_EMBEDDING_PROVIDERS_LITERAL, potential_provider)
 
             # Check if the first part is a known provider (standard format)
-            potential_provider = parts[
-                0
-            ]  # e.g., "cohere" from "cohere.embed-english-v3:0"
+            potential_provider = parts[0]  # e.g., "cohere" from "cohere.embed-english-v3:0"
             if potential_provider in get_args(BEDROCK_EMBEDDING_PROVIDERS_LITERAL):
                 return cast(BEDROCK_EMBEDDING_PROVIDERS_LITERAL, potential_provider)
 
@@ -499,15 +482,11 @@ class BaseAWSLLM:
             # check env #
             litellm_aws_region_name = get_secret("AWS_REGION_NAME", None)
 
-            if litellm_aws_region_name is not None and isinstance(
-                litellm_aws_region_name, str
-            ):
+            if litellm_aws_region_name is not None and isinstance(litellm_aws_region_name, str):
                 aws_region_name = litellm_aws_region_name
 
             standard_aws_region_name = get_secret("AWS_REGION", None)
-            if standard_aws_region_name is not None and isinstance(
-                standard_aws_region_name, str
-            ):
+            if standard_aws_region_name is not None and isinstance(standard_aws_region_name, str):
                 aws_region_name = standard_aws_region_name
 
             if aws_region_name is None:
@@ -673,9 +652,7 @@ class BaseAWSLLM:
         # Get current caller identity for debugging
         try:
             caller_identity = sts_client.get_caller_identity()
-            verbose_logger.debug(
-                f"Current IRSA identity: {caller_identity.get('Arn', 'unknown')}"
-            )
+            verbose_logger.debug(f"Current IRSA identity: {caller_identity.get('Arn', 'unknown')}")
         except Exception as e:
             verbose_logger.debug(f"Failed to get caller identity: {e}")
 
@@ -694,9 +671,7 @@ class BaseAWSLLM:
 
         return sts_client.assume_role(**assume_role_params)
 
-    def _extract_credentials_and_ttl(
-        self, sts_response: dict
-    ) -> Tuple[Credentials, Optional[int]]:
+    def _extract_credentials_and_ttl(self, sts_response: dict) -> Tuple[Credentials, Optional[int]]:
         """Extract credentials and TTL from STS response."""
         from botocore.credentials import Credentials
 
@@ -708,9 +683,7 @@ class BaseAWSLLM:
         )
 
         expiration_time = sts_credentials["Expiration"]
-        ttl = int(
-            (expiration_time - datetime.now(expiration_time.tzinfo)).total_seconds()
-        )
+        ttl = int((expiration_time - datetime.now(expiration_time.tzinfo)).total_seconds())
 
         return credentials, ttl
 
@@ -750,11 +723,7 @@ class BaseAWSLLM:
 
             try:
                 # Get region from environment
-                region = (
-                    os.getenv("AWS_REGION")
-                    or os.getenv("AWS_DEFAULT_REGION")
-                    or "us-east-1"
-                )
+                region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "us-east-1"
 
                 # Check if we need to do cross-account role assumption
                 if aws_role_name != irsa_role_arn:
@@ -827,9 +796,7 @@ class BaseAWSLLM:
         return credentials, sts_ttl
 
     @tracer.wrap()
-    def _auth_with_aws_profile(
-        self, aws_profile_name: str
-    ) -> Tuple[Credentials, Optional[int]]:
+    def _auth_with_aws_profile(self, aws_profile_name: str) -> Tuple[Credentials, Optional[int]]:
         """
         Authenticate with AWS profile
         """
@@ -921,9 +888,7 @@ class BaseAWSLLM:
             aws_bedrock_runtime_endpoint, str
         ):
             endpoint_url = aws_bedrock_runtime_endpoint
-        elif env_aws_bedrock_runtime_endpoint and isinstance(
-            env_aws_bedrock_runtime_endpoint, str
-        ):
+        elif env_aws_bedrock_runtime_endpoint and isinstance(env_aws_bedrock_runtime_endpoint, str):
             endpoint_url = env_aws_bedrock_runtime_endpoint
         else:
             endpoint_url = self._select_default_endpoint_url(
@@ -936,9 +901,7 @@ class BaseAWSLLM:
             aws_bedrock_runtime_endpoint, str
         ):
             proxy_endpoint_url = aws_bedrock_runtime_endpoint
-        elif env_aws_bedrock_runtime_endpoint and isinstance(
-            env_aws_bedrock_runtime_endpoint, str
-        ):
+        elif env_aws_bedrock_runtime_endpoint and isinstance(env_aws_bedrock_runtime_endpoint, str):
             proxy_endpoint_url = env_aws_bedrock_runtime_endpoint
         else:
             proxy_endpoint_url = endpoint_url
@@ -946,7 +909,9 @@ class BaseAWSLLM:
         return endpoint_url, proxy_endpoint_url
 
     def _select_default_endpoint_url(
-        self, endpoint_type: Optional[Literal["runtime", "agent", "agentcore"]], aws_region_name: str
+        self,
+        endpoint_type: Optional[Literal["runtime", "agent", "agentcore"]],
+        aws_region_name: str,
     ) -> str:
         """
         Select the default endpoint url based on the endpoint type
@@ -1032,21 +997,15 @@ class BaseAWSLLM:
             try:
                 from botocore.awsrequest import AWSRequest
             except ImportError:
-                raise ImportError(
-                    "Missing boto3 to call bedrock. Run 'pip install boto3'."
-                )
+                raise ImportError("Missing boto3 to call bedrock. Run 'pip install boto3'.")
             headers["Authorization"] = f"Bearer {aws_bearer_token}"
-            request = AWSRequest(
-                method="POST", url=endpoint_url, data=data, headers=headers
-            )
+            request = AWSRequest(method="POST", url=endpoint_url, data=data, headers=headers)
         else:
             try:
                 from botocore.auth import SigV4Auth
                 from botocore.awsrequest import AWSRequest
             except ImportError:
-                raise ImportError(
-                    "Missing boto3 to call bedrock. Run 'pip install boto3'."
-                )
+                raise ImportError("Missing boto3 to call bedrock. Run 'pip install boto3'.")
 
             # Filter headers for AWS signature calculation
             # AWS SigV4 only includes specific headers in signature calculation
@@ -1151,9 +1110,7 @@ class BaseAWSLLM:
         aws_web_identity_token = optional_params.get("aws_web_identity_token", None)
         aws_sts_endpoint = optional_params.get("aws_sts_endpoint", None)
         aws_external_id = optional_params.get("aws_external_id", None)
-        aws_region_name = self._get_aws_region_name(
-            optional_params=optional_params, model=model
-        )
+        aws_region_name = self._get_aws_region_name(optional_params=optional_params, model=model)
 
         credentials: Credentials = self.get_credentials(
             aws_access_key_id=aws_access_key_id,

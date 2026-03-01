@@ -3,7 +3,6 @@ import urllib.parse
 from typing import Any, Coroutine, Optional, Tuple, Union
 
 import httpx
-
 from litellm import LlmProviders
 from litellm.integrations.gcs_bucket.gcs_bucket_base import (
     GCSBucketBase,
@@ -46,9 +45,7 @@ class VertexAIFilesHandler(GCSBucketBase):
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
     ) -> OpenAIFileObject:
-        gcs_logging_config: GCSLoggingConfig = await self.get_gcs_logging_config(
-            kwargs={}
-        )
+        gcs_logging_config: GCSLoggingConfig = await self.get_gcs_logging_config(kwargs={})
         headers = await self.construct_request_headers(
             vertex_instance=gcs_logging_config["vertex_instance"],
             service_account_json=gcs_logging_config["path_service_account"],
@@ -168,13 +165,9 @@ class VertexAIFilesHandler(GCSBucketBase):
         if not file_id:
             raise ValueError("file_id is required in file_content_request")
 
-        bucket_name, encoded_object_path = self._extract_bucket_and_object_from_file_id(
-            file_id
-        )
+        bucket_name, encoded_object_path = self._extract_bucket_and_object_from_file_id(file_id)
 
-        download_kwargs = {
-            "standard_callback_dynamic_params": {"gcs_bucket_name": bucket_name}
-        }
+        download_kwargs = {"standard_callback_dynamic_params": {"gcs_bucket_name": bucket_name}}
 
         file_content = await self.download_gcs_object(
             object_name=encoded_object_path, **download_kwargs
@@ -204,9 +197,7 @@ class VertexAIFilesHandler(GCSBucketBase):
         vertex_location: Optional[str],
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
-    ) -> Union[
-        HttpxBinaryResponseContent, Coroutine[Any, Any, HttpxBinaryResponseContent]
-    ]:
+    ) -> Union[HttpxBinaryResponseContent, Coroutine[Any, Any, HttpxBinaryResponseContent]]:
         """
         Download file content from GCS bucket for VertexAI files.
         Supports both sync and async operations.

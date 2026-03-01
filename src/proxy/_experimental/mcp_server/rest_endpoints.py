@@ -3,7 +3,6 @@ import traceback
 from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Query, Request
-
 from litellm._logging import verbose_logger
 from litellm.proxy._types import UserAPIKeyAuth
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
@@ -43,17 +42,13 @@ if MCP_AVAILABLE:
         """Helper function to get server-specific auth header with case-insensitive matching."""
         if mcp_server_auth_headers and server.alias:
             normalized_server_alias = server.alias.lower()
-            normalized_headers = {
-                k.lower(): v for k, v in mcp_server_auth_headers.items()
-            }
+            normalized_headers = {k.lower(): v for k, v in mcp_server_auth_headers.items()}
             server_auth = normalized_headers.get(normalized_server_alias)
             if server_auth is not None:
                 return server_auth
         elif mcp_server_auth_headers and server.server_name:
             normalized_server_name = server.server_name.lower()
-            normalized_headers = {
-                k.lower(): v for k, v in mcp_server_auth_headers.items()
-            }
+            normalized_headers = {k.lower(): v for k, v in mcp_server_auth_headers.items()}
             server_auth = normalized_headers.get(normalized_server_name)
             if server_auth is not None:
                 return server_auth
@@ -90,9 +85,7 @@ if MCP_AVAILABLE:
     @router.get("/tools/list", dependencies=[Depends(user_api_key_auth)])
     async def list_tool_rest_api(
         request: Request,
-        server_id: Optional[str] = Query(
-            None, description="The server id to list tools for"
-        ),
+        server_id: Optional[str] = Query(None, description="The server id to list tools for"),
         user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
     ) -> dict:
         """
@@ -122,11 +115,9 @@ if MCP_AVAILABLE:
         try:
             # Extract auth headers from request
             headers = request.headers
-            mcp_auth_header = MCPRequestHandler._get_mcp_auth_header_from_headers(
+            mcp_auth_header = MCPRequestHandler._get_mcp_auth_header_from_headers(headers)
+            mcp_server_auth_headers = MCPRequestHandler._get_mcp_server_auth_headers_from_headers(
                 headers
-            )
-            mcp_server_auth_headers = (
-                MCPRequestHandler._get_mcp_server_auth_headers_from_headers(headers)
             )
 
             list_tools_result = []
@@ -151,9 +142,7 @@ if MCP_AVAILABLE:
                         server, server_auth_header
                     )
                 except Exception as e:
-                    verbose_logger.exception(
-                        f"Error getting tools from {server.name}: {e}"
-                    )
+                    verbose_logger.exception(f"Error getting tools from {server.name}: {e}")
                     return {
                         "tools": [],
                         "error": "server_error",
@@ -173,29 +162,21 @@ if MCP_AVAILABLE:
                         )
                         list_tools_result.extend(tools_result)
                     except Exception as e:
-                        verbose_logger.exception(
-                            f"Error getting tools from {server.name}: {e}"
-                        )
+                        verbose_logger.exception(f"Error getting tools from {server.name}: {e}")
                         errors.append(f"{server.name}: {str(e)}")
                         continue
 
                 if errors and not list_tools_result:
-                    error_message = "Failed to get tools from servers: " + "; ".join(
-                        errors
-                    )
+                    error_message = "Failed to get tools from servers: " + "; ".join(errors)
 
             return {
                 "tools": list_tools_result,
                 "error": "partial_failure" if error_message else None,
-                "message": (
-                    error_message if error_message else "Successfully retrieved tools"
-                ),
+                "message": (error_message if error_message else "Successfully retrieved tools"),
             }
 
         except Exception as e:
-            verbose_logger.exception(
-                "Unexpected error in list_tool_rest_api: %s", str(e)
-            )
+            verbose_logger.exception("Unexpected error in list_tool_rest_api: %s", str(e))
             return {
                 "tools": [],
                 "error": "unexpected_error",
@@ -211,12 +192,11 @@ if MCP_AVAILABLE:
         REST API to call a specific MCP tool with the provided arguments
         """
         from fastapi import HTTPException
-
         from litellm.exceptions import BlockedPiiEntityError, GuardrailRaisedException
-        from litellm.proxy.proxy_server import add_litellm_data_to_request, proxy_config
         from litellm.proxy._experimental.mcp_server.auth.user_api_key_auth_mcp import (
             MCPRequestHandler,
         )
+        from litellm.proxy.proxy_server import add_litellm_data_to_request, proxy_config
 
         try:
             data = await request.json()
@@ -232,13 +212,9 @@ if MCP_AVAILABLE:
             # but they weren't being extracted and passed to call_mcp_tool.
             # This fix ensures auth headers are properly extracted from the HTTP request
             # and passed through to the MCP server for authentication.
-            mcp_auth_header = MCPRequestHandler._get_mcp_auth_header_from_headers(
+            mcp_auth_header = MCPRequestHandler._get_mcp_auth_header_from_headers(request.headers)
+            mcp_server_auth_headers = MCPRequestHandler._get_mcp_server_auth_headers_from_headers(
                 request.headers
-            )
-            mcp_server_auth_headers = (
-                MCPRequestHandler._get_mcp_server_auth_headers_from_headers(
-                    request.headers
-                )
             )
 
             # Add extracted headers to data dict to pass to call_mcp_tool
@@ -387,13 +363,9 @@ if MCP_AVAILABLE:
             async def _list_tools_session_operation(session):
                 return await session.list_tools()
 
-            list_tools_response = await client.run_with_session(
-                _list_tools_session_operation
-            )
+            list_tools_response = await client.run_with_session(_list_tools_session_operation)
             list_tools_result: List[MCPTool] = list_tools_response.tools
-            model_dumped_tools: List[dict] = [
-                tool.model_dump() for tool in list_tools_result
-            ]
+            model_dumped_tools: List[dict] = [tool.model_dump() for tool in list_tools_result]
             return {
                 "tools": model_dumped_tools,
                 "error": None,

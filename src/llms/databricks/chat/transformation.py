@@ -18,16 +18,12 @@ from typing import (
 )
 
 import httpx
-from pydantic import BaseModel
-
 from litellm.constants import RESPONSE_FORMAT_TOOL_NAME
 from litellm.litellm_core_utils.llm_response_utils.convert_dict_to_response import (
     _handle_invalid_parallel_tool_calls,
     _should_convert_tool_call_to_json_mode,
 )
-from litellm.litellm_core_utils.prompt_templates.common_utils import (
-    strip_name_from_message
-)
+from litellm.litellm_core_utils.prompt_templates.common_utils import strip_name_from_message
 from litellm.llms.base_llm.base_model_iterator import BaseModelResponseIterator
 from litellm.types.llms.anthropic import AllAnthropicToolsValues
 from litellm.types.llms.databricks import (
@@ -54,6 +50,7 @@ from litellm.types.utils import (
     ProviderField,
     Usage,
 )
+from pydantic import BaseModel
 
 from ...anthropic.chat.transformation import AnthropicConfig
 from ...openai_like.chat.transformation import OpenAILikeChatConfig
@@ -173,9 +170,9 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
         # Build DatabricksFunction explicitly to avoid parameter conflicts
         function_params: DatabricksFunction = {
             "name": tool["name"],
-            "parameters": cast(dict, tool.get("input_schema") or {})
+            "parameters": cast(dict, tool.get("input_schema") or {}),
         }
-        
+
         # Only add description if it exists
         description = tool.get("description")
         if description is not None:
@@ -229,7 +226,7 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
         Databricks supports Anthropic-style cache control for Claude models.
         Databricks ignores the cache_control flag with other models.
         """
-        # TODO: Think about how to best design the request transformation so that 
+        # TODO: Think about how to best design the request transformation so that
         # every request doesn't have to be transformed for to OpenAI and Anthropic request formats.
         return messages, tools
 
@@ -267,9 +264,7 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
             )
 
             if _tool is not None:
-                self._add_tools_to_optional_params(
-                    optional_params=optional_params, tools=[_tool]
-                )
+                self._add_tools_to_optional_params(optional_params=optional_params, tools=[_tool])
                 optional_params["json_mode"] = True
                 if not is_thinking_enabled:
                     _tool_choice = ChatCompletionToolChoiceObjectParam(
@@ -307,8 +302,7 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
     @overload
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: Literal[True]
-    ) -> Coroutine[Any, Any, List[AllMessageValues]]:
-        ...
+    ) -> Coroutine[Any, Any, List[AllMessageValues]]: ...
 
     @overload
     def _transform_messages(
@@ -316,8 +310,7 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
         messages: List[AllMessageValues],
         model: str,
         is_async: Literal[False] = False,
-    ) -> List[AllMessageValues]:
-        ...
+    ) -> List[AllMessageValues]: ...
 
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: bool = False
@@ -347,15 +340,17 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
                 messages=new_messages, model=model, is_async=cast(Literal[False], False)
             )
 
-    def _move_cache_control_into_string_content_block(self, message: AllMessageValues) -> AllMessageValues:
+    def _move_cache_control_into_string_content_block(
+        self, message: AllMessageValues
+    ) -> AllMessageValues:
         """
         Moves message-level cache_control into a content block when content is a string.
-        
+
         Transforms:
             {"role": "user", "content": "text", "cache_control": {...}}
         Into:
             {"role": "user", "content": [{"type": "text", "text": "text", "cache_control": {...}}]}
-        
+
         This is required for Anthropic's prompt caching API when cache_control is specified
         at the message level but content is a simple string (not already an array of content blocks).
         """
@@ -371,7 +366,6 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
             }
         ]
         return cast(AllMessageValues, transformed_message)
-        
 
     @staticmethod
     def extract_content_str(
@@ -396,11 +390,7 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
         content: Optional[AllDatabricksContentValues],
     ) -> Tuple[
         Optional[str],
-        Optional[
-            List[
-                Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]
-            ]
-        ],
+        Optional[List[Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]]],
     ]:
         """
         Extract and return the reasoning content and thinking blocks
@@ -408,9 +398,7 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
         if content is None:
             return None, None
         thinking_blocks: Optional[
-            List[
-                Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]
-            ]
+            List[Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]]
         ] = None
         reasoning_content: Optional[str] = None
         if isinstance(content, list):
@@ -444,10 +432,7 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
                 text = item.get("text", None)
                 if citations_item := item.get("citations"):
                     citations.append(
-                        [
-                            {**citation, "supported_text": text}
-                            for citation in citations_item
-                        ]
+                        [{**citation, "supported_text": text} for citation in citations_item]
                     )
         return citations or None
 
@@ -464,9 +449,7 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
                 for _tc in tool_calls:
                     _openai_tc = ChatCompletionMessageToolCall(**_tc)  # type: ignore
                     _openai_tool_calls.append(_openai_tc)
-                fixed_tool_calls = _handle_invalid_parallel_tool_calls(
-                    _openai_tool_calls
-                )
+                fixed_tool_calls = _handle_invalid_parallel_tool_calls(_openai_tool_calls)
 
                 if fixed_tool_calls is not None:
                     tool_calls = fixed_tool_calls
@@ -487,21 +470,15 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
 
             if translated_message is None:
                 ## get the content str
-                content_str = DatabricksConfig.extract_content_str(
-                    choice["message"]["content"]
-                )
+                content_str = DatabricksConfig.extract_content_str(choice["message"]["content"])
 
                 ## get the reasoning content
                 (
                     reasoning_content,
                     thinking_blocks,
-                ) = DatabricksConfig.extract_reasoning_content(
-                    choice["message"].get("content")
-                )
+                ) = DatabricksConfig.extract_reasoning_content(choice["message"].get("content"))
 
-                citations = DatabricksConfig.extract_citations(
-                    choice["message"].get("content")
-                )
+                citations = DatabricksConfig.extract_citations(choice["message"].get("content"))
 
                 translated_message = Message(
                     role="assistant",
@@ -509,9 +486,9 @@ class DatabricksConfig(DatabricksBase, OpenAILikeChatConfig, AnthropicConfig):
                     reasoning_content=reasoning_content,
                     thinking_blocks=thinking_blocks,
                     tool_calls=choice["message"].get("tool_calls"),
-                    provider_specific_fields={"citations": citations}
-                    if citations is not None
-                    else None,
+                    provider_specific_fields=(
+                        {"citations": citations} if citations is not None else None
+                    ),
                 )
 
             if finish_reason is None:
@@ -646,23 +623,17 @@ class DatabricksChatResponseIterator(BaseModelResponseIterator):
                     if citations := content[0].get("citations"):
                         # TODO: Databricks delta does not include supported text or chunk type.
                         # Add either here once Databricks supports it to enable citation linkage.
-                        choice["delta"].setdefault("provider_specific_fields", {})[
-                            "citation"
-                        ] = citations[
-                            0
-                        ]  # Databricks Content item always has citation as a list of list
+                        choice["delta"].setdefault("provider_specific_fields", {})["citation"] = (
+                            citations[0]
+                        )  # Databricks Content item always has citation as a list of list
                 # extract the content str
-                content_str = DatabricksConfig.extract_content_str(
-                    choice["delta"].get("content")
-                )
+                content_str = DatabricksConfig.extract_content_str(choice["delta"].get("content"))
 
                 # extract the reasoning content
                 (
                     reasoning_content,
                     thinking_blocks,
-                ) = DatabricksConfig.extract_reasoning_content(
-                    choice["delta"].get("content")
-                )
+                ) = DatabricksConfig.extract_reasoning_content(choice["delta"].get("content"))
 
                 choice["delta"]["content"] = content_str
                 choice["delta"]["reasoning_content"] = reasoning_content

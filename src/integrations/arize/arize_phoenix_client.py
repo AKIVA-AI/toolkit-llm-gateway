@@ -78,13 +78,9 @@ class ArizePhoenixClient:
                         "Authentication failed. Check your Arize Phoenix API key and permissions."
                     )
                 else:
-                    raise Exception(
-                        f"Failed to fetch prompt version '{prompt_version_id}': {e}"
-                    )
+                    raise Exception(f"Failed to fetch prompt version '{prompt_version_id}': {e}")
             else:
-                raise Exception(
-                    f"Error fetching prompt version '{prompt_version_id}': {e}"
-                )
+                raise Exception(f"Error fetching prompt version '{prompt_version_id}': {e}")
 
     def test_connection(self) -> bool:
         """

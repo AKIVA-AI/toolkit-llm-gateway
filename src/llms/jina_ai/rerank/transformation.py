@@ -9,7 +9,6 @@ Docs - https://jina.ai/reranker
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from httpx import URL, Response
-
 from litellm._uuid import uuid
 from litellm.llms.base_llm.chat.transformation import LiteLLMLoggingObj
 from litellm.llms.base_llm.rerank.transformation import BaseRerankConfig
@@ -51,13 +50,15 @@ class JinaAIRerankConfig(BaseRerankConfig):
         for k, v in non_default_params.items():
             if k in supported_params:
                 optional_params[k] = v
-        return dict(OptionalRerankParams(
-            **optional_params,
-        ))
+        return dict(
+            OptionalRerankParams(
+                **optional_params,
+            )
+        )
 
     def get_complete_url(
-        self, 
-        api_base: Optional[str], 
+        self,
+        api_base: Optional[str],
         model: str,
         optional_params: Optional[dict] = None,
     ) -> str:
@@ -127,9 +128,9 @@ class JinaAIRerankConfig(BaseRerankConfig):
         )  # Return response
 
     def validate_environment(
-        self, 
-        headers: Dict, 
-        model: str, 
+        self,
+        headers: Dict,
+        model: str,
         api_key: Optional[str] = None,
         optional_params: Optional[dict] = None,
     ) -> Dict:

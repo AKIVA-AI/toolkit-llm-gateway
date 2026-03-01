@@ -5,15 +5,14 @@ Transformation logic for Amazon Titan Image Generation.
 import types
 from typing import List, Optional
 
-from openai.types.image import Image
-
-from litellm.utils import get_model_info
 from litellm.types.llms.bedrock import (
     AmazonNovaCanvasImageGenerationConfig,
     AmazonTitanImageGenerationRequestBody,
     AmazonTitanTextToImageParams,
 )
 from litellm.types.utils import ImageResponse
+from litellm.utils import get_model_info
+from openai.types.image import Image
 
 
 class AmazonTitanImageGenerationConfig:
@@ -116,9 +115,7 @@ class AmazonTitanImageGenerationConfig:
         if negative_text:
             text_to_image_params["negativeText"] = negative_text
         task_type = optional_params.pop("taskType", "TEXT_IMAGE")
-        user_specified_image_generation_config = optional_params.pop(
-            "imageGenerationConfig", {}
-        )
+        user_specified_image_generation_config = optional_params.pop("imageGenerationConfig", {})
         image_generation_config = {
             **image_generation_config,
             **user_specified_image_generation_config,
@@ -126,9 +123,7 @@ class AmazonTitanImageGenerationConfig:
         return AmazonTitanImageGenerationRequestBody(
             taskType=task_type,
             textToImageParams=AmazonTitanTextToImageParams(**text_to_image_params),  # type: ignore
-            imageGenerationConfig=AmazonNovaCanvasImageGenerationConfig(
-                **image_generation_config
-            ),
+            imageGenerationConfig=AmazonNovaCanvasImageGenerationConfig(**image_generation_config),
         )
 
     @classmethod

@@ -9,7 +9,6 @@ import traceback
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
-
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import (
     AddTeamCallback,
@@ -105,9 +104,7 @@ async def add_team_callbacks(
         team_callback_settings: List[dict] = team_metadata.get(
             "logging"
         )  # will be dict of type AddTeamCallback
-        if team_callback_settings is None or not isinstance(
-            team_callback_settings, list
-        ):
+        if team_callback_settings is None or not isinstance(team_callback_settings, list):
             team_callback_settings = []
 
         ## check if it already exists, for the same callback event
@@ -143,9 +140,7 @@ async def add_team_callbacks(
         raise e
     except Exception as e:
         verbose_proxy_logger.exception(
-            "litellm.proxy.proxy_server.add_team_callbacks(): Exception occured - {}".format(
-                str(e)
-            )
+            "litellm.proxy.proxy_server.add_team_callbacks(): Exception occured - {}".format(str(e))
         )
         raise ProxyException(
             message="Internal Server Error, " + str(e),

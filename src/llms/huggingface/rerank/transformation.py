@@ -2,8 +2,6 @@ import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import httpx
-from typing_extensions import TypedDict
-
 import litellm
 from litellm._uuid import uuid
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
@@ -19,6 +17,7 @@ from litellm.types.rerank import (
     RerankTokens,
 )
 from litellm.utils import token_counter
+from typing_extensions import TypedDict
 
 from ..common_utils import HuggingFaceError
 
@@ -61,8 +60,8 @@ class HuggingFaceRerankConfig(BaseRerankConfig):
             return "https://api-inference.huggingface.co"
 
     def get_complete_url(
-        self, 
-        api_base: Optional[str], 
+        self,
+        api_base: Optional[str],
         model: str,
         optional_params: Optional[dict] = None,
     ) -> str:
@@ -150,9 +149,7 @@ class HuggingFaceRerankConfig(BaseRerankConfig):
         if "query" not in optional_rerank_params:
             raise ValueError("query is required for HuggingFace rerank")
         if "texts" not in optional_rerank_params:
-            raise ValueError(
-                "Cohere 'documents' param is required for HuggingFace rerank"
-            )
+            raise ValueError("Cohere 'documents' param is required for HuggingFace rerank")
         # Ensure return_text is a boolean value
         # HuggingFace API expects return_text parameter, corresponding to our return_documents parameter
         request_body = {
@@ -208,12 +205,8 @@ class HuggingFaceRerankConfig(BaseRerankConfig):
             estimated_input_tokens = token_counter(model=model, text=input_text)
         except Exception:
             # Fallback to reasonable estimates if token counting fails
-            estimated_output_tokens = (
-                len(raw_response_json) * 10 if raw_response_json else 10
-            )
-            estimated_input_tokens = (
-                len(input_text) * 4 if "input_text" in locals() else 0
-            )
+            estimated_output_tokens = len(raw_response_json) * 10 if raw_response_json else 10
+            estimated_input_tokens = len(input_text) * 4 if "input_text" in locals() else 0
 
         _billed_units = RerankBilledUnits(search_units=1)
         _tokens = RerankTokens(
@@ -224,9 +217,9 @@ class HuggingFaceRerankConfig(BaseRerankConfig):
         )
 
         # Check if documents should be returned based on request parameters
-        should_return_documents = request_data.get(
-            "return_text", False
-        ) or request_data.get("return_documents", False)
+        should_return_documents = request_data.get("return_text", False) or request_data.get(
+            "return_documents", False
+        )
         original_documents = request_data.get("texts", [])
 
         results = []
@@ -250,9 +243,7 @@ class HuggingFaceRerankConfig(BaseRerankConfig):
                 if text_content:
                     result["document"] = RerankResponseDocument(text=text_content)
                 # 2. If no text in API response but original documents are available, use those
-                elif original_documents and 0 <= item.get("index", -1) < len(
-                    original_documents
-                ):
+                elif original_documents and 0 <= item.get("index", -1) < len(original_documents):
                     doc = original_documents[item.get("index")]
                     if isinstance(doc, str):
                         result["document"] = RerankResponseDocument(text=doc)
@@ -286,9 +277,7 @@ class HuggingFaceRerankConfig(BaseRerankConfig):
             api_base: API base provided directly to this function, takes precedence over all other sources
         """
         # Get API key from multiple sources
-        final_api_key = (
-            api_key or litellm.huggingface_key or get_secret_str("HUGGINGFACE_API_KEY")
-        )
+        final_api_key = api_key or litellm.huggingface_key or get_secret_str("HUGGINGFACE_API_KEY")
 
         # Get API base from multiple sources
         final_api_base = (

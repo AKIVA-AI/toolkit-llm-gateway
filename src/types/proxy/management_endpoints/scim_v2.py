@@ -1,6 +1,5 @@
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
-from fastapi import HTTPException
 from pydantic import BaseModel, EmailStr, field_validator
 
 
@@ -101,9 +100,7 @@ class SCIMFeature(BaseModel):
 
 
 class SCIMServiceProviderConfig(BaseModel):
-    schemas: List[str] = [
-        "urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"
-    ]
+    schemas: List[str] = ["urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"]
     patch: SCIMFeature = SCIMFeature(supported=True)
     bulk: SCIMFeature = SCIMFeature(supported=False)
     filter: SCIMFeature = SCIMFeature(supported=False)

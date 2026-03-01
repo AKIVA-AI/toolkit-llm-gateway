@@ -51,9 +51,7 @@ def get_prompt_initializer_from_integrations():
             module_path = f"litellm.integrations.{item}"
             try:
                 # Import the module
-                verbose_proxy_logger.debug(
-                    f"Discovering prompt integrations in: {module_path}"
-                )
+                verbose_proxy_logger.debug(f"Discovering prompt integrations in: {module_path}")
 
                 module = importlib.import_module(module_path)
 
@@ -97,9 +95,7 @@ class InMemoryPromptRegistry:
         Prompt id to Prompt object mapping
         """
 
-        self.prompt_id_to_custom_prompt: Dict[str, Optional[CustomPromptManagement]] = (
-            {}
-        )
+        self.prompt_id_to_custom_prompt: Dict[str, Optional[CustomPromptManagement]] = {}
         """
         Guardrail id to CustomGuardrail object mapping
         """
@@ -166,9 +162,7 @@ class InMemoryPromptRegistry:
         """
         return self.IN_MEMORY_PROMPTS.get(prompt_id)
 
-    def get_prompt_callback_by_id(
-        self, prompt_id: str
-    ) -> Optional[CustomPromptManagement]:
+    def get_prompt_callback_by_id(self, prompt_id: str) -> Optional[CustomPromptManagement]:
         """
         Get a prompt callback by its ID from memory
         """

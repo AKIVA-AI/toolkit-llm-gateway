@@ -3,7 +3,6 @@
 from typing import Any, List, Optional
 
 import httpx
-
 import litellm
 from litellm.llms.base_llm.chat.transformation import LiteLLMLoggingObj
 from litellm.types.llms.openai import AllMessageValues
@@ -16,9 +15,7 @@ class VertexAIError(Exception):
     def __init__(self, status_code, message):
         self.status_code = status_code
         self.message = message
-        self.request = httpx.Request(
-            method="POST", url=" https://cloud.google.com/vertex-ai/"
-        )
+        self.request = httpx.Request(method="POST", url=" https://cloud.google.com/vertex-ai/")
         self.response = httpx.Response(status_code=status_code, request=self.request)
         super().__init__(
             self.message
@@ -68,7 +65,7 @@ class VertexAIAnthropicConfig(AnthropicConfig):
         )
 
         data.pop("model", None)  # vertex anthropic doesn't accept 'model' parameter
-        
+
         tools = optional_params.get("tools")
         tool_search_used = self.is_tool_search_used(tools)
         auto_betas = self.get_anthropic_beta_list(
@@ -82,11 +79,13 @@ class VertexAIAnthropicConfig(AnthropicConfig):
 
         beta_set = set(auto_betas)
         if tool_search_used:
-            beta_set.add("tool-search-tool-2025-10-19")  # Vertex requires this header for tool search
+            beta_set.add(
+                "tool-search-tool-2025-10-19"
+            )  # Vertex requires this header for tool search
 
         if beta_set:
             data["anthropic_beta"] = list(beta_set)
-        
+
         return data
 
     def transform_response(
@@ -125,10 +124,7 @@ class VertexAIAnthropicConfig(AnthropicConfig):
         """
         Check if the model is supported by the VertexAI Anthropic API.
         """
-        if (
-            custom_llm_provider != "vertex_ai"
-            and custom_llm_provider != "vertex_ai_beta"
-        ):
+        if custom_llm_provider != "vertex_ai" and custom_llm_provider != "vertex_ai_beta":
             return False
         if "claude" in model.lower():
             return True

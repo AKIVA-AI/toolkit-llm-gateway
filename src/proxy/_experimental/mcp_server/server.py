@@ -1,6 +1,7 @@
 """
 LiteLLM MCP Server Routes
 """
+
 # pyright: reportInvalidTypeForm=false, reportArgumentType=false, reportOptionalCall=false
 
 import asyncio
@@ -9,9 +10,6 @@ from datetime import datetime
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple, Union, cast
 
 from fastapi import FastAPI, HTTPException
-from pydantic import AnyUrl, ConfigDict
-from starlette.types import Receive, Scope, Send
-
 from litellm._logging import verbose_logger
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.proxy._experimental.mcp_server.auth.user_api_key_auth_mcp import (
@@ -27,6 +25,8 @@ from litellm.types.mcp import MCPAuth
 from litellm.types.mcp_server.mcp_server_manager import MCPInfo, MCPServer
 from litellm.types.utils import StandardLoggingMCPToolCall
 from litellm.utils import client
+from pydantic import AnyUrl, ConfigDict
+from starlette.types import Receive, Scope, Send
 
 # Check if MCP is available
 # "mcp" requires python 3.10 or higher, but several litellm users use python 3.8
@@ -64,6 +64,19 @@ _SESSION_MANAGERS_INITIALIZED = False
 _INITIALIZATION_LOCK = asyncio.Lock()
 
 if MCP_AVAILABLE:
+    from litellm.proxy._experimental.mcp_server.auth.litellm_auth_handler import (
+        MCPAuthenticatedUser,
+    )
+    from litellm.proxy._experimental.mcp_server.mcp_server_manager import (
+        global_mcp_server_manager,
+    )
+    from litellm.proxy._experimental.mcp_server.sse_transport import SseServerTransport
+    from litellm.proxy._experimental.mcp_server.tool_registry import (
+        global_mcp_tool_registry,
+    )
+    from litellm.proxy._experimental.mcp_server.utils import (
+        split_server_prefix_from_name,
+    )
     from mcp.server import Server
 
     # Import auth context variables and middleware
@@ -80,20 +93,6 @@ if MCP_AVAILABLE:
         TextContent,
     )
     from mcp.types import Tool as MCPTool
-
-    from litellm.proxy._experimental.mcp_server.auth.litellm_auth_handler import (
-        MCPAuthenticatedUser,
-    )
-    from litellm.proxy._experimental.mcp_server.mcp_server_manager import (
-        global_mcp_server_manager,
-    )
-    from litellm.proxy._experimental.mcp_server.sse_transport import SseServerTransport
-    from litellm.proxy._experimental.mcp_server.tool_registry import (
-        global_mcp_tool_registry,
-    )
-    from litellm.proxy._experimental.mcp_server.utils import (
-        split_server_prefix_from_name,
-    )
 
     ######################################################
     ############ MCP Tools List REST API Response Object #
@@ -157,9 +156,7 @@ if MCP_AVAILABLE:
             await _sse_session_manager_cm.__aenter__()
 
             _SESSION_MANAGERS_INITIALIZED = True
-            verbose_logger.info(
-                "MCP Server started with StreamableHTTP and SSE session managers!"
-            )
+            verbose_logger.info("MCP Server started with StreamableHTTP and SSE session managers!")
 
     async def shutdown_session_managers():
         """Shutdown the session managers."""
@@ -211,9 +208,7 @@ if MCP_AVAILABLE:
             verbose_logger.debug(
                 f"MCP list_tools - User API Key Auth from context: {user_api_key_auth}"
             )
-            verbose_logger.debug(
-                f"MCP list_tools - MCP servers from context: {mcp_servers}"
-            )
+            verbose_logger.debug(f"MCP list_tools - MCP servers from context: {mcp_servers}")
             verbose_logger.debug(
                 f"MCP list_tools - MCP server auth headers: {list(mcp_server_auth_headers.keys()) if mcp_server_auth_headers else None}"
             )
@@ -227,9 +222,7 @@ if MCP_AVAILABLE:
                 oauth2_headers=oauth2_headers,
                 raw_headers=raw_headers,
             )
-            verbose_logger.info(
-                f"MCP list_tools - Successfully returned {len(tools)} tools"
-            )
+            verbose_logger.info(f"MCP list_tools - Successfully returned {len(tools)} tools")
             return tools
         except Exception as e:
             verbose_logger.exception(f"Error in list_tools endpoint: {str(e)}")
@@ -238,9 +231,7 @@ if MCP_AVAILABLE:
             return []
 
     @server.call_tool()
-    async def mcp_server_tool_call(
-        name: str, arguments: Dict[str, Any] | None
-    ) -> CallToolResult:
+    async def mcp_server_tool_call(name: str, arguments: Dict[str, Any] | None) -> CallToolResult:
         """
         Call a specific tool with the provided arguments
 
@@ -255,7 +246,6 @@ if MCP_AVAILABLE:
             HTTPException: If tool not found or arguments missing
         """
         from fastapi import Request
-
         from litellm.exceptions import BlockedPiiEntityError, GuardrailRaisedException
         from litellm.proxy.litellm_pre_call_utils import add_litellm_data_to_request
         from litellm.proxy.proxy_server import proxy_config
@@ -318,11 +308,7 @@ if MCP_AVAILABLE:
         except GuardrailRaisedException as e:
             verbose_logger.error(f"GuardrailRaisedException in MCP tool call: {str(e)}")
             return CallToolResult(
-                content=[
-                    TextContent(
-                        text=f"Error: Guardrail violation - {str(e)}", type="text"
-                    )
-                ],
+                content=[TextContent(text=f"Error: Guardrail violation - {str(e)}", type="text")],
                 isError=True,
             )
         except HTTPException as e:
@@ -358,9 +344,7 @@ if MCP_AVAILABLE:
             verbose_logger.debug(
                 f"MCP list_prompts - User API Key Auth from context: {user_api_key_auth}"
             )
-            verbose_logger.debug(
-                f"MCP list_prompts - MCP servers from context: {mcp_servers}"
-            )
+            verbose_logger.debug(f"MCP list_prompts - MCP servers from context: {mcp_servers}")
             verbose_logger.debug(
                 f"MCP list_prompts - MCP server auth headers: {list(mcp_server_auth_headers.keys()) if mcp_server_auth_headers else None}"
             )
@@ -374,9 +358,7 @@ if MCP_AVAILABLE:
                 oauth2_headers=oauth2_headers,
                 raw_headers=raw_headers,
             )
-            verbose_logger.info(
-                f"MCP list_prompts - Successfully returned {len(prompts)} prompts"
-            )
+            verbose_logger.info(f"MCP list_prompts - Successfully returned {len(prompts)} prompts")
             return prompts
         except Exception as e:
             verbose_logger.exception(f"Error in list_prompts endpoint: {str(e)}")
@@ -385,9 +367,7 @@ if MCP_AVAILABLE:
             return []
 
     @server.get_prompt()
-    async def get_prompt(
-        name: str, arguments: dict[str, str] | None
-    ) -> GetPromptResult:
+    async def get_prompt(name: str, arguments: dict[str, str] | None) -> GetPromptResult:
         """
         Get a specific prompt with the provided arguments
 
@@ -438,9 +418,7 @@ if MCP_AVAILABLE:
             verbose_logger.debug(
                 f"MCP list_resources - User API Key Auth from context: {user_api_key_auth}"
             )
-            verbose_logger.debug(
-                f"MCP list_resources - MCP servers from context: {mcp_servers}"
-            )
+            verbose_logger.debug(f"MCP list_resources - MCP servers from context: {mcp_servers}")
             verbose_logger.debug(
                 f"MCP list_resources - MCP server auth headers: {list(mcp_server_auth_headers.keys()) if mcp_server_auth_headers else None}"
             )
@@ -497,9 +475,7 @@ if MCP_AVAILABLE:
             )
             return resource_templates
         except Exception as e:
-            verbose_logger.exception(
-                f"Error in list_resource_templates endpoint: {str(e)}"
-            )
+            verbose_logger.exception(f"Error in list_resource_templates endpoint: {str(e)}")
             return []
 
     @server.read_resource()
@@ -654,9 +630,7 @@ if MCP_AVAILABLE:
         # Filter by allowed_tools (whitelist)
         if mcp_server.allowed_tools:
             tools_to_return = [
-                tool
-                for tool in tools
-                if _tool_name_matches(tool.name, mcp_server.allowed_tools)
+                tool for tool in tools if _tool_name_matches(tool.name, mcp_server.allowed_tools)
             ]
 
         # Filter by disallowed_tools (blacklist)
@@ -674,14 +648,12 @@ if MCP_AVAILABLE:
         mcp_servers: Optional[List[str]],
     ) -> List[MCPServer]:
         """Return allowed MCP servers for a request after applying filters."""
-        allowed_mcp_server_ids = (
-            await global_mcp_server_manager.get_allowed_mcp_servers(user_api_key_auth)
+        allowed_mcp_server_ids = await global_mcp_server_manager.get_allowed_mcp_servers(
+            user_api_key_auth
         )
         allowed_mcp_servers: List[MCPServer] = []
         for allowed_mcp_server_id in allowed_mcp_server_ids:
-            mcp_server = global_mcp_server_manager.get_mcp_server_by_id(
-                allowed_mcp_server_id
-            )
+            mcp_server = global_mcp_server_manager.get_mcp_server_by_id(allowed_mcp_server_id)
             if mcp_server is not None:
                 allowed_mcp_servers.append(mcp_server)
 
@@ -791,9 +763,7 @@ if MCP_AVAILABLE:
                     f"Successfully fetched {len(tools)} tools from server {server.name}, {len(filtered_tools)} after filtering"
                 )
             except Exception as e:
-                verbose_logger.exception(
-                    f"Error getting tools from server {server.name}: {str(e)}"
-                )
+                verbose_logger.exception(f"Error getting tools from server {server.name}: {str(e)}")
                 # Continue with other servers instead of failing completely
 
         verbose_logger.info(
@@ -1060,9 +1030,7 @@ if MCP_AVAILABLE:
                 f"Successfully fetched {len(managed_tools)} tools from managed MCP servers"
             )
         except Exception as e:
-            verbose_logger.exception(
-                f"Error getting tools from managed MCP servers: {str(e)}"
-            )
+            verbose_logger.exception(f"Error getting tools from managed MCP servers: {str(e)}")
             # Continue with empty managed tools list instead of failing completely
 
         return managed_tools
@@ -1104,9 +1072,7 @@ if MCP_AVAILABLE:
                 f"Successfully fetched {len(managed_prompts)} prompts from managed MCP servers"
             )
         except Exception as e:
-            verbose_logger.exception(
-                f"Error getting tools from managed MCP servers: {str(e)}"
-            )
+            verbose_logger.exception(f"Error getting tools from managed MCP servers: {str(e)}")
             # Continue with empty managed tools list instead of failing completely
 
         return managed_prompts
@@ -1138,9 +1104,7 @@ if MCP_AVAILABLE:
                 f"Successfully fetched {len(managed_resources)} resources from managed MCP servers"
             )
         except Exception as e:
-            verbose_logger.exception(
-                f"Error getting resources from managed MCP servers: {str(e)}"
-            )
+            verbose_logger.exception(f"Error getting resources from managed MCP servers: {str(e)}")
 
         return managed_resources
 
@@ -1196,22 +1160,16 @@ if MCP_AVAILABLE:
         """
         start_time = datetime.now()
         if arguments is None:
-            raise HTTPException(
-                status_code=400, detail="Request arguments are required"
-            )
+            raise HTTPException(status_code=400, detail="Request arguments are required")
 
         ## CHECK IF USER IS ALLOWED TO CALL THIS TOOL
-        allowed_mcp_server_ids = (
-            await global_mcp_server_manager.get_allowed_mcp_servers(
-                user_api_key_auth=user_api_key_auth,
-            )
+        allowed_mcp_server_ids = await global_mcp_server_manager.get_allowed_mcp_servers(
+            user_api_key_auth=user_api_key_auth,
         )
 
         allowed_mcp_servers: List[MCPServer] = []
         for allowed_mcp_server_id in allowed_mcp_server_ids:
-            allowed_server = global_mcp_server_manager.get_mcp_server_by_id(
-                allowed_mcp_server_id
-            )
+            allowed_server = global_mcp_server_manager.get_mcp_server_by_id(allowed_mcp_server_id)
             if allowed_server is not None:
                 allowed_mcp_servers.append(allowed_server)
 
@@ -1250,13 +1208,11 @@ if MCP_AVAILABLE:
                 server_name=server_name,
             )
         )
-        litellm_logging_obj: Optional[LiteLLMLoggingObj] = kwargs.get(
-            "litellm_logging_obj", None
-        )
+        litellm_logging_obj: Optional[LiteLLMLoggingObj] = kwargs.get("litellm_logging_obj", None)
         if litellm_logging_obj:
-            litellm_logging_obj.model_call_details[
-                "mcp_tool_call_metadata"
-            ] = standard_logging_mcp_tool_call
+            litellm_logging_obj.model_call_details["mcp_tool_call_metadata"] = (
+                standard_logging_mcp_tool_call
+            )
             litellm_logging_obj.model = f"MCP: {name}"
         # Check if tool exists in local registry first (for OpenAPI-based tools)
         # These tools are registered with their prefixed names
@@ -1273,18 +1229,16 @@ if MCP_AVAILABLE:
         else:
             # If we haven't already resolved the server, do it now for dispatch
             if mcp_server is None:
-                mcp_server = global_mcp_server_manager._get_mcp_server_from_tool_name(
-                    name
-                )
+                mcp_server = global_mcp_server_manager._get_mcp_server_from_tool_name(name)
             if mcp_server:
                 standard_logging_mcp_tool_call["mcp_server_cost_info"] = (
                     mcp_server.mcp_info or {}
                 ).get("mcp_server_cost_info")
                 # Update model_call_details with the cost info
                 if litellm_logging_obj:
-                    litellm_logging_obj.model_call_details[
-                        "mcp_tool_call_metadata"
-                    ] = standard_logging_mcp_tool_call
+                    litellm_logging_obj.model_call_details["mcp_tool_call_metadata"] = (
+                        standard_logging_mcp_tool_call
+                    )
                 response = await _handle_managed_mcp_tool(
                     server_name=server_name,
                     name=original_tool_name,  # Pass the full name (potentially prefixed)
@@ -1302,12 +1256,8 @@ if MCP_AVAILABLE:
             # Deprecated: Local MCP Server Tool
             #########################################################
             else:
-                local_content = await _handle_local_mcp_tool(
-                    original_tool_name, arguments
-                )
-                response = CallToolResult(
-                    content=cast(Any, local_content), isError=False
-                )
+                local_content = await _handle_local_mcp_tool(original_tool_name, arguments)
+                response = CallToolResult(content=cast(Any, local_content), isError=False)
 
         #########################################################
         # Post MCP Tool Call Hook
@@ -1597,9 +1547,7 @@ if MCP_AVAILABLE:
             raw_headers,
         )
 
-    async def handle_streamable_http_mcp(
-        scope: Scope, receive: Receive, send: Send
-    ) -> None:
+    async def handle_streamable_http_mcp(scope: Scope, receive: Receive, send: Send) -> None:
         """Handle MCP requests through StreamableHTTP."""
         try:
             path = scope.get("path", "")
@@ -1611,9 +1559,7 @@ if MCP_AVAILABLE:
                 oauth2_headers,
                 raw_headers,
             ) = await extract_mcp_auth_context(scope, path)
-            verbose_logger.debug(
-                f"MCP request mcp_servers (header/path): {mcp_servers}"
-            )
+            verbose_logger.debug(f"MCP request mcp_servers (header/path): {mcp_servers}")
             verbose_logger.debug(
                 f"MCP server auth headers: {list(mcp_server_auth_headers.keys()) if mcp_server_auth_headers else None}"
             )
@@ -1669,9 +1615,7 @@ if MCP_AVAILABLE:
                 )
                 await error_response(scope, receive, send)
             except Exception as response_error:
-                verbose_logger.exception(
-                    f"Failed to send error response: {response_error}"
-                )
+                verbose_logger.exception(f"Failed to send error response: {response_error}")
                 # If we can't send a proper response, re-raise the original error
                 raise e
 
@@ -1687,9 +1631,7 @@ if MCP_AVAILABLE:
                 oauth2_headers,
                 raw_headers,
             ) = await extract_mcp_auth_context(scope, path)
-            verbose_logger.debug(
-                f"MCP request mcp_servers (header/path): {mcp_servers}"
-            )
+            verbose_logger.debug(f"MCP request mcp_servers (header/path): {mcp_servers}")
             verbose_logger.debug(
                 f"MCP server auth headers: {list(mcp_server_auth_headers.keys()) if mcp_server_auth_headers else None}"
             )
@@ -1721,9 +1663,7 @@ if MCP_AVAILABLE:
                 )
                 await error_response(scope, receive, send)
             except Exception as response_error:
-                verbose_logger.exception(
-                    f"Failed to send error response: {response_error}"
-                )
+                verbose_logger.exception(f"Failed to send error response: {response_error}")
                 # If we can't send a proper response, re-raise the original error
                 raise e
 
@@ -1783,16 +1723,14 @@ if MCP_AVAILABLE:
         )
         auth_context_var.set(auth_user)
 
-    def get_auth_context() -> (
-        Tuple[
-            Optional[UserAPIKeyAuth],
-            Optional[str],
-            Optional[List[str]],
-            Optional[Dict[str, Dict[str, str]]],
-            Optional[Dict[str, str]],
-            Optional[Dict[str, str]],
-        ]
-    ):
+    def get_auth_context() -> Tuple[
+        Optional[UserAPIKeyAuth],
+        Optional[str],
+        Optional[List[str]],
+        Optional[Dict[str, Dict[str, str]]],
+        Optional[Dict[str, str]],
+        Optional[Dict[str, str]],
+    ]:
         """
         Get the UserAPIKeyAuth from the auth context variable.
 

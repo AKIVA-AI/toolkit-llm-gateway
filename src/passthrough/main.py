@@ -18,9 +18,8 @@ from typing import (
 )
 
 import httpx
-from httpx._types import CookieTypes, QueryParamTypes, RequestFiles
-
 import litellm
+from httpx._types import CookieTypes, QueryParamTypes, RequestFiles
 from litellm.litellm_core_utils.get_llm_provider_logic import get_llm_provider
 from litellm.llms.custom_httpx.http_handler import AsyncHTTPHandler, HTTPHandler
 from litellm.llms.custom_httpx.llm_http_handler import BaseLLMHTTPHandler
@@ -113,7 +112,7 @@ async def allm_passthrough_route(
             # Only call raise_for_status if it's a Response object (not a generator)
             if isinstance(response, httpx.Response):
                 response.raise_for_status()
-            
+
             return response
         else:
             # This shouldn't happen when allm_passthrough_route=True, but handle it for type safety
@@ -245,9 +244,7 @@ def llm_passthrough_route(
 
     # [TODO: Refactor to bedrockpassthroughconfig] need to encode the id of application-inference-profile for bedrock
     if custom_llm_provider == "bedrock" and "application-inference-profile" in endpoint:
-        encoded_url_str = CommonUtils.encode_bedrock_runtime_modelid_arn(
-            str(updated_url)
-        )
+        encoded_url_str = CommonUtils.encode_bedrock_runtime_modelid_arn(str(updated_url))
         updated_url = httpx.URL(encoded_url_str)
 
     # Add or update query parameters
@@ -358,7 +355,7 @@ async def _async_passthrough_request(
     """
     # client.client.send returns a coroutine for async clients
     response_result = client.client.send(request=request, stream=is_streaming_request)
-    
+
     # Check if it's a coroutine and await it
     if asyncio.iscoroutine(response_result):
         if is_streaming_request:

@@ -79,9 +79,7 @@ class CustomGuardrail(CustomLogger):
         self,
         guardrail_name: Optional[str] = None,
         supported_event_hooks: Optional[List[GuardrailEventHooks]] = None,
-        event_hook: Optional[
-            Union[GuardrailEventHooks, List[GuardrailEventHooks], Mode]
-        ] = None,
+        event_hook: Optional[Union[GuardrailEventHooks, List[GuardrailEventHooks], Mode]] = None,
         default_on: bool = False,
         mask_request_content: bool = False,
         mask_response_content: bool = False,
@@ -101,9 +99,9 @@ class CustomGuardrail(CustomLogger):
         """
         self.guardrail_name = guardrail_name
         self.supported_event_hooks = supported_event_hooks
-        self.event_hook: Optional[
-            Union[GuardrailEventHooks, List[GuardrailEventHooks], Mode]
-        ] = event_hook
+        self.event_hook: Optional[Union[GuardrailEventHooks, List[GuardrailEventHooks], Mode]] = (
+            event_hook
+        )
         self.default_on: bool = default_on
         self.mask_request_content: bool = mask_request_content
         self.mask_response_content: bool = mask_response_content
@@ -190,9 +188,7 @@ class CustomGuardrail(CustomLogger):
 
     def _validate_event_hook(
         self,
-        event_hook: Optional[
-            Union[GuardrailEventHooks, List[GuardrailEventHooks], Mode]
-        ],
+        event_hook: Optional[Union[GuardrailEventHooks, List[GuardrailEventHooks], Mode]],
         supported_event_hooks: List[GuardrailEventHooks],
     ) -> None:
         def _validate_event_hook_list_is_in_supported_event_hooks(
@@ -212,9 +208,7 @@ class CustomGuardrail(CustomLogger):
         if isinstance(event_hook, str):
             event_hook = GuardrailEventHooks(event_hook)
         if isinstance(event_hook, list):
-            _validate_event_hook_list_is_in_supported_event_hooks(
-                event_hook, supported_event_hooks
-            )
+            _validate_event_hook_list_is_in_supported_event_hooks(event_hook, supported_event_hooks)
         elif isinstance(event_hook, Mode):
             _validate_event_hook_list_is_in_supported_event_hooks(
                 list(event_hook.tags.values()), supported_event_hooks
@@ -276,9 +270,7 @@ class CustomGuardrail(CustomLogger):
             return kwargs
 
         if (
-            self.should_run_guardrail(
-                data=kwargs, event_type=GuardrailEventHooks.pre_call
-            )
+            self.should_run_guardrail(data=kwargs, event_type=GuardrailEventHooks.pre_call)
             is not True
         ):
             return kwargs
@@ -322,9 +314,7 @@ class CustomGuardrail(CustomLogger):
             return response
 
         if (
-            self.should_run_guardrail(
-                data=request_data, event_type=GuardrailEventHooks.post_call
-            )
+            self.should_run_guardrail(data=request_data, event_type=GuardrailEventHooks.post_call)
             is not True
         ):
             return response
@@ -659,10 +649,7 @@ class CustomGuardrail(CustomLogger):
         # /responses
         # User/System messages are stored in the "input" key, use litellm transformation to get the messages
         #########################################################
-        if (
-            call_type == CallTypes.responses.value
-            or call_type == CallTypes.aresponses.value
-        ):
+        if call_type == CallTypes.responses.value or call_type == CallTypes.aresponses.value:
             from typing import cast
 
             from litellm.responses.litellm_completion_transformation.transformation import (

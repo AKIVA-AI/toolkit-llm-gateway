@@ -7,7 +7,6 @@ Written separately to handle faking streaming for o1 and o3 models.
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 import httpx
-
 from litellm.types.utils import ModelResponse
 
 from ...openai.openai import OpenAIChatCompletion

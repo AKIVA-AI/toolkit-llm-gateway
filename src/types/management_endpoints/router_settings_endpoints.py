@@ -194,4 +194,3 @@ ROUTER_SETTINGS_FIELDS: List[RouterSettingsField] = [
         ui_field_name="Disable Cooldowns",
     ),
 ]
-

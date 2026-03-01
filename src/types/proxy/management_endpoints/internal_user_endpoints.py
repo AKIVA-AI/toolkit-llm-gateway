@@ -1,13 +1,11 @@
-from typing import Any, Dict, List, Literal, Optional, Union
-
-from fastapi import HTTPException
-from pydantic import BaseModel, EmailStr, field_validator
+from typing import Any, Dict, List, Optional
 
 from litellm.proxy._types import (
     LiteLLM_UserTableWithKeyCount,
     UpdateUserRequest,
     UpdateUserRequestNoUserIDorEmail,
 )
+from pydantic import BaseModel, field_validator
 
 
 class UserListResponse(BaseModel):
@@ -25,9 +23,7 @@ class UserListResponse(BaseModel):
 class BulkUpdateUserRequest(BaseModel):
     """Request for bulk user updates"""
 
-    users: Optional[List[UpdateUserRequest]] = (
-        None  # List of specific user update requests
-    )
+    users: Optional[List[UpdateUserRequest]] = None  # List of specific user update requests
     all_users: Optional[bool] = False  # Flag to update all users
     user_updates: Optional[UpdateUserRequestNoUserIDorEmail] = (
         None  # Updates to apply to all users when all_users=True
@@ -40,9 +36,7 @@ class BulkUpdateUserRequest(BaseModel):
         values = info.data if hasattr(info, "data") else {}
 
         # After all fields are set, validate the combination
-        if (
-            info.field_name == "user_updates"
-        ):  # This is the last field, do validation here
+        if info.field_name == "user_updates":  # This is the last field, do validation here
             users = values.get("users")
             all_users = values.get("all_users", False)
             user_updates = v

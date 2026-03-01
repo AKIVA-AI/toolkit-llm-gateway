@@ -9,9 +9,8 @@ from litellm.types.integrations.slack_alerting import AlertType
 from litellm.types.router import RouterRateLimitError
 
 if TYPE_CHECKING:
-    from opentelemetry.trace import Span as _Span
-
     from litellm.router import Router as _Router
+    from opentelemetry.trace import Span as _Span
 
     LitellmRouter = _Router
     Span = Union[_Span, Any]

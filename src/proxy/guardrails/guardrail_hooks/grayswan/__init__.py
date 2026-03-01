@@ -29,15 +29,11 @@ def initialize_guardrail(
         guardrail_name=guardrail_name,
         api_key=litellm_params.api_key,
         api_base=litellm_params.api_base,
-        on_flagged_action=_get_config_value(
-            litellm_params, optional_params, "on_flagged_action"
-        ),
+        on_flagged_action=_get_config_value(litellm_params, optional_params, "on_flagged_action"),
         violation_threshold=_get_config_value(
             litellm_params, optional_params, "violation_threshold"
         ),
-        reasoning_mode=_get_config_value(
-            litellm_params, optional_params, "reasoning_mode"
-        ),
+        reasoning_mode=_get_config_value(litellm_params, optional_params, "reasoning_mode"),
         categories=_get_config_value(litellm_params, optional_params, "categories"),
         policy_id=_get_config_value(litellm_params, optional_params, "policy_id"),
         event_hook=litellm_params.mode,

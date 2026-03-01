@@ -28,14 +28,12 @@ class AmazonTitanMultimodalEmbeddingG1Config:
     def get_supported_openai_params(self) -> List[str]:
         return ["dimensions"]
 
-    def map_openai_params(
-        self, non_default_params: dict, optional_params: dict
-    ) -> dict:
+    def map_openai_params(self, non_default_params: dict, optional_params: dict) -> dict:
         for k, v in non_default_params.items():
             if k == "dimensions":
-                optional_params[
-                    "embeddingConfig"
-                ] = AmazonTitanMultimodalEmbeddingConfig(outputEmbeddingLength=v)
+                optional_params["embeddingConfig"] = AmazonTitanMultimodalEmbeddingConfig(
+                    outputEmbeddingLength=v
+                )
         return optional_params
 
     def _transform_request(
@@ -45,9 +43,7 @@ class AmazonTitanMultimodalEmbeddingG1Config:
         is_encoded = is_base64_encoded(input)
         if is_encoded:  # check if string is b64 encoded image or not
             b64_str = get_base64_str(input)
-            transformed_request = AmazonTitanMultimodalEmbeddingRequest(
-                inputImage=b64_str
-            )
+            transformed_request = AmazonTitanMultimodalEmbeddingRequest(inputImage=b64_str)
         else:
             transformed_request = AmazonTitanMultimodalEmbeddingRequest(inputText=input)
 
@@ -55,9 +51,7 @@ class AmazonTitanMultimodalEmbeddingG1Config:
             transformed_request[k] = v  # type: ignore
         return transformed_request
 
-    def _transform_response(
-        self, response_list: List[dict], model: str
-    ) -> EmbeddingResponse:
+    def _transform_response(self, response_list: List[dict], model: str) -> EmbeddingResponse:
         total_prompt_tokens = 0
         transformed_responses: List[Embedding] = []
         for index, response in enumerate(response_list):

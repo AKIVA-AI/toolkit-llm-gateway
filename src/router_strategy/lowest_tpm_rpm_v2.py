@@ -4,7 +4,6 @@ import random
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm import token_counter
 from litellm._logging import verbose_logger, verbose_router_logger
@@ -47,9 +46,7 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
     logged_failure: int = 0
     default_cache_time_seconds: int = 1 * 60 * 60  # 1 hour
 
-    def __init__(
-        self, router_cache: DualCache, routing_args: dict = {}
-    ):
+    def __init__(self, router_cache: DualCache, routing_args: dict = {}):
         self.router_cache = router_cache
         self.routing_args = RoutingArgs(**routing_args)
         BaseRoutingStrategy.__init__(
@@ -514,13 +511,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                     if _deployment_tpm is None:
                         _deployment_tpm = _deployment.get("tpm", None)
                     if _deployment_tpm is None:
-                        _deployment_tpm = _deployment.get("litellm_params", {}).get(
-                            "tpm", None
-                        )
+                        _deployment_tpm = _deployment.get("litellm_params", {}).get("tpm", None)
                     if _deployment_tpm is None:
-                        _deployment_tpm = _deployment.get("model_info", {}).get(
-                            "tpm", None
-                        )
+                        _deployment_tpm = _deployment.get("model_info", {}).get("tpm", None)
                     if _deployment_tpm is None:
                         _deployment_tpm = float("inf")
 
@@ -532,13 +525,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                     if _deployment_rpm is None:
                         _deployment_rpm = _deployment.get("rpm", None)
                     if _deployment_rpm is None:
-                        _deployment_rpm = _deployment.get("litellm_params", {}).get(
-                            "rpm", None
-                        )
+                        _deployment_rpm = _deployment.get("litellm_params", {}).get("rpm", None)
                     if _deployment_rpm is None:
-                        _deployment_rpm = _deployment.get("model_info", {}).get(
-                            "rpm", None
-                        )
+                        _deployment_rpm = _deployment.get("model_info", {}).get("rpm", None)
                     if _deployment_rpm is None:
                         _deployment_rpm = float("inf")
 
@@ -627,13 +616,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                     if _deployment_tpm is None:
                         _deployment_tpm = _deployment.get("tpm", None)
                     if _deployment_tpm is None:
-                        _deployment_tpm = _deployment.get("litellm_params", {}).get(
-                            "tpm", None
-                        )
+                        _deployment_tpm = _deployment.get("litellm_params", {}).get("tpm", None)
                     if _deployment_tpm is None:
-                        _deployment_tpm = _deployment.get("model_info", {}).get(
-                            "tpm", None
-                        )
+                        _deployment_tpm = _deployment.get("model_info", {}).get("tpm", None)
                     if _deployment_tpm is None:
                         _deployment_tpm = float("inf")
 
@@ -645,13 +630,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                     if _deployment_rpm is None:
                         _deployment_rpm = _deployment.get("rpm", None)
                     if _deployment_rpm is None:
-                        _deployment_rpm = _deployment.get("litellm_params", {}).get(
-                            "rpm", None
-                        )
+                        _deployment_rpm = _deployment.get("litellm_params", {}).get("rpm", None)
                     if _deployment_rpm is None:
-                        _deployment_rpm = _deployment.get("model_info", {}).get(
-                            "rpm", None
-                        )
+                        _deployment_rpm = _deployment.get("model_info", {}).get("rpm", None)
                     if _deployment_rpm is None:
                         _deployment_rpm = float("inf")
 

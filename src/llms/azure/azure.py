@@ -4,8 +4,6 @@ import time
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Union
 
 import httpx  # type: ignore
-from openai import APITimeoutError, AsyncAzureOpenAI, AzureOpenAI
-
 import litellm
 from litellm.constants import AZURE_OPERATION_POLLING_TIMEOUT, DEFAULT_MAX_RETRIES
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -26,6 +24,7 @@ from litellm.utils import (
     convert_to_model_response_object,
     modify_url,
 )
+from openai import APITimeoutError, AsyncAzureOpenAI, AzureOpenAI
 
 from ...types.llms.openai import HttpxBinaryResponseContent
 from ..base import BaseLLM
@@ -204,9 +203,7 @@ class AzureChatCompletion(BaseAzureLLM, BaseLLM):
             optional_params["extra_headers"] = headers
         try:
             if model is None or messages is None:
-                raise AzureOpenAIError(
-                    status_code=422, message="Missing model or messages"
-                )
+                raise AzureOpenAIError(status_code=422, message="Missing model or messages")
 
             max_retries = optional_params.pop("max_retries", None)
             if max_retries is None:
@@ -315,9 +312,7 @@ class AzureChatCompletion(BaseAzureLLM, BaseLLM):
                     },
                 )
                 if not isinstance(max_retries, int):
-                    raise AzureOpenAIError(
-                        status_code=422, message="max retries must be an int"
-                    )
+                    raise AzureOpenAIError(status_code=422, message="max retries must be an int")
                 # init AzureOpenAI Client
                 azure_client = self.get_azure_openai_client(
                     api_version=api_version,
@@ -856,14 +851,10 @@ class AzureChatCompletion(BaseAzureLLM, BaseLLM):
             timeout_secs: int = AZURE_OPERATION_POLLING_TIMEOUT
             start_time = time.time()
             if "status" not in response.json():
-                raise Exception(
-                    "Expected 'status' in response. Got={}".format(response.json())
-                )
+                raise Exception("Expected 'status' in response. Got={}".format(response.json()))
             while response.json()["status"] not in ["succeeded", "failed"]:
                 if time.time() - start_time > timeout_secs:
-                    raise AzureOpenAIError(
-                        status_code=408, message="Operation polling timed out."
-                    )
+                    raise AzureOpenAIError(status_code=408, message="Operation polling timed out.")
 
                 await asyncio.sleep(int(response.headers.get("retry-after") or 10))
                 response = await async_handler.get(
@@ -954,14 +945,10 @@ class AzureChatCompletion(BaseAzureLLM, BaseLLM):
             timeout_secs: int = AZURE_OPERATION_POLLING_TIMEOUT
             start_time = time.time()
             if "status" not in response.json():
-                raise Exception(
-                    "Expected 'status' in response. Got={}".format(response.json())
-                )
+                raise Exception("Expected 'status' in response. Got={}".format(response.json()))
             while response.json()["status"] not in ["succeeded", "failed"]:
                 if time.time() - start_time > timeout_secs:
-                    raise AzureOpenAIError(
-                        status_code=408, message="Operation polling timed out."
-                    )
+                    raise AzureOpenAIError(status_code=408, message="Operation polling timed out.")
 
                 time.sleep(int(response.headers.get("retry-after") or 10))
                 response = sync_handler.get(
@@ -987,9 +974,7 @@ class AzureChatCompletion(BaseAzureLLM, BaseLLM):
             headers=headers,
         )
 
-    def create_azure_base_url(
-        self, azure_client_params: dict, model: Optional[str]
-    ) -> str:
+    def create_azure_base_url(self, azure_client_params: dict, model: Optional[str]) -> str:
         api_base: str = azure_client_params.get(
             "azure_endpoint", ""
         )  # "https://example-endpoint.openai.azure.com"
@@ -1055,9 +1040,7 @@ class AzureChatCompletion(BaseAzureLLM, BaseLLM):
                 headers=headers,
             )
 
-            provider_config = get_azure_image_generation_config(
-                data.get("model", "dall-e-2")
-            )
+            provider_config = get_azure_image_generation_config(data.get("model", "dall-e-2"))
             if provider_config is not None:
                 return provider_config.transform_image_generation_response(
                     model=data.get("model", "dall-e-2"),
@@ -1121,24 +1104,17 @@ class AzureChatCompletion(BaseAzureLLM, BaseLLM):
                 model = None
 
             ## BASE MODEL CHECK
-            if (
-                model_response is not None
-                and optional_params.get("base_model", None) is not None
-            ):
-                model_response._hidden_params["model"] = optional_params.pop(
-                    "base_model"
-                )
+            if model_response is not None and optional_params.get("base_model", None) is not None:
+                model_response._hidden_params["model"] = optional_params.pop("base_model")
 
             # Azure image generation API doesn't support extra_body parameter
             extra_body = optional_params.pop("extra_body", {})
             flattened_params = {**optional_params, **extra_body}
-            
+
             data = {"model": model, "prompt": prompt, **flattened_params}
             max_retries = data.pop("max_retries", 2)
             if not isinstance(max_retries, int):
-                raise AzureOpenAIError(
-                    status_code=422, message="max retries must be an int"
-                )
+                raise AzureOpenAIError(status_code=422, message="max retries must be an int")
 
             if api_key is None and azure_ad_token_provider is not None:
                 azure_ad_token = azure_ad_token_provider()

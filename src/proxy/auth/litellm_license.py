@@ -7,7 +7,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 import httpx
-
 from litellm._logging import verbose_proxy_logger
 from litellm.constants import NON_LLM_CONNECTION_TIMEOUT
 from litellm.llms.custom_httpx.http_handler import HTTPHandler
@@ -140,7 +139,7 @@ class LicenseCheck:
         ):
             return False
         return total_users > self.airgapped_license_data["max_users"]
-    
+
     def is_team_count_over_limit(self, team_count: int) -> bool:
         """
         Check if the license is over the limit
@@ -159,7 +158,6 @@ class LicenseCheck:
         try:
             from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.asymmetric import padding
-
             from litellm.proxy._types import EnterpriseLicenseData
 
             # Decode the license key - add padding if needed for base64
@@ -167,7 +165,7 @@ class LicenseCheck:
             padding_needed = len(license_key) % 4
             if padding_needed:
                 license_key += "=" * (4 - padding_needed)
-            
+
             decoded = base64.b64decode(license_key)
             message, signature = decoded.split(b".", 1)
 
@@ -191,9 +189,7 @@ class LicenseCheck:
             verbose_proxy_logger.debug("License data: %s", license_data)
 
             # Check expiration date
-            expiration_date = datetime.strptime(
-                license_data["expiration_date"], "%Y-%m-%d"
-            )
+            expiration_date = datetime.strptime(license_data["expiration_date"], "%Y-%m-%d")
             if expiration_date < datetime.now():
                 return False, "License has expired"
 

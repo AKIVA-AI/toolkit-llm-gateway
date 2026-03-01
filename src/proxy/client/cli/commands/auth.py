@@ -238,9 +238,7 @@ def prompt_team_selection(teams: List[Dict[str, Any]]) -> Optional[Dict[str, Any
         return prompt_team_selection_fallback(teams)
 
 
-def prompt_team_selection_fallback(
-    teams: List[Dict[str, Any]]
-) -> Optional[Dict[str, Any]]:
+def prompt_team_selection_fallback(teams: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     """Fallback team selection for non-interactive environments"""
     if not teams:
         return None
@@ -400,9 +398,7 @@ def _handle_team_selection_during_polling(
         The JWT token with the selected team, or None if selection was skipped
     """
     if not teams:
-        click.echo(
-            "ℹ️ No teams found. You can create or join teams using the web interface."
-        )
+        click.echo("ℹ️ No teams found. You can create or join teams using the web interface.")
         return None
 
     click.echo("\n" + "=" * 60)
@@ -482,9 +478,7 @@ def _render_and_prompt_for_team_selection(teams: List[Dict[str, Any]]) -> Option
                 click.echo(f"\n✅ Selected team: {team_alias} ({team_id})")
                 return team_id
 
-            click.echo(
-                f"❌ Invalid selection. Please enter a number between 1 and {len(teams)}"
-            )
+            click.echo(f"❌ Invalid selection. Please enter a number between 1 and {len(teams)}")
         except ValueError:
             click.echo("❌ Invalid input. Please enter a number or 'skip'")
         except KeyboardInterrupt:

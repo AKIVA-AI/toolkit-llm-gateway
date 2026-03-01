@@ -1,8 +1,7 @@
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
-
 from litellm.types.utils import HiddenParams
+from pydantic import BaseModel
 
 
 def _add_headers_to_response(response: Any, headers: dict) -> Any:
@@ -12,9 +11,7 @@ def _add_headers_to_response(response: Any, headers: dict) -> Any:
     if response is None or not isinstance(response, BaseModel):
         return response
 
-    hidden_params: Optional[Union[dict, HiddenParams]] = getattr(
-        response, "_hidden_params", {}
-    )
+    hidden_params: Optional[Union[dict, HiddenParams]] = getattr(response, "_hidden_params", {})
 
     if hidden_params is None:
         hidden_params_dict = {}

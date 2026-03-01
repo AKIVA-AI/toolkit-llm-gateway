@@ -2,22 +2,21 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Tuple, Union, cast
 
 import aiohttp
 import httpx  # type: ignore
-from aiohttp import ClientSession, FormData
-
 import litellm
 import litellm.litellm_core_utils
 import litellm.types
 import litellm.types.utils
+from aiohttp import ClientSession, FormData
 from litellm.llms.base_llm.chat.transformation import BaseConfig
 from litellm.llms.base_llm.image_variations.transformation import (
     BaseImageVariationConfig,
 )
+from litellm.llms.custom_httpx.aiohttp_transport import LiteLLMAiohttpTransport
 from litellm.llms.custom_httpx.http_handler import (
     AsyncHTTPHandler,
     HTTPHandler,
     _get_httpx_client,
 )
-from litellm.llms.custom_httpx.aiohttp_transport import LiteLLMAiohttpTransport
 from litellm.types.llms.openai import FileTypes
 from litellm.types.utils import HttpHandlerRequestFields, ImageResponse, LlmProviders
 from litellm.utils import CustomStreamWrapper, ModelResponse, ProviderConfigManager
@@ -40,19 +39,13 @@ class BaseLLMAIOHTTPHandler:
         connector: Optional[aiohttp.BaseConnector] = None,
     ):
         self.client_session = client_session
-        self._owns_session = (
-            client_session is None
-        )  # Track if we own the session for cleanup
+        self._owns_session = client_session is None  # Track if we own the session for cleanup
 
         self.transport = transport
-        self._owns_transport = (
-            transport is None
-        )  # Track if we own the transport for cleanup
+        self._owns_transport = transport is None  # Track if we own the transport for cleanup
 
         self.connector = connector
-        self._owns_connector = (
-            connector is None
-        )  # Track if we own the connector for cleanup
+        self._owns_connector = connector is None  # Track if we own the connector for cleanup
 
     def _get_or_create_transport(self) -> Optional[LiteLLMAiohttpTransport]:
         """Get existing transport or create a new one if needed."""
@@ -115,19 +108,11 @@ class BaseLLMAIOHTTPHandler:
     async def close(self):
         """Close the aiohttp client session and transport if we own them."""
         # Close client session if we own it
-        if (
-            self.client_session
-            and not self.client_session.closed
-            and self._owns_session
-        ):
+        if self.client_session and not self.client_session.closed and self._owns_session:
             await self.client_session.close()
 
         # Close transport if we own it
-        if (
-            self.transport
-            and self._owns_transport
-            and hasattr(self.transport, "aclose")
-        ):
+        if self.transport and self._owns_transport and hasattr(self.transport, "aclose"):
             try:
                 await self.transport.aclose()
             except Exception:
@@ -216,14 +201,14 @@ class BaseLLMAIOHTTPHandler:
                 )
             except httpx.HTTPStatusError as e:
                 hit_max_retry = i + 1 == max_retry_on_unprocessable_entity_error
-                should_retry = provider_config.should_retry_llm_api_inside_llm_translation_on_http_error(
-                    e=e, litellm_params=litellm_params
+                should_retry = (
+                    provider_config.should_retry_llm_api_inside_llm_translation_on_http_error(
+                        e=e, litellm_params=litellm_params
+                    )
                 )
                 if should_retry and not hit_max_retry:
-                    data = (
-                        provider_config.transform_request_on_unprocessable_entity_error(
-                            e=e, request_data=data
-                        )
+                    data = provider_config.transform_request_on_unprocessable_entity_error(
+                        e=e, request_data=data
                     )
                     continue
                 else:
@@ -365,9 +350,7 @@ class BaseLLMAIOHTTPHandler:
                 litellm_params=litellm_params,
                 encoding=encoding,
                 client=(
-                    client
-                    if client is not None and isinstance(client, ClientSession)
-                    else None
+                    client if client is not None and isinstance(client, ClientSession) else None
                 ),
             )
 
@@ -384,11 +367,7 @@ class BaseLLMAIOHTTPHandler:
                 logging_obj=logging_obj,
                 timeout=timeout,
                 fake_stream=fake_stream,
-                client=(
-                    client
-                    if client is not None and isinstance(client, HTTPHandler)
-                    else None
-                ),
+                client=(client if client is not None and isinstance(client, HTTPHandler) else None),
                 litellm_params=litellm_params,
             )
             return CustomStreamWrapper(
@@ -567,9 +546,7 @@ class BaseLLMAIOHTTPHandler:
         )
 
         if provider_config is None:
-            raise ValueError(
-                f"image variation provider not found: {custom_llm_provider}."
-            )
+            raise ValueError(f"image variation provider not found: {custom_llm_provider}.")
 
         api_base = provider_config.get_complete_url(
             api_base=api_base,

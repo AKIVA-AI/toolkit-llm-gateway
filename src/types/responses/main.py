@@ -1,9 +1,8 @@
-from typing import List, Literal, Optional, Union
-
-from pydantic import PrivateAttr
-from typing_extensions import Any, List, Optional, TypedDict
+from typing import List, Literal, Optional
 
 from litellm.types.llms.base import BaseLiteLLMOpenAIResponseObject
+from pydantic import PrivateAttr
+from typing_extensions import List, Optional, TypedDict
 
 
 class GenericResponseOutputItemContentAnnotation(BaseLiteLLMOpenAIResponseObject):

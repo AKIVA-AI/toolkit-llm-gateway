@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, List, Optional, Tuple, Union
 
 import httpx
-
 from litellm.types.llms.anthropic_messages.anthropic_response import (
     AnthropicMessagesResponse,
 )
@@ -117,6 +116,4 @@ class BaseAnthropicMessagesConfig(ABC):
     ) -> "BaseLLMException":
         from litellm.llms.base_llm.chat.transformation import BaseLLMException
 
-        return BaseLLMException(
-            message=error_message, status_code=status_code, headers=headers
-        )
+        return BaseLLMException(message=error_message, status_code=status_code, headers=headers)

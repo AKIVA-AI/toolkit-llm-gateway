@@ -1,4 +1,4 @@
-from typing import Union, Literal
+from typing import Literal, Union
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -7,20 +7,21 @@ def validate_different_content(v: Union[str, dict, list]) -> str:
     if v in ((), {}, []):
         return ""
     elif isinstance(v, dict) and "text" in v:
-        return v['text']
+        return v["text"]
     elif isinstance(v, list):
         new_v = []
         for item in v:
             if isinstance(item, dict) and "text" in item:
-                if item['text']:
-                    new_v.append(item['text'])
+                if item["text"]:
+                    new_v.append(item["text"])
             elif isinstance(item, str):
                 new_v.append(item)
-        return '\n'.join(new_v)
+        return "\n".join(new_v)
     elif isinstance(v, str):
         return v
     raise ValueError("Content must be a string")
     return v
+
 
 class TextContent(BaseModel):
     type_: Literal["text"] = Field(default="text", alias="type")
@@ -73,9 +74,7 @@ class SAPMessage(BaseModel):
 
 class SAPUserMessage(BaseModel):
     role: Literal["user"] = "user"
-    content: Union[
-        str, TextContent, ImageContent, list[Union[TextContent, ImageContent]]
-    ]
+    content: Union[str, TextContent, ImageContent, list[Union[TextContent, ImageContent]]]
 
 
 class SAPAssistantMessage(BaseModel):
@@ -85,7 +84,6 @@ class SAPAssistantMessage(BaseModel):
     tool_calls: list[MessageToolCall] = []
 
     _content_validator = field_validator("content", mode="before")(validate_different_content)
-
 
 
 class SAPToolChatMessage(BaseModel):

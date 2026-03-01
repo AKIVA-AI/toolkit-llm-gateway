@@ -10,12 +10,12 @@ Follows the A2A Spec.
 
 from typing import Any, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-
 import litellm
+from fastapi import APIRouter, Depends, HTTPException, Request
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import CommonProxyErrors, LitellmUserRoles, UserAPIKeyAuth
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
+from litellm.proxy.management_endpoints.common_daily_activity import get_daily_activity
 from litellm.types.agents import (
     AgentConfig,
     AgentMakePublicResponse,
@@ -23,8 +23,6 @@ from litellm.types.agents import (
     MakeAgentsPublicRequest,
     PatchAgentRequest,
 )
-
-from litellm.proxy.management_endpoints.common_daily_activity import get_daily_activity
 from litellm.types.proxy.management_endpoints.common_daily_activity import (
     SpendAnalyticsPaginatedResponse,
 )
@@ -60,7 +58,7 @@ async def get_agents(
 
     try:
         returned_agents: List[AgentResponse] = []
-        
+
         # Admin users get all agents
         if (
             user_api_key_dict.user_role == LitellmUserRoles.PROXY_ADMIN
@@ -72,7 +70,7 @@ async def get_agents(
             allowed_agent_ids = await AgentRequestHandler.get_allowed_agents(
                 user_api_key_auth=user_api_key_dict
             )
-            
+
             # If no restrictions (empty list), return all agents
             if len(allowed_agent_ids) == 0:
                 returned_agents = global_agent_registry.get_agent_list()
@@ -80,17 +78,15 @@ async def get_agents(
                 # Filter agents by allowed IDs
                 all_agents = global_agent_registry.get_agent_list()
                 returned_agents = [
-                    agent for agent in all_agents
-                    if agent.agent_id in allowed_agent_ids
+                    agent for agent in all_agents if agent.agent_id in allowed_agent_ids
                 ]
 
         # add is_public field to each agent - we do it this way, to allow setting config agents as public
         for agent in returned_agents:
             if agent.litellm_params is None:
                 agent.litellm_params = {}
-            agent.litellm_params["is_public"] = (
-                litellm.public_agent_groups is not None
-                and (agent.agent_id in litellm.public_agent_groups)
+            agent.litellm_params["is_public"] = litellm.public_agent_groups is not None and (
+                agent.agent_id in litellm.public_agent_groups
             )
 
         return returned_agents
@@ -98,13 +94,9 @@ async def get_agents(
         raise
     except Exception as e:
         verbose_proxy_logger.exception(
-            "litellm.proxy.agent_endpoints.get_agents(): Exception occurred - {}".format(
-                str(e)
-            )
+            "litellm.proxy.agent_endpoints.get_agents(): Exception occurred - {}".format(str(e))
         )
-        raise HTTPException(
-            status_code=500, detail={"error": f"Internal server error: {str(e)}"}
-        )
+        raise HTTPException(status_code=500, detail={"error": f"Internal server error: {str(e)}"})
 
 
 #### CRUD ENDPOINTS FOR AGENTS ####
@@ -240,9 +232,7 @@ async def get_agent_by_id(agent_id: str):
                 agent = AgentResponse(**agent.model_dump())  # type: ignore
 
         if agent is None:
-            raise HTTPException(
-                status_code=404, detail=f"Agent with ID {agent_id} not found"
-            )
+            raise HTTPException(status_code=404, detail=f"Agent with ID {agent_id} not found")
 
         return agent
     except HTTPException:
@@ -297,9 +287,7 @@ async def update_agent(
     from litellm.proxy.proxy_server import prisma_client
 
     if prisma_client is None:
-        raise HTTPException(
-            status_code=500, detail=CommonProxyErrors.db_not_connected_error.value
-        )
+        raise HTTPException(status_code=500, detail=CommonProxyErrors.db_not_connected_error.value)
 
     try:
         # Check if agent exists
@@ -310,9 +298,7 @@ async def update_agent(
             existing_agent = dict(existing_agent)
 
         if existing_agent is None:
-            raise HTTPException(
-                status_code=404, detail=f"Agent with ID {agent_id} not found"
-            )
+            raise HTTPException(status_code=404, detail=f"Agent with ID {agent_id} not found")
 
         # Get the user ID from the API key auth
         updated_by = user_api_key_dict.user_id or "unknown"
@@ -386,9 +372,7 @@ async def patch_agent(
     from litellm.proxy.proxy_server import prisma_client
 
     if prisma_client is None:
-        raise HTTPException(
-            status_code=500, detail=CommonProxyErrors.db_not_connected_error.value
-        )
+        raise HTTPException(status_code=500, detail=CommonProxyErrors.db_not_connected_error.value)
 
     try:
         # Check if agent exists
@@ -399,9 +383,7 @@ async def patch_agent(
             existing_agent = dict(existing_agent)
 
         if existing_agent is None:
-            raise HTTPException(
-                status_code=404, detail=f"Agent with ID {agent_id} not found"
-            )
+            raise HTTPException(status_code=404, detail=f"Agent with ID {agent_id} not found")
 
         # Get the user ID from the API key auth
         updated_by = user_api_key_dict.user_id or "unknown"
@@ -470,9 +452,7 @@ async def delete_agent(agent_id: str):
                 status_code=404, detail=f"Agent with ID {agent_id} not found in DB."
             )
 
-        await AGENT_REGISTRY.delete_agent_from_db(
-            agent_id=agent_id, prisma_client=prisma_client
-        )
+        await AGENT_REGISTRY.delete_agent_from_db(agent_id=agent_id, prisma_client=prisma_client)
 
         AGENT_REGISTRY.deregister_agent(agent_name=existing_agent.get("agent_name"))  # type: ignore
 
@@ -523,9 +503,7 @@ async def make_agent_public(
     from litellm.proxy.proxy_server import prisma_client
 
     if prisma_client is None:
-        raise HTTPException(
-            status_code=500, detail=CommonProxyErrors.db_not_connected_error.value
-        )
+        raise HTTPException(status_code=500, detail=CommonProxyErrors.db_not_connected_error.value)
 
     try:
         # Update the public model groups
@@ -556,9 +534,7 @@ async def make_agent_public(
                 agent = AgentResponse(**agent.model_dump())  # type: ignore
 
             if agent is None:
-                raise HTTPException(
-                    status_code=404, detail=f"Agent with ID {agent_id} not found"
-                )
+                raise HTTPException(status_code=404, detail=f"Agent with ID {agent_id} not found")
 
         if litellm.public_agent_groups is None:
             litellm.public_agent_groups = []
@@ -640,9 +616,7 @@ async def make_agents_public(
     from litellm.proxy.proxy_server import prisma_client
 
     if prisma_client is None:
-        raise HTTPException(
-            status_code=500, detail=CommonProxyErrors.db_not_connected_error.value
-        )
+        raise HTTPException(status_code=500, detail=CommonProxyErrors.db_not_connected_error.value)
 
     try:
         # Update the public model groups
@@ -709,6 +683,7 @@ async def make_agents_public(
         verbose_proxy_logger.exception(f"Error making agent public: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get(
     "/agent/daily/activity",
     tags=["Agent Management"],
@@ -740,20 +715,14 @@ async def get_agent_daily_activity(
     agent_ids_list = agent_ids.split(",") if agent_ids else None
     exclude_agent_ids_list: Optional[List[str]] = None
     if exclude_agent_ids:
-        exclude_agent_ids_list = (
-            exclude_agent_ids.split(",") if exclude_agent_ids else None
-        )
+        exclude_agent_ids_list = exclude_agent_ids.split(",") if exclude_agent_ids else None
 
     where_condition = {}
     if agent_ids_list:
         where_condition["agent_id"] = {"in": list(agent_ids_list)}
 
-    agent_records = await prisma_client.db.litellm_agentstable.find_many(
-        where=where_condition
-    )
-    agent_metadata = {
-        agent.agent_id: {"agent_name": agent.agent_name} for agent in agent_records
-    }
+    agent_records = await prisma_client.db.litellm_agentstable.find_many(where=where_condition)
+    agent_metadata = {agent.agent_id: {"agent_name": agent.agent_name} for agent in agent_records}
 
     return await get_daily_activity(
         prisma_client=prisma_client,

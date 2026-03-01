@@ -6,7 +6,6 @@ Azure Prompt Shield Native Guardrail Integrationfor LiteLLM
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Type, cast
 
 from fastapi import HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import (
     CustomGuardrail,
@@ -73,13 +72,9 @@ class AzureContentSafetyPromptShieldGuardrail(AzureGuardrailBase, CustomGuardrai
         self.api_base = api_base
         self.api_version = kwargs.get("api_version") or "2024-09-01"
 
-        verbose_proxy_logger.debug(
-            f"Initialized Azure Prompt Shield Guardrail: {guardrail_name}"
-        )
+        verbose_proxy_logger.debug(f"Initialized Azure Prompt Shield Guardrail: {guardrail_name}")
 
-    async def async_make_request(
-        self, user_prompt: str
-    ) -> "AzurePromptShieldGuardrailResponse":
+    async def async_make_request(self, user_prompt: str) -> "AzurePromptShieldGuardrailResponse":
         """
         Make a request to the Azure Prompt Shield API.
         """
@@ -88,12 +83,8 @@ class AzureContentSafetyPromptShieldGuardrail(AzureGuardrailBase, CustomGuardrai
             AzurePromptShieldGuardrailResponse,
         )
 
-        request_body = AzurePromptShieldGuardrailRequestBody(
-            documents=[], userPrompt=user_prompt
-        )
-        verbose_proxy_logger.debug(
-            "Azure Prompt Shield guard request: %s", request_body
-        )
+        request_body = AzurePromptShieldGuardrailRequestBody(documents=[], userPrompt=user_prompt)
+        verbose_proxy_logger.debug("Azure Prompt Shield guard request: %s", request_body)
         response = await self.async_handler.post(
             url=f"{self.api_base}/contentsafety/text:shieldPrompt?api-version={self.api_version}",
             headers={
@@ -103,9 +94,7 @@ class AzureContentSafetyPromptShieldGuardrail(AzureGuardrailBase, CustomGuardrai
             json=cast(dict, request_body),
         )
 
-        verbose_proxy_logger.debug(
-            "Azure Prompt Shield guard response: %s", response.json()
-        )
+        verbose_proxy_logger.debug("Azure Prompt Shield guard response: %s", response.json())
         return AzurePromptShieldGuardrailResponse(**response.json())  # type: ignore
 
     @log_guardrail_information
@@ -137,16 +126,12 @@ class AzureContentSafetyPromptShieldGuardrail(AzureGuardrailBase, CustomGuardrai
         )
         new_messages: Optional[List[AllMessageValues]] = data.get("messages")
         if new_messages is None:
-            verbose_proxy_logger.warning(
-                "Lakera AI: not running guardrail. No messages in data"
-            )
+            verbose_proxy_logger.warning("Lakera AI: not running guardrail. No messages in data")
             return data
         user_prompt = self.get_user_prompt(new_messages)
 
         if user_prompt:
-            verbose_proxy_logger.debug(
-                f"Azure Prompt Shield: User prompt: {user_prompt}"
-            )
+            verbose_proxy_logger.debug(f"Azure Prompt Shield: User prompt: {user_prompt}")
             azure_prompt_shield_response = await self.async_make_request(
                 user_prompt=user_prompt,
             )
@@ -175,9 +160,7 @@ class AzureContentSafetyPromptShieldGuardrail(AzureGuardrailBase, CustomGuardrai
 
         Raises HTTPException if response should be blocked.
         """
-        verbose_proxy_logger.debug(
-            "Azure Prompt Shield: Running post-call response scan"
-        )
+        verbose_proxy_logger.debug("Azure Prompt Shield: Running post-call response scan")
 
         return response
 

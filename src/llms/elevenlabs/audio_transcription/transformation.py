@@ -4,9 +4,8 @@ Translates from OpenAI's `/v1/audio/transcriptions` to ElevenLabs's `/v1/speech-
 
 from typing import List, Optional, Union
 
-from httpx import Headers, Response
-
 import litellm
+from httpx import Headers, Response
 from litellm.litellm_core_utils.audio_utils.utils import process_audio_file
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.secret_managers.main import get_secret_str
@@ -53,9 +52,7 @@ class ElevenLabsAudioTranscriptionConfig(BaseAudioTranscriptionConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, Headers]
     ) -> BaseLLMException:
-        return ElevenLabsException(
-            message=error_message, status_code=status_code, headers=headers
-        )
+        return ElevenLabsException(message=error_message, status_code=status_code, headers=headers)
 
     def transform_audio_transcription_request(
         self,
@@ -66,20 +63,19 @@ class ElevenLabsAudioTranscriptionConfig(BaseAudioTranscriptionConfig):
     ) -> AudioTranscriptionRequestData:
         """
         Transforms the audio transcription request for ElevenLabs API.
-        
+
         Returns AudioTranscriptionRequestData with both form data and files.
-        
+
         Returns:
             AudioTranscriptionRequestData: Structured data with form data and files
         """
-        
+
         # Use common utility to process the audio file
         processed_audio = process_audio_file(audio_file)
-        
+
         # Prepare form data
         form_data = {"model_id": model}
 
-        
         #########################################################
         # Add OpenAI Compatible Parameters
         #########################################################
@@ -87,29 +83,31 @@ class ElevenLabsAudioTranscriptionConfig(BaseAudioTranscriptionConfig):
             if key in self.get_supported_openai_params(model) and value is not None:
                 # Convert values to strings for form data, but skip None values
                 form_data[key] = str(value)
-        
+
         #########################################################
         # Add Provider Specific Parameters
         #########################################################
         provider_specific_params = self.get_provider_specific_params(
             model=model,
             optional_params=optional_params,
-            openai_params=self.get_supported_openai_params(model)
+            openai_params=self.get_supported_openai_params(model),
         )
 
         for key, value in provider_specific_params.items():
             form_data[key] = str(value)
         #########################################################
         #########################################################
-        
-        # Prepare files
-        files = {"file": (processed_audio.filename, processed_audio.file_content, processed_audio.content_type)}
-        
-        return AudioTranscriptionRequestData(
-            data=form_data,
-            files=files
-        )
 
+        # Prepare files
+        files = {
+            "file": (
+                processed_audio.filename,
+                processed_audio.file_content,
+                processed_audio.content_type,
+            )
+        }
+
+        return AudioTranscriptionRequestData(data=form_data, files=files)
 
     def transform_audio_transcription_response(
         self,
@@ -130,18 +128,20 @@ class ElevenLabsAudioTranscriptionConfig(BaseAudioTranscriptionConfig):
             # Add additional metadata matching OpenAI format
             response["task"] = "transcribe"
             response["language"] = response_json.get("language_code", "unknown")
-            
+
             # Map ElevenLabs words to OpenAI format
             if "words" in response_json:
                 response["words"] = []
                 for word_data in response_json["words"]:
                     # Only include actual words, skip spacing and audio events
                     if word_data.get("type") == "word":
-                        response["words"].append({
-                            "word": word_data.get("text", ""),
-                            "start": word_data.get("start", 0),
-                            "end": word_data.get("end", 0)
-                        })
+                        response["words"].append(
+                            {
+                                "word": word_data.get("text", ""),
+                                "start": word_data.get("start", 0),
+                                "end": word_data.get("end", 0),
+                            }
+                        )
 
             # Store full response in hidden params
             response._hidden_params = response_json
@@ -163,9 +163,7 @@ class ElevenLabsAudioTranscriptionConfig(BaseAudioTranscriptionConfig):
         stream: Optional[bool] = None,
     ) -> str:
         if api_base is None:
-            api_base = (
-                get_secret_str("ELEVENLABS_API_BASE") or "https://api.elevenlabs.io"
-            )
+            api_base = get_secret_str("ELEVENLABS_API_BASE") or "https://api.elevenlabs.io"
         api_base = api_base.rstrip("/")  # Remove trailing slash if present
 
         # ElevenLabs speech-to-text endpoint
@@ -194,4 +192,4 @@ class ElevenLabsAudioTranscriptionConfig(BaseAudioTranscriptionConfig):
         }
 
         headers.update(auth_header)
-        return headers 
+        return headers

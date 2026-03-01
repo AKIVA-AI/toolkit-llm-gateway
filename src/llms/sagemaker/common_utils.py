@@ -2,7 +2,6 @@ import json
 from typing import AsyncIterator, Iterator, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm import verbose_logger
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
@@ -31,12 +30,8 @@ class AWSEventStreamDecoder:
         self.content_blocks: List = []
         self.is_messages_api = is_messages_api
 
-    def _chunk_parser_messages_api(
-        self, chunk_data: dict
-    ) -> StreamingChatCompletionChunk:
-        openai_chunk = StreamingChatCompletionChunk(
-            **{"model": self.model, **chunk_data}
-        )
+    def _chunk_parser_messages_api(self, chunk_data: dict) -> StreamingChatCompletionChunk:
+        openai_chunk = StreamingChatCompletionChunk(**{"model": self.model, **chunk_data})
 
         return openai_chunk
 
@@ -80,10 +75,7 @@ class AWSEventStreamDecoder:
                 message = self._parse_message_from_event(event)
                 if message:
                     # remove data: prefix and "\n\n" at the end
-                    message = (
-                        litellm.CustomStreamWrapper._strip_sse_data_from_chunk(message)
-                        or ""
-                    )
+                    message = litellm.CustomStreamWrapper._strip_sse_data_from_chunk(message) or ""
                     message = message.replace("\n\n", "")
 
                     # Accumulate JSON data
@@ -112,9 +104,7 @@ class AWSEventStreamDecoder:
                     yield self._chunk_parser(chunk_data=_data)
             except json.JSONDecodeError:
                 # Handle or log any unparseable data at the end
-                verbose_logger.error(
-                    f"Warning: Unparseable JSON data remained: {accumulated_json}"
-                )
+                verbose_logger.error(f"Warning: Unparseable JSON data remained: {accumulated_json}")
                 yield None
 
     async def aiter_bytes(
@@ -132,15 +122,10 @@ class AWSEventStreamDecoder:
                 try:
                     message = self._parse_message_from_event(event)
                     if message:
-                        verbose_logger.debug(
-                            "sagemaker  parsed chunk bytes %s", message
-                        )
+                        verbose_logger.debug("sagemaker  parsed chunk bytes %s", message)
                         # remove data: prefix and "\n\n" at the end
                         message = (
-                            litellm.CustomStreamWrapper._strip_sse_data_from_chunk(
-                                message
-                            )
-                            or ""
+                            litellm.CustomStreamWrapper._strip_sse_data_from_chunk(message) or ""
                         )
                         message = message.replace("\n\n", "")
 
@@ -179,9 +164,7 @@ class AWSEventStreamDecoder:
                     yield self._chunk_parser(chunk_data=_data)
             except json.JSONDecodeError:
                 # Handle or log any unparseable data at the end
-                verbose_logger.error(
-                    f"Warning: Unparseable JSON data remained: {accumulated_json}"
-                )
+                verbose_logger.error(f"Warning: Unparseable JSON data remained: {accumulated_json}")
                 yield None
             except Exception as e:
                 verbose_logger.error(f"Final error parsing accumulated JSON: {e}")
@@ -213,9 +196,7 @@ def get_response_stream_shape():
         from botocore.model import ServiceModel
 
         loader = Loader()
-        sagemaker_service_dict = loader.load_service_model(
-            "sagemaker-runtime", "service-2"
-        )
+        sagemaker_service_dict = loader.load_service_model("sagemaker-runtime", "service-2")
         sagemaker_service_model = ServiceModel(sagemaker_service_dict)
         _response_stream_shape_cache = sagemaker_service_model.shape_for(
             "InvokeEndpointWithResponseStreamOutput"

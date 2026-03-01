@@ -5,7 +5,6 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
     convert_content_list_to_str,
@@ -212,9 +211,7 @@ class HuggingFaceEmbeddingConfig(BaseConfig):
         task = litellm_params.get("task", None)
         ## VALIDATE API FORMAT
         if task is None or not isinstance(task, str) or task not in hf_task_list:
-            raise Exception(
-                "Invalid hf task - {}. Valid formats - {}.".format(task, hf_tasks)
-            )
+            raise Exception("Invalid hf task - {}. Valid formats - {}.".format(task, hf_tasks))
 
         ## Load Config
         config = litellm.HuggingFaceEmbeddingConfig.get_config()
@@ -269,12 +266,8 @@ class HuggingFaceEmbeddingConfig(BaseConfig):
                 model_prompt_details = litellm.custom_prompt_dict[model]
                 prompt = custom_prompt(
                     role_dict=model_prompt_details.get("roles") or {},
-                    initial_prompt_value=model_prompt_details.get(
-                        "initial_prompt_value", ""
-                    ),
-                    final_prompt_value=model_prompt_details.get(
-                        "final_prompt_value", ""
-                    ),
+                    initial_prompt_value=model_prompt_details.get("initial_prompt_value", ""),
+                    final_prompt_value=model_prompt_details.get("final_prompt_value", ""),
                     messages=messages,
                 )
             else:
@@ -298,12 +291,8 @@ class HuggingFaceEmbeddingConfig(BaseConfig):
                 model_prompt_details = litellm.custom_prompt_dict[model]
                 prompt = custom_prompt(
                     role_dict=model_prompt_details.get("roles", {}),
-                    initial_prompt_value=model_prompt_details.get(
-                        "initial_prompt_value", ""
-                    ),
-                    final_prompt_value=model_prompt_details.get(
-                        "final_prompt_value", ""
-                    ),
+                    initial_prompt_value=model_prompt_details.get("initial_prompt_value", ""),
+                    final_prompt_value=model_prompt_details.get("final_prompt_value", ""),
                     bos_token=model_prompt_details.get("bos_token", ""),
                     eos_token=model_prompt_details.get("eos_token", ""),
                     messages=messages,
@@ -373,9 +362,7 @@ class HuggingFaceEmbeddingConfig(BaseConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, httpx.Headers]
     ) -> BaseLLMException:
-        return HuggingFaceError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return HuggingFaceError(status_code=status_code, message=error_message, headers=headers)
 
     def _convert_streamed_response_to_complete_response(
         self,
@@ -443,9 +430,9 @@ class HuggingFaceEmbeddingConfig(BaseConfig):
                 "details" in completion_response[0]
                 and "tokens" in completion_response[0]["details"]
             ):
-                model_response.choices[0].finish_reason = completion_response[0][
-                    "details"
-                ]["finish_reason"]
+                model_response.choices[0].finish_reason = completion_response[0]["details"][
+                    "finish_reason"
+                ]
                 sum_logprob = 0
                 for token in completion_response[0]["details"]["tokens"]:
                     if token["logprob"] is not None:
@@ -502,9 +489,7 @@ class HuggingFaceEmbeddingConfig(BaseConfig):
             completion_tokens = 0
             try:
                 completion_tokens = len(
-                    encoding.encode(
-                        model_response["choices"][0]["message"].get("content", "")
-                    )
+                    encoding.encode(model_response["choices"][0]["message"].get("content", ""))
                 )  ##[TODO] use the llama2 tokenizer here
             except Exception:
                 # this should remain non blocking we should not block a response returning if calculating usage fails
@@ -540,10 +525,7 @@ class HuggingFaceEmbeddingConfig(BaseConfig):
         ## Some servers might return streaming responses even though stream was not set to true. (e.g. Baseten)
         task = litellm_params.get("task", None)
         is_streamed = False
-        if (
-            raw_response.__dict__["headers"].get("Content-Type", "")
-            == "text/event-stream"
-        ):
+        if raw_response.__dict__["headers"].get("Content-Type", "") == "text/event-stream":
             is_streamed = True
 
         # iterate over the complete streamed response, and return the final answer

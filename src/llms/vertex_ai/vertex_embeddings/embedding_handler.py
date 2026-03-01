@@ -1,7 +1,6 @@
 from typing import Literal, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObject
 from litellm.llms.custom_httpx.http_handler import (
@@ -74,7 +73,7 @@ class VertexEmbedding(VertexBase):
         )
         # Extract use_psc_endpoint_format from optional_params
         use_psc_endpoint_format = optional_params.get("use_psc_endpoint_format", False)
-        
+
         auth_header, api_base = self._get_token_and_url(
             model=model,
             gemini_api_key=gemini_api_key,
@@ -125,14 +124,10 @@ class VertexEmbedding(VertexBase):
 
         _json_response = response.json()
         ## LOGGING POST-CALL
-        logging_obj.post_call(
-            input=input, api_key=None, original_response=_json_response
-        )
+        logging_obj.post_call(input=input, api_key=None, original_response=_json_response)
 
-        model_response = (
-            litellm.vertexAITextEmbeddingConfig.transform_vertex_response_to_openai(
-                response=_json_response, model=model, model_response=model_response
-            )
+        model_response = litellm.vertexAITextEmbeddingConfig.transform_vertex_response_to_openai(
+            response=_json_response, model=model, model_response=model_response
         )
 
         return model_response
@@ -170,7 +165,7 @@ class VertexEmbedding(VertexBase):
         )
         # Extract use_psc_endpoint_format from optional_params
         use_psc_endpoint_format = optional_params.get("use_psc_endpoint_format", False)
-        
+
         auth_header, api_base = self._get_token_and_url(
             model=model,
             gemini_api_key=gemini_api_key,
@@ -223,14 +218,10 @@ class VertexEmbedding(VertexBase):
 
         _json_response = response.json()
         ## LOGGING POST-CALL
-        logging_obj.post_call(
-            input=input, api_key=None, original_response=_json_response
-        )
+        logging_obj.post_call(input=input, api_key=None, original_response=_json_response)
 
-        model_response = (
-            litellm.vertexAITextEmbeddingConfig.transform_vertex_response_to_openai(
-                response=_json_response, model=model, model_response=model_response
-            )
+        model_response = litellm.vertexAITextEmbeddingConfig.transform_vertex_response_to_openai(
+            response=_json_response, model=model, model_response=model_response
         )
 
         return model_response

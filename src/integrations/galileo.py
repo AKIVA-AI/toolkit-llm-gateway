@@ -1,8 +1,6 @@
 import os
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.integrations.custom_logger import CustomLogger
@@ -10,6 +8,7 @@ from litellm.llms.custom_httpx.http_handler import (
     get_async_httpx_client,
     httpxSpecialProvider,
 )
+from pydantic import BaseModel, Field
 
 
 # from here: https://docs.rungalileo.io/galileo/gen-ai-studio-products/galileo-observe/how-to/logging-data-via-restful-apis#structuring-your-records
@@ -26,9 +25,7 @@ class LLMResponse(BaseModel):
         default=None,
         description="Optional. When available, logprobs are used to compute Uncertainty.",
     )
-    created_at: str = Field(
-        ..., description='timestamp constructed in "%Y-%m-%dT%H:%M:%S" format'
-    )
+    created_at: str = Field(..., description='timestamp constructed in "%Y-%m-%dT%H:%M:%S" format')
     tags: Optional[List[str]] = None
     user_metadata: Optional[Dict[str, Any]] = None
 
@@ -76,17 +73,11 @@ class GalileoObserve(CustomLogger):
             or isinstance(response_obj, litellm.EmbeddingResponse)
         ):
             output = None
-        elif response_obj is not None and isinstance(
-            response_obj, litellm.ModelResponse
-        ):
+        elif response_obj is not None and isinstance(response_obj, litellm.ModelResponse):
             output = response_obj["choices"][0]["message"].json()
-        elif response_obj is not None and isinstance(
-            response_obj, litellm.TextCompletionResponse
-        ):
+        elif response_obj is not None and isinstance(response_obj, litellm.TextCompletionResponse):
             output = response_obj.choices[0].text
-        elif response_obj is not None and isinstance(
-            response_obj, litellm.ImageResponse
-        ):
+        elif response_obj is not None and isinstance(response_obj, litellm.ImageResponse):
             output = response_obj["data"]
 
         return output
@@ -98,17 +89,13 @@ class GalileoObserve(CustomLogger):
 
         _latency_ms = int((end_time - start_time).total_seconds() * 1000)
         _call_type = kwargs.get("call_type", "litellm")
-        input_text = litellm.utils.get_formatted_prompt(
-            data=kwargs, call_type=_call_type
-        )
+        input_text = litellm.utils.get_formatted_prompt(data=kwargs, call_type=_call_type)
 
         _usage = response_obj.get("usage", {}) or {}
         num_input_tokens = _usage.get("prompt_tokens", 0)
         num_output_tokens = _usage.get("completion_tokens", 0)
 
-        output_text = self.get_output_str_from_response(
-            response_obj=response_obj, kwargs=kwargs
-        )
+        output_text = self.get_output_str_from_response(response_obj=response_obj, kwargs=kwargs)
 
         if output_text is not None:
             request_record = LLMResponse(
@@ -141,9 +128,7 @@ class GalileoObserve(CustomLogger):
         )
 
         if response.status_code == 200:
-            verbose_logger.debug(
-                "Galileo Logger:successfully flushed in memory records"
-            )
+            verbose_logger.debug("Galileo Logger:successfully flushed in memory records")
             self.in_memory_records = []
         else:
             verbose_logger.debug("Galileo Logger: failed to flush in memory records")

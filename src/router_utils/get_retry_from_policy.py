@@ -43,10 +43,7 @@ def get_num_retries_from_retry_policy(
     if isinstance(retry_policy, dict):
         retry_policy = RetryPolicy(**retry_policy)
 
-    if (
-        isinstance(exception, BadRequestError)
-        and retry_policy.BadRequestErrorRetries is not None
-    ):
+    if isinstance(exception, BadRequestError) and retry_policy.BadRequestErrorRetries is not None:
         return retry_policy.BadRequestErrorRetries
     if (
         isinstance(exception, AuthenticationError)
@@ -55,10 +52,7 @@ def get_num_retries_from_retry_policy(
         return retry_policy.AuthenticationErrorRetries
     if isinstance(exception, Timeout) and retry_policy.TimeoutErrorRetries is not None:
         return retry_policy.TimeoutErrorRetries
-    if (
-        isinstance(exception, RateLimitError)
-        and retry_policy.RateLimitErrorRetries is not None
-    ):
+    if isinstance(exception, RateLimitError) and retry_policy.RateLimitErrorRetries is not None:
         return retry_policy.RateLimitErrorRetries
     if (
         isinstance(exception, ContentPolicyViolationError)

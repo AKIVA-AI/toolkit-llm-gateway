@@ -6,8 +6,6 @@ import inspect
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union, cast
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-
 from litellm._logging import verbose_proxy_logger
 from litellm.constants import DEFAULT_MAX_RECURSE_DEPTH
 from litellm.integrations.custom_guardrail import CustomGuardrail
@@ -33,6 +31,7 @@ from litellm.types.guardrails import (
     SupportedGuardrailIntegrations,
     ToolPermissionGuardrailConfigModel,
 )
+from pydantic import BaseModel
 
 #### GUARDRAILS ENDPOINTS ####
 
@@ -271,9 +270,7 @@ async def create_guardrail(request: CreateGuardrailRequest):
         guardrail_id = result.get("guardrail_id", "Unknown")
 
         try:
-            IN_MEMORY_GUARDRAIL_HANDLER.initialize_guardrail(
-                guardrail=cast(Guardrail, result)
-            )
+            IN_MEMORY_GUARDRAIL_HANDLER.initialize_guardrail(guardrail=cast(Guardrail, result))
             verbose_proxy_logger.info(
                 f"Immediate sync: Successfully initialized guardrail '{guardrail_name}' (ID: {guardrail_id})"
             )
@@ -531,13 +528,9 @@ async def patch_guardrail(guardrail_id: str, request: PatchGuardrailRequest):
         )
 
         # Update litellm_params if default_on is provided or pii_entities_config is provided
-        litellm_params = LitellmParams(
-            **dict(existing_guardrail.get("litellm_params", {}))
-        )
+        litellm_params = LitellmParams(**dict(existing_guardrail.get("litellm_params", {})))
         if request.litellm_params is not None:
-            requested_litellm_params = request.litellm_params.model_dump(
-                exclude_unset=True
-            )
+            requested_litellm_params = request.litellm_params.model_dump(exclude_unset=True)
             litellm_params_dict = litellm_params.model_dump(exclude_unset=True)
             litellm_params_dict.update(requested_litellm_params)
             litellm_params = LitellmParams(**litellm_params_dict)
@@ -643,9 +636,7 @@ async def get_guardrail_info(guardrail_id: str):
             guardrail_id=guardrail_id, prisma_client=prisma_client
         )
         if result is None:
-            result = IN_MEMORY_GUARDRAIL_HANDLER.get_guardrail_by_id(
-                guardrail_id=guardrail_id
-            )
+            result = IN_MEMORY_GUARDRAIL_HANDLER.get_guardrail_by_id(guardrail_id=guardrail_id)
             guardrail_definition_location = GUARDRAIL_DEFINITION_LOCATION.CONFIG
 
         if result is None:
@@ -653,9 +644,7 @@ async def get_guardrail_info(guardrail_id: str):
                 status_code=404, detail=f"Guardrail with ID {guardrail_id} not found"
             )
 
-        litellm_params: Optional[Union[LitellmParams, dict]] = result.get(
-            "litellm_params"
-        )
+        litellm_params: Optional[Union[LitellmParams, dict]] = result.get("litellm_params")
         result_litellm_params_dict = (
             litellm_params.model_dump(exclude_none=True)
             if isinstance(litellm_params, LitellmParams)
@@ -801,9 +790,7 @@ async def validate_blocked_words_file(request: Dict[str, str]):
                     f"Entry {idx}: action must be 'BLOCK' or 'MASK', got '{word_data['action']}'"
                 )
 
-            if "description" in word_data and not isinstance(
-                word_data["description"], str
-            ):
+            if "description" in word_data and not isinstance(word_data["description"], str):
                 errors.append(f"Entry {idx}: 'description' must be a string")
 
         if errors:
@@ -845,9 +832,7 @@ def _get_field_type_from_annotation(field_annotation: Any) -> str:
         return "dict"
 
     # Handle Literal types
-    if hasattr(field_annotation, "__origin__") and hasattr(
-        field_annotation, "__args__"
-    ):
+    if hasattr(field_annotation, "__origin__") and hasattr(field_annotation, "__args__"):
         # Check for Literal types (Python 3.8+)
         origin = field_annotation.__origin__
         if hasattr(origin, "__name__") and origin.__name__ == "Literal":
@@ -940,8 +925,7 @@ def _should_skip_optional_params(field_name: str, field_annotation: Any) -> bool
 
     # Check if the annotation is still a generic TypeVar (not specialized)
     if isinstance(field_annotation, TypeVar) or (
-        hasattr(field_annotation, "__origin__")
-        and field_annotation.__origin__ is TypeVar
+        hasattr(field_annotation, "__origin__") and field_annotation.__origin__ is TypeVar
     ):
         return True
 
@@ -954,9 +938,7 @@ def _should_skip_optional_params(field_name: str, field_annotation: Any) -> bool
 
     # Handle Optional[T] where T is still a TypeVar
     if hasattr(field_annotation, "__args__"):
-        non_none_args = [
-            arg for arg in field_annotation.__args__ if arg is not type(None)
-        ]
+        non_none_args = [arg for arg in field_annotation.__args__ if arg is not type(None)]
         if non_none_args and isinstance(non_none_args[0], TypeVar):
             return True
 
@@ -1048,9 +1030,7 @@ def _extract_fields_recursive(
         field_annotation = field.annotation
 
         # Skip optional_params if it's not meaningfully overridden
-        if _should_skip_optional_params(
-            field_name=field_name, field_annotation=field_annotation
-        ):
+        if _should_skip_optional_params(field_name=field_name, field_annotation=field_annotation):
             continue
 
         # Handle Optional types and get the actual type

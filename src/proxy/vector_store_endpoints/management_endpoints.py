@@ -12,9 +12,8 @@ import copy
 import json
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-
 import litellm
+from fastapi import APIRouter, Depends, HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.litellm_core_utils.safe_json_dumps import safe_dumps
 from litellm.proxy._types import (
@@ -65,10 +64,8 @@ async def new_vector_store(
 
     try:
         # Check if vector store already exists
-        existing_vector_store = (
-            await prisma_client.db.litellm_managedvectorstorestable.find_unique(
-                where={"vector_store_id": vector_store.get("vector_store_id")}
-            )
+        existing_vector_store = await prisma_client.db.litellm_managedvectorstorestable.find_unique(
+            where={"vector_store_id": vector_store.get("vector_store_id")}
         )
         if existing_vector_store is not None:
             raise HTTPException(
@@ -85,19 +82,17 @@ async def new_vector_store(
         litellm_params_json: Optional[str] = None
         _input_litellm_params: dict = vector_store.get("litellm_params", {}) or {}
         if _input_litellm_params is not None:
-            litellm_params_dict = GenericLiteLLMParams(
-                **_input_litellm_params
-            ).model_dump(exclude_none=True)
+            litellm_params_dict = GenericLiteLLMParams(**_input_litellm_params).model_dump(
+                exclude_none=True
+            )
             litellm_params_json = safe_dumps(litellm_params_dict)
             del vector_store["litellm_params"]
 
-        _new_vector_store = (
-            await prisma_client.db.litellm_managedvectorstorestable.create(
-                data={
-                    **vector_store,
-                    "litellm_params": litellm_params_json,
-                }
-            )
+        _new_vector_store = await prisma_client.db.litellm_managedvectorstorestable.create(
+            data={
+                **vector_store,
+                "litellm_params": litellm_params_json,
+            }
         )
 
         new_vector_store: LiteLLM_ManagedVectorStore = LiteLLM_ManagedVectorStore(
@@ -147,9 +142,7 @@ async def list_vector_stores(
         # Get in-memory vector stores
         in_memory_vector_stores: List[LiteLLM_ManagedVectorStore] = []
         if litellm.vector_store_registry is not None:
-            in_memory_vector_stores = copy.deepcopy(
-                litellm.vector_store_registry.vector_stores
-            )
+            in_memory_vector_stores = copy.deepcopy(litellm.vector_store_registry.vector_stores)
 
         # Get vector stores from database
         vector_stores_from_db = await VectorStoreRegistry._get_vector_stores_from_db(
@@ -204,10 +197,8 @@ async def delete_vector_store(
 
     try:
         # Check if vector store exists
-        existing_vector_store = (
-            await prisma_client.db.litellm_managedvectorstorestable.find_unique(
-                where={"vector_store_id": data.vector_store_id}
-            )
+        existing_vector_store = await prisma_client.db.litellm_managedvectorstorestable.find_unique(
+            where={"vector_store_id": data.vector_store_id}
         )
         if existing_vector_store is None:
             raise HTTPException(
@@ -249,8 +240,10 @@ async def get_vector_store_info(
 
     try:
         if litellm.vector_store_registry is not None:
-            vector_store = litellm.vector_store_registry.get_litellm_managed_vector_store_from_registry(
-                vector_store_id=data.vector_store_id
+            vector_store = (
+                litellm.vector_store_registry.get_litellm_managed_vector_store_from_registry(
+                    vector_store_id=data.vector_store_id
+                )
             )
             if vector_store is not None:
                 vector_store_metadata = vector_store.get("vector_store_metadata")
@@ -265,10 +258,7 @@ async def get_vector_store_info(
                     vector_store_id=vector_store.get("vector_store_id") or "",
                     custom_llm_provider=vector_store.get("custom_llm_provider") or "",
                     vector_store_name=vector_store.get("vector_store_name") or None,
-                    vector_store_description=vector_store.get(
-                        "vector_store_description"
-                    )
-                    or None,
+                    vector_store_description=vector_store.get("vector_store_description") or None,
                     vector_store_metadata=parsed_metadata,
                     created_at=vector_store.get("created_at") or None,
                     updated_at=vector_store.get("updated_at") or None,
@@ -277,10 +267,8 @@ async def get_vector_store_info(
                 )
                 return {"vector_store": vector_store_pydantic_obj}
 
-        vector_store = (
-            await prisma_client.db.litellm_managedvectorstorestable.find_unique(
-                where={"vector_store_id": data.vector_store_id}
-            )
+        vector_store = await prisma_client.db.litellm_managedvectorstorestable.find_unique(
+            where={"vector_store_id": data.vector_store_id}
         )
         if vector_store is None:
             raise HTTPException(
@@ -314,9 +302,7 @@ async def update_vector_store(
         update_data = data.model_dump(exclude_unset=True)
         vector_store_id = update_data.pop("vector_store_id")
         if update_data.get("vector_store_metadata") is not None:
-            update_data["vector_store_metadata"] = safe_dumps(
-                update_data["vector_store_metadata"]
-            )
+            update_data["vector_store_metadata"] = safe_dumps(update_data["vector_store_metadata"])
 
         updated = await prisma_client.db.litellm_managedvectorstorestable.update(
             where={"vector_store_id": vector_store_id},

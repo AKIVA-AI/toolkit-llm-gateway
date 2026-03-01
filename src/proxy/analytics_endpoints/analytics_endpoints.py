@@ -4,7 +4,6 @@ from typing import List, Optional
 
 import fastapi
 from fastapi import APIRouter, Depends, HTTPException, status
-
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
 
@@ -90,9 +89,7 @@ async def get_global_activity(
                 sl."call_type",
                 sl."model"
         """
-        db_response = await prisma_client.db.query_raw(
-            sql_query, start_date_obj, end_date_obj
-        )
+        db_response = await prisma_client.db.query_raw(sql_query, start_date_obj, end_date_obj)
 
         if db_response is None:
             return []

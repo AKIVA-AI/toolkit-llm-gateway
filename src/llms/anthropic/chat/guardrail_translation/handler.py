@@ -77,8 +77,8 @@ class AnthropicMessagesHandler(BaseTranslation):
 
         texts_to_check: List[str] = []
         images_to_check: List[str] = []
-        tools_to_check: List[ChatCompletionToolParam] = (
-            chat_completion_compatible_request.get("tools", [])
+        tools_to_check: List[ChatCompletionToolParam] = chat_completion_compatible_request.get(
+            "tools", []
         )
         task_mappings: List[Tuple[int, Optional[int]]] = []
         # Track (message_index, content_index) for each text
@@ -119,9 +119,7 @@ class AnthropicMessagesHandler(BaseTranslation):
                 task_mappings=task_mappings,
             )
 
-        verbose_proxy_logger.debug(
-            "Anthropic Messages: Processed input messages: %s", messages
-        )
+        verbose_proxy_logger.debug("Anthropic Messages: Processed input messages: %s", messages)
 
         return data
 
@@ -209,9 +207,7 @@ class AnthropicMessagesHandler(BaseTranslation):
 
             elif isinstance(content, list) and content_idx_optional is not None:
                 # Replace specific text item in list content
-                messages[msg_idx]["content"][content_idx_optional][
-                    "text"
-                ] = guardrail_response
+                messages[msg_idx]["content"][content_idx_optional]["text"] = guardrail_response
 
     async def process_output_response(
         self,
@@ -272,9 +268,7 @@ class AnthropicMessagesHandler(BaseTranslation):
             request_data: dict = {"response": response}
 
             # Add user API key metadata with prefixed keys
-            user_metadata = self.transform_user_api_key_dict_to_metadata(
-                user_api_key_dict
-            )
+            user_metadata = self.transform_user_api_key_dict_to_metadata(user_api_key_dict)
             if user_metadata:
                 request_data["litellm_metadata"] = user_metadata
 
@@ -300,9 +294,7 @@ class AnthropicMessagesHandler(BaseTranslation):
                 task_mappings=task_mappings,
             )
 
-        verbose_proxy_logger.debug(
-            "Anthropic Messages: Processed output response: %s", response
-        )
+        verbose_proxy_logger.debug("Anthropic Messages: Processed output response: %s", response)
 
         return response
 
@@ -319,11 +311,13 @@ class AnthropicMessagesHandler(BaseTranslation):
         Get the string so far, check the apply guardrail to the string so far, and return the list of responses so far.
         """
         string_so_far = self.get_streaming_string_so_far(responses_so_far)
-        _guardrailed_inputs = await guardrail_to_apply.apply_guardrail(  # allow rejecting the response, if invalid
-            inputs={"texts": [string_so_far]},
-            request_data={},
-            input_type="response",
-            logging_obj=litellm_logging_obj,
+        _guardrailed_inputs = (
+            await guardrail_to_apply.apply_guardrail(  # allow rejecting the response, if invalid
+                inputs={"texts": [string_so_far]},
+                request_data={},
+                input_type="response",
+                logging_obj=litellm_logging_obj,
+            )
         )
         return responses_so_far
 

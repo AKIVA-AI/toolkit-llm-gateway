@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import click
 import httpx
 from dotenv import load_dotenv
-
 from litellm.constants import DEFAULT_NUM_WORKERS_LITELLM_PROXY
 from litellm.secret_managers.main import get_secret_bool
 
@@ -203,9 +202,7 @@ class ProxyInitializationHelpers:
                 self.application = app  # FastAPI app
                 super().__init__()
 
-                _endpoint_str = (
-                    f"curl --location 'http://0.0.0.0:{port}/chat/completions' \\"
-                )
+                _endpoint_str = f"curl --location 'http://0.0.0.0:{port}/chat/completions' \\"
                 curl_command = (
                     _endpoint_str
                     + """
@@ -310,9 +307,7 @@ class ProxyInitializationHelpers:
 
 
 @click.command()
-@click.option(
-    "--host", default="0.0.0.0", help="Host for the server to listen on.", envvar="HOST"
-)
+@click.option("--host", default="0.0.0.0", help="Host for the server to listen on.", envvar="HOST")
 @click.option("--port", default=4000, help="Port to bind the server to.", envvar="PORT")
 @click.option(
     "--num_workers",
@@ -326,17 +321,13 @@ class ProxyInitializationHelpers:
     default="2024-07-01-preview",
     help="For azure - pass in the api version.",
 )
-@click.option(
-    "--model", "-m", default=None, help="The model name to pass to litellm expects"
-)
+@click.option("--model", "-m", default=None, help="The model name to pass to litellm expects")
 @click.option(
     "--alias",
     default=None,
     help='The alias for the model - use this to give a litellm model name (e.g. "huggingface/codellama/CodeLlama-7b-Instruct-hf") a more user-friendly name ("codellama")',
 )
-@click.option(
-    "--add_key", default=None, help="The model name to pass to litellm expects"
-)
+@click.option("--add_key", default=None, help="The model name to pass to litellm expects")
 @click.option("--headers", default=None, help="headers for the API call")
 @click.option("--save", is_flag=True, type=bool, help="Save the model-specific config")
 @click.option(
@@ -362,12 +353,8 @@ class ProxyInitializationHelpers:
     type=bool,
     help="To use celery workers for async endpoints",
 )
-@click.option(
-    "--temperature", default=None, type=float, help="Set temperature for the model"
-)
-@click.option(
-    "--max_tokens", default=None, type=int, help="Set max tokens for the model"
-)
+@click.option("--temperature", default=None, type=float, help="Set temperature for the model")
+@click.option("--max_tokens", default=None, type=int, help="Set max tokens for the model")
 @click.option(
     "--request_timeout",
     default=None,
@@ -556,9 +543,7 @@ def run_server(  # noqa: PLR0915
                 save_worker_config,
             )
         except ModuleNotFoundError as e:
-            raise ModuleNotFoundError(
-                f"Missing dependency {e}. Run `pip install 'litellm[proxy]'`"
-            )
+            raise ModuleNotFoundError(f"Missing dependency {e}. Run `pip install 'litellm[proxy]'`")
         except ImportError as e:
             if "litellm[proxy]" in str(e):
                 # user is missing a proxy dependency, ask them to pip install litellm[proxy]
@@ -625,9 +610,7 @@ def run_server(  # noqa: PLR0915
             db_name = os.getenv("DATABASE_NAME")
             db_schema = os.getenv("DATABASE_SCHEMA")
 
-            token = generate_iam_auth_token(
-                db_host=db_host, db_port=db_port, db_user=db_user
-            )
+            token = generate_iam_auth_token(db_host=db_host, db_port=db_port, db_user=db_user)
 
             # print(f"token: {token}")
             _db_url = f"postgresql://{db_user}:{token}@{db_host}:{db_port}/{db_name}"
@@ -641,10 +624,7 @@ def run_server(  # noqa: PLR0915
 
         from litellm.secret_managers.aws_secret_manager import decrypt_env_var
 
-        if (
-            os.getenv("USE_AWS_KMS", None) is not None
-            and os.getenv("USE_AWS_KMS") == "True"
-        ):
+        if os.getenv("USE_AWS_KMS", None) is not None and os.getenv("USE_AWS_KMS") == "True":
             ## V2 IMPLEMENTATION OF AWS KMS - USER WANTS TO DECRYPT MULTIPLE KEYS IN THEIR ENV
             new_env_var = decrypt_env_var()
 
@@ -661,9 +641,7 @@ def run_server(  # noqa: PLR0915
                 import asyncio
 
             except Exception:
-                raise ImportError(
-                    "yaml needs to be imported. Run - `pip install 'litellm[proxy]'`"
-                )
+                raise ImportError("yaml needs to be imported. Run - `pip install 'litellm[proxy]'`")
 
             proxy_config = ProxyConfig()
             _config = asyncio.run(proxy_config.get_config(config_file_path=config))
@@ -685,21 +663,15 @@ def run_server(  # noqa: PLR0915
             if general_settings is None:
                 general_settings = {}
             ### LOAD KEY MANAGEMENT SETTINGS FIRST (needed for custom secret manager) ###
-            key_management_settings = general_settings.get(
-                "key_management_settings", None
-            )
+            key_management_settings = general_settings.get("key_management_settings", None)
             if key_management_settings is not None:
                 import litellm
 
-                litellm._key_management_settings = KeyManagementSettings(
-                    **key_management_settings
-                )
+                litellm._key_management_settings = KeyManagementSettings(**key_management_settings)
 
             if general_settings:
                 ### LOAD SECRET MANAGER ###
-                key_management_system = general_settings.get(
-                    "key_management_system", None
-                )
+                key_management_system = general_settings.get("key_management_system", None)
                 proxy_config.initialize_secret_manager(
                     key_management_system=key_management_system, config_file_path=config
                 )
@@ -751,10 +723,7 @@ def run_server(  # noqa: PLR0915
                 LiteLLMDatabaseConnectionPool.database_connection_pool_timeout.value
             )
 
-        if (
-            os.getenv("DATABASE_URL", None) is not None
-            or os.getenv("DIRECT_URL", None) is not None
-        ):
+        if os.getenv("DATABASE_URL", None) is not None or os.getenv("DIRECT_URL", None) is not None:
             try:
                 from litellm.secret_managers.main import get_secret
 
@@ -820,9 +789,7 @@ def run_server(  # noqa: PLR0915
         # --- END SEPARATE HEALTH APP LOGIC ---
         # Skip server startup if requested (after all setup is done)
         if skip_server_startup:
-            print(  # noqa
-                "LiteLLM: Setup complete. Skipping server startup as requested."
-            )
+            print("LiteLLM: Setup complete. Skipping server startup as requested.")  # noqa
             return
 
         uvicorn_args = ProxyInitializationHelpers._get_default_unvicorn_init_args(

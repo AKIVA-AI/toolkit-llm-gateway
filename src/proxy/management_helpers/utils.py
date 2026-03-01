@@ -4,9 +4,8 @@ from datetime import datetime
 from functools import wraps
 from typing import Optional, Tuple
 
-from fastapi import HTTPException, Request
-
 import litellm
+from fastapi import HTTPException, Request
 from litellm._logging import verbose_logger
 from litellm._uuid import uuid
 from litellm.proxy._types import (  # key request types; user request types; team request types; customer request types
@@ -32,17 +31,13 @@ from litellm.proxy.common_utils.http_parsing_utils import _read_request_body
 from litellm.proxy.utils import PrismaClient
 
 
-def get_new_internal_user_defaults(
-    user_id: str, user_email: Optional[str] = None
-) -> dict:
+def get_new_internal_user_defaults(user_id: str, user_email: Optional[str] = None) -> dict:
     user_info = litellm.default_internal_user_params or {}
 
     returned_dict: SSOUserDefinedValues = {
         "models": user_info.get("models") or [],
         "max_budget": user_info.get("max_budget", litellm.max_internal_user_budget),
-        "budget_duration": user_info.get(
-            "budget_duration", litellm.internal_user_budget_duration
-        ),
+        "budget_duration": user_info.get("budget_duration", litellm.internal_user_budget_duration),
         "user_email": user_email or user_info.get("user_email", None),
         "user_id": user_id,
         "user_role": "internal_user",
@@ -64,19 +59,19 @@ async def handle_budget_for_entity(
 ) -> Optional[str]:
     """
     Common helper to handle budget creation/updates for entities (organizations, tags, etc).
-    
+
     This function:
     1. Creates a new budget if budget_id is None but budget fields are provided
     2. Updates an existing budget if budget fields are provided and budget_id exists
     3. Returns the budget_id to use (existing or newly created)
-    
+
     Args:
         data: The request object (e.g., TagNewRequest, NewOrganizationRequest, etc.) containing budget fields
         existing_budget_id: The existing budget_id if updating an entity, None if creating new
         user_api_key_dict: User authentication info
         prisma_client: Database client
         litellm_proxy_admin_name: Admin name for audit trail
-        
+
     Returns:
         Optional[str]: The budget_id to use, or None if no budget was created/updated
     """
@@ -102,9 +97,7 @@ async def handle_budget_for_entity(
         elif _budget_data:
             # Create a new budget with the provided fields
             budget_row = LiteLLM_BudgetTable(**_budget_data)
-            new_budget_data = prisma_client.jsonify_object(
-                budget_row.model_dump(exclude_none=True)
-            )
+            new_budget_data = prisma_client.jsonify_object(budget_row.model_dump(exclude_none=True))
 
             _budget = await prisma_client.db.litellm_budgettable.create(
                 data={
@@ -124,9 +117,7 @@ async def handle_budget_for_entity(
         # If budget fields are provided, update the existing budget
         if _budget_data:
             await update_budget(
-                budget_obj=BudgetNewRequest(
-                    budget_id=existing_budget_id, **_budget_data
-                ),
+                budget_obj=BudgetNewRequest(budget_id=existing_budget_id, **_budget_data),
                 user_api_key_dict=user_api_key_dict,
             )
 
@@ -221,20 +212,16 @@ async def add_new_member(
         _budget_id = default_team_budget_id
 
     if _budget_id and returned_user is not None and returned_user.user_id is not None:
-        _returned_team_membership = (
-            await prisma_client.db.litellm_teammembership.create(
-                data={
-                    "team_id": team_id,
-                    "user_id": returned_user.user_id,
-                    "budget_id": _budget_id,
-                },
-                include={"litellm_budget_table": True},
-            )
+        _returned_team_membership = await prisma_client.db.litellm_teammembership.create(
+            data={
+                "team_id": team_id,
+                "user_id": returned_user.user_id,
+                "budget_id": _budget_id,
+            },
+            include={"litellm_budget_table": True},
         )
 
-        returned_team_membership = LiteLLM_TeamMembership(
-            **_returned_team_membership.model_dump()
-        )
+        returned_team_membership = LiteLLM_TeamMembership(**_returned_team_membership.model_dump())
 
     if returned_user is None:
         raise Exception("Unable to update user table with membership information!")
@@ -331,10 +318,7 @@ async def send_management_endpoint_alert(
     }
 
     # Check if alerting is enabled
-    if (
-        proxy_logging_obj is not None
-        and proxy_logging_obj.slack_alerting_instance is not None
-    ):
+    if proxy_logging_obj is not None and proxy_logging_obj.slack_alerting_instance is not None:
         # Virtual Key Events
         if function_name in management_function_to_event_name:
             _event_name: AlertType = management_function_to_event_name[function_name]
@@ -390,9 +374,7 @@ def management_endpoint_wrapper(func):
                     if open_telemetry_logger is not None:
                         if _http_request:
                             _route = _http_request.url.path
-                            _request_body: dict = await _read_request_body(
-                                request=_http_request
-                            )
+                            _request_body: dict = await _read_request_body(request=_http_request)
                             _response = dict(result) if result is not None else None
 
                             logging_payload = ManagementEndpointLoggingPayload(
@@ -424,9 +406,7 @@ def management_endpoint_wrapper(func):
 
             if kwargs is None:
                 kwargs = {}
-            user_api_key_dict: UserAPIKeyAuth = (
-                kwargs.get("user_api_key_dict") or UserAPIKeyAuth()
-            )
+            user_api_key_dict: UserAPIKeyAuth = kwargs.get("user_api_key_dict") or UserAPIKeyAuth()
             parent_otel_span = getattr(user_api_key_dict, "parent_otel_span", None)
             if parent_otel_span is not None:
                 from litellm.proxy.proxy_server import open_telemetry_logger
@@ -435,9 +415,7 @@ def management_endpoint_wrapper(func):
                     _http_request = kwargs.get("http_request")
                     if _http_request:
                         _route = _http_request.url.path
-                        _request_body: dict = await _read_request_body(
-                            request=_http_request
-                        )
+                        _request_body: dict = await _read_request_body(request=_http_request)
                         logging_payload = ManagementEndpointLoggingPayload(
                             route=_route,
                             request_data=_request_body,

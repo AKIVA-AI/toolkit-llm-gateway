@@ -1,7 +1,6 @@
 from typing import List, Literal, Optional, Tuple, Union
 
 import httpx
-
 import litellm
 from litellm.caching.caching import Cache, LiteLLMCacheType
 from litellm.litellm_core_utils.litellm_logging import Logging
@@ -76,7 +75,6 @@ class ContextCachingEndpoints(VertexBase):
             else:
                 url = f"https://{vertex_location}-aiplatform.googleapis.com/v1beta1/projects/{vertex_project}/locations/{vertex_location}/{endpoint}"
 
-
         return self._check_custom_proxy(
             api_base=api_base,
             custom_llm_provider=custom_llm_provider,
@@ -121,7 +119,7 @@ class ContextCachingEndpoints(VertexBase):
             api_base=api_base,
             vertex_project=vertex_project,
             vertex_location=vertex_location,
-            vertex_auth_header=vertex_auth_header
+            vertex_auth_header=vertex_auth_header,
         )
         try:
             ## LOGGING
@@ -140,9 +138,7 @@ class ContextCachingEndpoints(VertexBase):
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 403:
                 return None
-            raise VertexAIError(
-                status_code=e.response.status_code, message=e.response.text
-            )
+            raise VertexAIError(status_code=e.response.status_code, message=e.response.text)
         except Exception as e:
             raise VertexAIError(status_code=500, message=str(e))
         raw_response = resp.json()
@@ -174,7 +170,7 @@ class ContextCachingEndpoints(VertexBase):
         custom_llm_provider: Literal["vertex_ai", "vertex_ai_beta", "gemini"],
         vertex_project: Optional[str],
         vertex_location: Optional[str],
-        vertex_auth_header: Optional[str]
+        vertex_auth_header: Optional[str],
     ) -> Optional[str]:
         """
         Checks if content already cached.
@@ -193,7 +189,7 @@ class ContextCachingEndpoints(VertexBase):
             api_base=api_base,
             vertex_project=vertex_project,
             vertex_location=vertex_location,
-            vertex_auth_header=vertex_auth_header
+            vertex_auth_header=vertex_auth_header,
         )
         try:
             ## LOGGING
@@ -212,9 +208,7 @@ class ContextCachingEndpoints(VertexBase):
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 403:
                 return None
-            raise VertexAIError(
-                status_code=e.response.status_code, message=e.response.text
-            )
+            raise VertexAIError(status_code=e.response.status_code, message=e.response.text)
         except Exception as e:
             raise VertexAIError(status_code=500, message=str(e))
         raw_response = resp.json()
@@ -265,9 +259,7 @@ class ContextCachingEndpoints(VertexBase):
         if cached_content is not None:
             return messages, optional_params, cached_content
 
-        cached_messages, non_cached_messages = separate_cached_messages(
-            messages=messages
-        )
+        cached_messages, non_cached_messages = separate_cached_messages(messages=messages)
 
         if len(cached_messages) == 0:
             return messages, optional_params, None
@@ -281,7 +273,7 @@ class ContextCachingEndpoints(VertexBase):
             api_base=api_base,
             vertex_project=vertex_project,
             vertex_location=vertex_location,
-            vertex_auth_header=vertex_auth_header
+            vertex_auth_header=vertex_auth_header,
         )
 
         headers = {
@@ -303,9 +295,7 @@ class ContextCachingEndpoints(VertexBase):
             client = client
 
         ## CHECK IF CACHED ALREADY
-        generated_cache_key = local_cache_obj.get_cache_key(
-            messages=cached_messages, tools=tools
-        )
+        generated_cache_key = local_cache_obj.get_cache_key(messages=cached_messages, tools=tools)
         google_cache_name = self.check_cache(
             cache_key=generated_cache_key,
             client=client,
@@ -316,21 +306,19 @@ class ContextCachingEndpoints(VertexBase):
             custom_llm_provider=custom_llm_provider,
             vertex_project=vertex_project,
             vertex_location=vertex_location,
-            vertex_auth_header=vertex_auth_header
+            vertex_auth_header=vertex_auth_header,
         )
         if google_cache_name:
             return non_cached_messages, optional_params, google_cache_name
 
         ## TRANSFORM REQUEST
-        cached_content_request_body = (
-            transform_openai_messages_to_gemini_context_caching(
-                model=model,
-                messages=cached_messages,
-                cache_key=generated_cache_key,
-                custom_llm_provider=custom_llm_provider,
-                vertex_project=vertex_project,
-                vertex_location=vertex_location,
-            )
+        cached_content_request_body = transform_openai_messages_to_gemini_context_caching(
+            model=model,
+            messages=cached_messages,
+            cache_key=generated_cache_key,
+            custom_llm_provider=custom_llm_provider,
+            vertex_project=vertex_project,
+            vertex_location=vertex_location,
         )
 
         cached_content_request_body["tools"] = tools
@@ -397,9 +385,7 @@ class ContextCachingEndpoints(VertexBase):
         if cached_content is not None:
             return messages, optional_params, cached_content
 
-        cached_messages, non_cached_messages = separate_cached_messages(
-            messages=messages
-        )
+        cached_messages, non_cached_messages = separate_cached_messages(messages=messages)
 
         if len(cached_messages) == 0:
             return messages, optional_params, None
@@ -413,7 +399,7 @@ class ContextCachingEndpoints(VertexBase):
             api_base=api_base,
             vertex_project=vertex_project,
             vertex_location=vertex_location,
-            vertex_auth_header=vertex_auth_header
+            vertex_auth_header=vertex_auth_header,
         )
 
         headers = {
@@ -432,9 +418,7 @@ class ContextCachingEndpoints(VertexBase):
             client = client
 
         ## CHECK IF CACHED ALREADY
-        generated_cache_key = local_cache_obj.get_cache_key(
-            messages=cached_messages, tools=tools
-        )
+        generated_cache_key = local_cache_obj.get_cache_key(messages=cached_messages, tools=tools)
         google_cache_name = await self.async_check_cache(
             cache_key=generated_cache_key,
             client=client,
@@ -445,22 +429,20 @@ class ContextCachingEndpoints(VertexBase):
             custom_llm_provider=custom_llm_provider,
             vertex_project=vertex_project,
             vertex_location=vertex_location,
-            vertex_auth_header=vertex_auth_header
+            vertex_auth_header=vertex_auth_header,
         )
 
         if google_cache_name:
             return non_cached_messages, optional_params, google_cache_name
 
         ## TRANSFORM REQUEST
-        cached_content_request_body = (
-            transform_openai_messages_to_gemini_context_caching(
-                model=model,
-                messages=cached_messages,
-                cache_key=generated_cache_key,
-                custom_llm_provider=custom_llm_provider,
-                vertex_project=vertex_project,
-                vertex_location=vertex_location,
-            )
+        cached_content_request_body = transform_openai_messages_to_gemini_context_caching(
+            model=model,
+            messages=cached_messages,
+            cache_key=generated_cache_key,
+            custom_llm_provider=custom_llm_provider,
+            vertex_project=vertex_project,
+            vertex_location=vertex_location,
         )
 
         cached_content_request_body["tools"] = tools

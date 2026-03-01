@@ -3,8 +3,6 @@ import os
 from typing import Any, Callable, Dict, Literal, Optional, Union, cast
 
 import httpx
-from openai import AsyncAzureOpenAI, AzureOpenAI
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.caching.caching import DualCache
@@ -16,6 +14,7 @@ from litellm.secret_managers.get_azure_ad_token_provider import (
 from litellm.secret_managers.main import get_secret_str
 from litellm.types.router import GenericLiteLLMParams
 from litellm.utils import _add_path_to_api_base
+from openai import AsyncAzureOpenAI, AzureOpenAI
 
 azure_ad_cache = DualCache()
 
@@ -43,22 +42,14 @@ class AzureOpenAIError(BaseLLMException):
 def process_azure_headers(headers: Union[httpx.Headers, dict]) -> dict:
     openai_headers = {}
     if "x-ratelimit-limit-requests" in headers:
-        openai_headers["x-ratelimit-limit-requests"] = headers[
-            "x-ratelimit-limit-requests"
-        ]
+        openai_headers["x-ratelimit-limit-requests"] = headers["x-ratelimit-limit-requests"]
     if "x-ratelimit-remaining-requests" in headers:
-        openai_headers["x-ratelimit-remaining-requests"] = headers[
-            "x-ratelimit-remaining-requests"
-        ]
+        openai_headers["x-ratelimit-remaining-requests"] = headers["x-ratelimit-remaining-requests"]
     if "x-ratelimit-limit-tokens" in headers:
         openai_headers["x-ratelimit-limit-tokens"] = headers["x-ratelimit-limit-tokens"]
     if "x-ratelimit-remaining-tokens" in headers:
-        openai_headers["x-ratelimit-remaining-tokens"] = headers[
-            "x-ratelimit-remaining-tokens"
-        ]
-    llm_response_headers = {
-        "{}-{}".format("llm_provider", k): v for k, v in headers.items()
-    }
+        openai_headers["x-ratelimit-remaining-tokens"] = headers["x-ratelimit-remaining-tokens"]
+    llm_response_headers = {"{}-{}".format("llm_provider", k): v for k, v in headers.items()}
 
     return {**llm_response_headers, **openai_headers}
 
@@ -180,9 +171,7 @@ def get_azure_ad_token_from_oidc(
     """
     if scope is None:
         scope = "https://cognitiveservices.azure.com/.default"
-    azure_authority_host = os.getenv(
-        "AZURE_AUTHORITY_HOST", "https://login.microsoftonline.com"
-    )
+    azure_authority_host = os.getenv("AZURE_AUTHORITY_HOST", "https://login.microsoftonline.com")
     azure_client_id = azure_client_id or os.getenv("AZURE_CLIENT_ID")
     azure_tenant_id = azure_tenant_id or os.getenv("AZURE_TENANT_ID")
     if azure_client_id is None or azure_tenant_id is None:
@@ -236,14 +225,10 @@ def get_azure_ad_token_from_oidc(
     azure_ad_token_expires_in = azure_ad_token_json.get("expires_in", None)
 
     if azure_ad_token_access_token is None:
-        raise AzureOpenAIError(
-            status_code=422, message="Azure AD Token access_token not returned"
-        )
+        raise AzureOpenAIError(status_code=422, message="Azure AD Token access_token not returned")
 
     if azure_ad_token_expires_in is None:
-        raise AzureOpenAIError(
-            status_code=422, message="Azure AD Token expires_in not returned"
-        )
+        raise AzureOpenAIError(status_code=422, message="Azure AD Token expires_in not returned")
 
     azure_ad_cache.set_cache(
         key=azure_ad_token_cache_key,
@@ -296,9 +281,7 @@ def get_azure_ad_token(
     # Extract parameters
     # Use `or` instead of default parameter to handle cases where key exists but value is None
     azure_ad_token_provider = litellm_params.get("azure_ad_token_provider")
-    azure_ad_token = litellm_params.get("azure_ad_token") or get_secret_str(
-        "AZURE_AD_TOKEN"
-    )
+    azure_ad_token = litellm_params.get("azure_ad_token") or get_secret_str("AZURE_AD_TOKEN")
     tenant_id = litellm_params.get("tenant_id") or os.getenv("AZURE_TENANT_ID")
     client_id = litellm_params.get("client_id") or os.getenv("AZURE_CLIENT_ID")
     client_secret = litellm_params.get("client_secret") or os.getenv("AZURE_CLIENT_SECRET")
@@ -312,9 +295,7 @@ def get_azure_ad_token(
 
     # Try to get token provider from Entra ID
     if azure_ad_token_provider is None and tenant_id and client_id and client_secret:
-        verbose_logger.debug(
-            "Using Azure AD Token Provider from Entra ID for Azure Auth"
-        )
+        verbose_logger.debug("Using Azure AD Token Provider from Entra ID for Azure Auth")
         azure_ad_token_provider = get_azure_ad_token_from_entra_id(
             tenant_id=tenant_id,
             client_id=client_id,
@@ -323,12 +304,7 @@ def get_azure_ad_token(
         )
 
     # Try to get token provider from username and password
-    if (
-        azure_ad_token_provider is None
-        and azure_username
-        and azure_password
-        and client_id
-    ):
+    if azure_ad_token_provider is None and azure_username and azure_password and client_id:
         verbose_logger.debug("Using Azure Username and Password for Azure Auth")
         azure_ad_token_provider = get_azure_ad_token_from_username_password(
             azure_username=azure_username,
@@ -338,12 +314,7 @@ def get_azure_ad_token(
         )
 
     # Try to get token from OIDC
-    if (
-        client_id
-        and tenant_id
-        and azure_ad_token
-        and azure_ad_token.startswith("oidc/")
-    ):
+    if client_id and tenant_id and azure_ad_token and azure_ad_token.startswith("oidc/"):
         verbose_logger.debug("Using Azure OIDC Token for Azure Auth")
         azure_ad_token = get_azure_ad_token_from_oidc(
             azure_ad_token=azure_ad_token,
@@ -352,10 +323,7 @@ def get_azure_ad_token(
             scope=scope,
         )
     # Try to get token provider from service principal or DefaultAzureCredential
-    elif (
-        azure_ad_token_provider is None
-        and litellm.enable_azure_ad_token_refresh is True
-    ):
+    elif azure_ad_token_provider is None and litellm.enable_azure_ad_token_refresh is True:
         verbose_logger.debug(
             "Using Azure AD token provider based on Service Principal with Secret workflow or DefaultAzureCredential for Azure Auth"
         )
@@ -374,10 +342,8 @@ def get_azure_ad_token(
         # try to get DefaultAzureCredential provider
         #########################################################
         if azure_ad_token_provider is None and azure_ad_token is None:
-            azure_ad_token_provider = (
-                BaseAzureLLM._try_get_default_azure_credential_provider(
-                    scope=scope,
-                )
+            azure_ad_token_provider = BaseAzureLLM._try_get_default_azure_credential_provider(
+                scope=scope,
             )
 
     # Execute the token provider to get the token if available
@@ -472,9 +438,7 @@ class BaseAzureLLM(BaseOpenAILLM):
                 openai_client = AzureOpenAI(**azure_client_params)  # type: ignore
         else:
             openai_client = client
-            if api_version is not None and isinstance(
-                openai_client._custom_query, dict
-            ):
+            if api_version is not None and isinstance(openai_client._custom_query, dict):
                 # set api_version to version passed by user
                 openai_client._custom_query.setdefault("api-version", api_version)
 
@@ -503,7 +467,9 @@ class BaseAzureLLM(BaseOpenAILLM):
         # We should respect environment variables in this case
         tenant_id = self._resolve_env_var(litellm_params, "tenant_id", "AZURE_TENANT_ID")
         client_id = self._resolve_env_var(litellm_params, "client_id", "AZURE_CLIENT_ID")
-        client_secret = self._resolve_env_var(litellm_params, "client_secret", "AZURE_CLIENT_SECRET")
+        client_secret = self._resolve_env_var(
+            litellm_params, "client_secret", "AZURE_CLIENT_SECRET"
+        )
         azure_username = self._resolve_env_var(litellm_params, "azure_username", "AZURE_USERNAME")
         azure_password = self._resolve_env_var(litellm_params, "azure_password", "AZURE_PASSWORD")
         scope = self._resolve_env_var(litellm_params, "azure_scope", "AZURE_SCOPE")
@@ -519,21 +485,14 @@ class BaseAzureLLM(BaseOpenAILLM):
             and client_id
             and client_secret
         ):
-            verbose_logger.debug(
-                "Using Azure AD Token Provider from Entra ID for Azure Auth"
-            )
+            verbose_logger.debug("Using Azure AD Token Provider from Entra ID for Azure Auth")
             azure_ad_token_provider = get_azure_ad_token_from_entra_id(
                 tenant_id=tenant_id,
                 client_id=client_id,
                 client_secret=client_secret,
                 scope=scope,
             )
-        if (
-            azure_ad_token_provider is None
-            and azure_username
-            and azure_password
-            and client_id
-        ):
+        if azure_ad_token_provider is None and azure_username and azure_password and client_id:
             verbose_logger.debug("Using Azure Username and Password for Azure Auth")
             azure_ad_token_provider = get_azure_ad_token_from_username_password(
                 azure_username=azure_username,
@@ -565,9 +524,7 @@ class BaseAzureLLM(BaseOpenAILLM):
             except ValueError:
                 verbose_logger.debug("Azure AD Token Provider could not be used.")
         if api_version is None:
-            api_version = os.getenv(
-                "AZURE_API_VERSION", litellm.AZURE_DEFAULT_API_VERSION
-            )
+            api_version = os.getenv("AZURE_API_VERSION", litellm.AZURE_DEFAULT_API_VERSION)
 
         _api_key = api_key
         if _api_key is not None and isinstance(_api_key, str):
@@ -715,10 +672,7 @@ class BaseAzureLLM(BaseOpenAILLM):
 
         # Extract api_version or use default
         litellm_params = litellm_params or {}
-        api_version = (
-            cast(Optional[str], litellm_params.get("api_version"))
-            or default_api_version
-        )
+        api_version = cast(Optional[str], litellm_params.get("api_version")) or default_api_version
 
         # Create a new dictionary with existing params
         query_params = dict(original_url.params)
@@ -738,9 +692,7 @@ class BaseAzureLLM(BaseOpenAILLM):
             if "/openai/v1" not in new_url:
                 parsed_url = httpx.URL(new_url)
                 new_url = str(
-                    parsed_url.copy_with(
-                        path=parsed_url.path.replace("/openai", "/openai/v1")
-                    )
+                    parsed_url.copy_with(path=parsed_url.path.replace("/openai", "/openai/v1"))
                 )
 
         # Use the new query_params dictionary
@@ -754,9 +706,11 @@ class BaseAzureLLM(BaseOpenAILLM):
             return False
         return api_version in {"preview", "latest", "v1"}
 
-    def _resolve_env_var(self, litellm_params: Dict[str, Any], param_key: str, env_var_key: str) -> Optional[str]:
+    def _resolve_env_var(
+        self, litellm_params: Dict[str, Any], param_key: str, env_var_key: str
+    ) -> Optional[str]:
         """Resolve the environment variable for a given parameter key.
-        
+
         The logic here is different from `params.get(key, os.getenv(env_var))` because
         litellm_params may contain the key with a None value, in which case we want
         to fallback to the environment variable.
@@ -765,4 +719,3 @@ class BaseAzureLLM(BaseOpenAILLM):
         if param_value is not None:
             return param_value
         return os.getenv(env_var_key)
-

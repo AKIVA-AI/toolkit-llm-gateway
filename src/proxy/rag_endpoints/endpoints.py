@@ -8,11 +8,10 @@ Upload -> (OCR) -> Chunk -> Embed -> Vector Store
 import base64
 from typing import Any, Dict, Optional, Tuple
 
+import litellm
 import orjson
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import ORJSONResponse
-
-import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import UserAPIKeyAuth, user_api_key_auth

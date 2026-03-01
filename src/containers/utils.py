@@ -1,7 +1,10 @@
 from typing import Dict
 
 from litellm.llms.base_llm.containers.transformation import BaseContainerConfig
-from litellm.types.containers.main import ContainerCreateOptionalRequestParams, ContainerListOptionalRequestParams
+from litellm.types.containers.main import (
+    ContainerCreateOptionalRequestParams,
+    ContainerListOptionalRequestParams,
+)
 
 
 class ContainerRequestUtils:
@@ -35,9 +38,7 @@ class ContainerRequestUtils:
 
         # Filter out unsupported parameters
         filtered_params = {
-            k: v
-            for k, v in container_create_optional_params.items()
-            if k in supported_params
+            k: v for k, v in container_create_optional_params.items() if k in supported_params
         }
 
         return container_provider_config.map_openai_params(

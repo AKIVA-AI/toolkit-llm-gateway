@@ -8,7 +8,6 @@ from functools import partial
 from typing import Callable, Optional, Union
 
 import httpx  # type: ignore
-
 import litellm
 import litellm.litellm_core_utils
 import litellm.litellm_core_utils.litellm_logging
@@ -37,9 +36,7 @@ async def make_call(
     logging_obj,
     timeout: Optional[Union[float, httpx.Timeout]],
 ):
-    response = await client.post(
-        api_base, headers=headers, data=data, stream=True, timeout=timeout
-    )
+    response = await client.post(api_base, headers=headers, data=data, stream=True, timeout=timeout)
 
     if response.status_code != 200:
         raise PredibaseError(status_code=response.status_code, message=response.text)
@@ -128,10 +125,7 @@ class PredibaseChatCompletion:
                     completion_response["generated_text"]
                 )
             ## GETTING LOGPROBS + FINISH REASON
-            if (
-                "details" in completion_response
-                and "tokens" in completion_response["details"]
-            ):
+            if "details" in completion_response and "tokens" in completion_response["details"]:
                 model_response.choices[0].finish_reason = map_finish_reason(
                     completion_response["details"]["finish_reason"]
                 )
@@ -150,9 +144,7 @@ class PredibaseChatCompletion:
                     and "best_of_sequences" in completion_response["details"]
                 ):
                     choices_list = []
-                    for idx, item in enumerate(
-                        completion_response["details"]["best_of_sequences"]
-                    ):
+                    for idx, item in enumerate(completion_response["details"]["best_of_sequences"]):
                         sum_logprob = 0
                         for token in item["tokens"]:
                             if token["logprob"] is not None:
@@ -184,9 +176,7 @@ class PredibaseChatCompletion:
             completion_tokens = 0
             try:
                 completion_tokens = len(
-                    encoding.encode(
-                        model_response["choices"][0]["message"].get("content", "")
-                    )
+                    encoding.encode(model_response["choices"][0]["message"].get("content", ""))
                 )  ##[TODO] use a model-specific tokenizer
             except Exception:
                 # this should remain non blocking we should not block a response returning if calculating usage fails
@@ -400,9 +390,7 @@ class PredibaseChatCompletion:
             params={"timeout": timeout},
         )
         try:
-            response = await async_handler.post(
-                api_base, headers=headers, data=json.dumps(data)
-            )
+            response = await async_handler.post(api_base, headers=headers, data=json.dumps(data))
         except httpx.HTTPStatusError as e:
             raise PredibaseError(
                 status_code=e.response.status_code,

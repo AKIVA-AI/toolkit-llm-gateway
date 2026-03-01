@@ -1,7 +1,6 @@
 from typing import Any, List, Optional, cast
 
 from httpx import Response
-
 from litellm import verbose_logger
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
     _parse_content_for_reasoning,
@@ -62,12 +61,9 @@ class AmazonDeepSeekR1Config(AmazonLlamaConfig):
         )
         if prompt and prompt.strip().endswith("<think>") and message_content:
             message_content_with_reasoning_token = "<think>" + message_content
-            reasoning, content = _parse_content_for_reasoning(
-                message_content_with_reasoning_token
-            )
+            reasoning, content = _parse_content_for_reasoning(message_content_with_reasoning_token)
             provider_specific_fields = (
-                cast(Choices, response.choices[0]).message.provider_specific_fields
-                or {}
+                cast(Choices, response.choices[0]).message.provider_specific_fields or {}
             )
             if reasoning:
                 provider_specific_fields["reasoning_content"] = reasoning
@@ -115,15 +111,9 @@ class AmazonDeepseekR1ResponseIterator(BaseModelResponseIterator):
                     StreamingChoices(
                         finish_reason=typed_chunk["stop_reason"],
                         delta=Delta(
-                            content=(
-                                generated_content
-                                if self.has_finished_thinking
-                                else None
-                            ),
+                            content=(generated_content if self.has_finished_thinking else None),
                             reasoning_content=(
-                                generated_content
-                                if not self.has_finished_thinking
-                                else None
+                                generated_content if not self.has_finished_thinking else None
                             ),
                         ),
                     )

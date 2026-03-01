@@ -1,19 +1,18 @@
 import os
-from typing import TYPE_CHECKING, Any, Optional, Union
 from datetime import datetime
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from litellm._logging import verbose_logger
 from litellm.integrations.arize import _utils
 from litellm.integrations.arize._utils import ArizeOTELAttributes
+from litellm.integrations.opentelemetry import OpenTelemetry
 from litellm.types.integrations.arize_phoenix import ArizePhoenixConfig
 from litellm.types.services import ServiceLoggerPayload
-from litellm.integrations.opentelemetry import OpenTelemetry
 
 if TYPE_CHECKING:
-    from opentelemetry.trace import Span as _Span
-
     from litellm.integrations.opentelemetry import OpenTelemetryConfig as _OpenTelemetryConfig
     from litellm.types.integrations.arize import Protocol as _Protocol
+    from opentelemetry.trace import Span as _Span
 
     Protocol = _Protocol
     OpenTelemetryConfig = _OpenTelemetryConfig
@@ -59,7 +58,9 @@ class ArizePhoenixLogger(OpenTelemetry):
 
         if collector_endpoint:
             # Parse the endpoint to determine protocol
-            if collector_endpoint.startswith("grpc://") or (":4317" in collector_endpoint and "/v1/traces" not in collector_endpoint):
+            if collector_endpoint.startswith("grpc://") or (
+                ":4317" in collector_endpoint and "/v1/traces" not in collector_endpoint
+            ):
                 endpoint = collector_endpoint
                 protocol = "otlp_grpc"
             else:

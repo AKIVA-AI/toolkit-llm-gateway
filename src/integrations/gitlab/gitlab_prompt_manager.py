@@ -5,7 +5,6 @@ GitLab prompt manager with configurable prompts folder.
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 from jinja2 import DictLoader, Environment, select_autoescape
-
 from litellm.integrations.custom_prompt_management import CustomPromptManagement
 
 if TYPE_CHECKING:
@@ -85,9 +84,7 @@ class GitLabTemplateManager:
 
         # Folder inside repo to look for prompts (e.g., "prompts" or "prompts/chat")
         self.prompts_path: str = (
-            self.gitlab_config.get("prompts_path")
-            or self.gitlab_config.get("folder")
-            or ""
+            self.gitlab_config.get("prompts_path") or self.gitlab_config.get("folder") or ""
         ).strip("/")
 
         self.jinja_env = Environment(
@@ -127,9 +124,7 @@ class GitLabTemplateManager:
 
     # ---------- loading ----------
 
-    def _load_prompt_from_gitlab(
-        self, prompt_id: str, *, ref: Optional[str] = None
-    ) -> None:
+    def _load_prompt_from_gitlab(self, prompt_id: str, *, ref: Optional[str] = None) -> None:
         """Load a specific .prompt file from GitLab (scoped under prompts_path if set)."""
         try:
             # prompt_id = decode_prompt_id(prompt_id)
@@ -208,9 +203,7 @@ class GitLabTemplateManager:
                     result[key] = value.strip("\"'")
         return result
 
-    def render_template(
-        self, template_id: str, variables: Optional[Dict[str, Any]] = None
-    ) -> str:
+    def render_template(self, template_id: str, variables: Optional[Dict[str, Any]] = None) -> str:
         if template_id not in self.prompts:
             raise ValueError(f"Template '{template_id}' not found")
         template = self.prompts[template_id]
@@ -328,9 +321,7 @@ class GitLabPromptManager(CustomPromptManagement):
         if not template:
             raise ValueError(f"Prompt template '{prompt_id}' not found")
 
-        rendered_prompt = self.prompt_manager.render_template(
-            prompt_id, prompt_variables or {}
-        )
+        rendered_prompt = self.prompt_manager.render_template(prompt_id, prompt_variables or {})
 
         metadata = {
             "model": template.model,
@@ -488,9 +479,7 @@ class GitLabPromptManager(CustomPromptManagement):
                 )
                 self.prompt_manager._load_prompt_from_gitlab(decoded_id, ref=git_ref)
 
-            rendered_prompt, prompt_metadata = self.get_prompt_template(
-                prompt_id, prompt_variables
-            )
+            rendered_prompt, prompt_metadata = self.get_prompt_template(prompt_id, prompt_variables)
 
             messages = self._parse_prompt_to_messages(rendered_prompt)
             template_model = prompt_metadata.get("model")
@@ -652,9 +641,7 @@ class GitLabPromptCache:
             ref=ref,
             gitlab_client=gitlab_client,
         )
-        self.template_manager: GitLabTemplateManager = (
-            self.prompt_manager.prompt_manager
-        )
+        self.template_manager: GitLabTemplateManager = self.prompt_manager.prompt_manager
 
         # In-memory stores
         self._by_file: Dict[str, Dict[str, Any]] = {}
@@ -731,9 +718,7 @@ class GitLabPromptCache:
     # Internals
     # -------------------------
 
-    def _template_to_json(
-        self, prompt_id: str, tmpl: GitLabPromptTemplate
-    ) -> Dict[str, Any]:
+    def _template_to_json(self, prompt_id: str, tmpl: GitLabPromptTemplate) -> Dict[str, Any]:
         """
         Normalize a GitLabPromptTemplate into a JSON-like dict that is easy to serialize.
         """

@@ -14,7 +14,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from fastapi import HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import DualCache
 from litellm.litellm_core_utils.dot_notation_indexing import get_nested_value
@@ -148,9 +147,7 @@ class JWTHandler:
             return LitellmUserRoles.TEAM
         elif self.get_user_id(token=token, default_value=None) is not None:
             return LitellmUserRoles.INTERNAL_USER
-        elif user_roles is not None and self.is_allowed_user_role(
-            user_roles=user_roles
-        ):
+        elif user_roles is not None and self.is_allowed_user_role(user_roles=user_roles):
             return LitellmUserRoles.INTERNAL_USER
         elif rbac_role := self._rbac_role_from_role_mapping(token=token):
             return rbac_role
@@ -174,9 +171,7 @@ class JWTHandler:
 
         return []
 
-    def get_end_user_id(
-        self, token: dict, default_value: Optional[str]
-    ) -> Optional[str]:
+    def get_end_user_id(self, token: dict, default_value: Optional[str]) -> Optional[str]:
         try:
             if self.litellm_jwtauth.end_user_id_jwt_field is not None:
                 user_id = get_nested_value(
@@ -300,9 +295,7 @@ class JWTHandler:
                     return mapping.litellm_role
         return None
 
-    def get_jwt_role(
-        self, token: dict, default_value: Optional[List[str]]
-    ) -> Optional[List[str]]:
+    def get_jwt_role(self, token: dict, default_value: Optional[List[str]]) -> Optional[List[str]]:
         """
         Generic implementation of `get_user_roles` that can be used for both user and team roles.
 
@@ -332,16 +325,12 @@ class JWTHandler:
         if (
             user_roles is not None
             and self.litellm_jwtauth.user_allowed_roles is not None
-            and any(
-                role in self.litellm_jwtauth.user_allowed_roles for role in user_roles
-            )
+            and any(role in self.litellm_jwtauth.user_allowed_roles for role in user_roles)
         ):
             return True
         return False
 
-    def get_user_email(
-        self, token: dict, default_value: Optional[str]
-    ) -> Optional[str]:
+    def get_user_email(self, token: dict, default_value: Optional[str]) -> Optional[str]:
         try:
             if self.litellm_jwtauth.user_email_jwt_field is not None:
                 user_email = get_nested_value(
@@ -441,18 +430,14 @@ class JWTHandler:
             if public_key is not None:
                 return cast(dict, public_key)
 
-        raise Exception(
-            f"No matching public key found. keys={keys_url_list}, kid={kid}"
-        )
+        raise Exception(f"No matching public key found. keys={keys_url_list}, kid={kid}")
 
     def parse_keys(self, keys: JWKKeyValue, kid: Optional[str]) -> Optional[JWTKeyItem]:
         public_key: Optional[JWTKeyItem] = None
         if len(keys) == 1:
             if isinstance(keys, dict) and (keys.get("kid", None) == kid or kid is None):
                 public_key = keys
-            elif isinstance(keys, list) and (
-                keys[0].get("kid", None) == kid or kid is None
-            ):
+            elif isinstance(keys, list) and (keys[0].get("kid", None) == kid or kid is None):
                 public_key = keys[0]
         elif len(keys) > 1:
             for key in keys:
@@ -483,17 +468,17 @@ class JWTHandler:
     async def get_oidc_userinfo(self, token: str) -> dict:
         """
         Fetch user information from OIDC UserInfo endpoint.
-        
+
         This follows the OpenID Connect protocol where an access token
         is sent to the identity provider's UserInfo endpoint to retrieve
         user identity information.
-        
+
         Args:
             token: The access token to use for authentication
-            
+
         Returns:
             dict: User information from the UserInfo endpoint
-            
+
         Raises:
             Exception: If UserInfo endpoint is not configured or request fails
         """
@@ -501,19 +486,19 @@ class JWTHandler:
             raise Exception(
                 "OIDC UserInfo endpoint not configured. Set 'oidc_userinfo_endpoint' in JWT auth config."
             )
-        
+
         # Check cache first
         cache_key = f"oidc_userinfo_{token[:20]}"  # Use first 20 chars of token as cache key
         cached_userinfo = await self.user_api_key_cache.async_get_cache(cache_key)
-        
+
         if cached_userinfo is not None:
             verbose_proxy_logger.debug("Returning cached OIDC UserInfo")
             return cached_userinfo
-        
+
         verbose_proxy_logger.debug(
             f"Calling OIDC UserInfo endpoint: {self.litellm_jwtauth.oidc_userinfo_endpoint}"
         )
-        
+
         try:
             # Call the UserInfo endpoint with the access token
             response = await self.http_handler.get(
@@ -523,24 +508,24 @@ class JWTHandler:
                     "Accept": "application/json",
                 },
             )
-            
+
             if response.status_code != 200:
                 raise Exception(
                     f"OIDC UserInfo endpoint returned status {response.status_code}: {response.text}"
                 )
-            
+
             userinfo = response.json()
             verbose_proxy_logger.debug(f"Received OIDC UserInfo: {userinfo}")
-            
+
             # Cache the userinfo response
             await self.user_api_key_cache.async_set_cache(
                 key=cache_key,
                 value=userinfo,
                 ttl=self.litellm_jwtauth.oidc_userinfo_cache_ttl,
             )
-            
+
             return userinfo
-            
+
         except Exception as e:
             verbose_proxy_logger.error(f"Error fetching OIDC UserInfo: {str(e)}")
             raise Exception(f"Failed to fetch OIDC UserInfo: {str(e)}")
@@ -617,9 +602,7 @@ class JWTHandler:
                 raise Exception(f"Validation fails: {str(e)}")
         elif public_key is not None and isinstance(public_key, str):
             try:
-                cert = x509.load_pem_x509_certificate(
-                    public_key.encode(), default_backend()
-                )
+                cert = x509.load_pem_x509_certificate(public_key.encode(), default_backend())
 
                 # Extract public key
                 key = cert.public_key().public_bytes(
@@ -814,9 +797,7 @@ class JWTAuthManager:
         proxy_logging_obj: ProxyLogging,
     ) -> Tuple[Optional[str], Optional[LiteLLM_TeamTable]]:
         """Find and validate specific team ID"""
-        individual_team_id = jwt_handler.get_team_id(
-            token=jwt_valid_token, default_value=None
-        )
+        individual_team_id = jwt_handler.get_team_id(token=jwt_valid_token, default_value=None)
 
         if not individual_team_id and jwt_handler.is_required_team_id() is True:
             raise Exception(
@@ -913,9 +894,7 @@ class JWTAuthManager:
         jwt_valid_token: dict,
     ) -> Tuple[Optional[str], Optional[str], Optional[bool]]:
         """Get user email and validation status"""
-        user_email = jwt_handler.get_user_email(
-            token=jwt_valid_token, default_value=None
-        )
+        user_email = jwt_handler.get_user_email(token=jwt_valid_token, default_value=None)
         valid_user_email = None
         if jwt_handler.is_enforced_email_domain():
             valid_user_email = (
@@ -923,9 +902,7 @@ class JWTAuthManager:
                 if user_email is None
                 else jwt_handler.is_allowed_domain(user_email=user_email)
             )
-        user_id = jwt_handler.get_user_id(
-            token=jwt_valid_token, default_value=user_email
-        )
+        user_id = jwt_handler.get_user_id(token=jwt_valid_token, default_value=user_email)
         return user_id, user_email, valid_user_email
 
     @staticmethod
@@ -970,9 +947,7 @@ class JWTAuthManager:
                     user_id=user_id,
                     prisma_client=prisma_client,
                     user_api_key_cache=user_api_key_cache,
-                    user_id_upsert=jwt_handler.is_upsert_user_id(
-                        valid_user_email=valid_user_email
-                    ),
+                    user_id_upsert=jwt_handler.is_upsert_user_id(valid_user_email=valid_user_email),
                     parent_otel_span=parent_otel_span,
                     proxy_logging_obj=proxy_logging_obj,
                     user_email=user_email,
@@ -1065,9 +1040,7 @@ class JWTAuthManager:
                 detail=f"Team '{header_team_id}' from x-litellm-team-id header is not in your JWT's allowed teams. Allowed teams: {list(allowed_team_ids)}",
             )
 
-        verbose_proxy_logger.debug(
-            f"Using team_id from x-litellm-team-id header: {header_team_id}"
-        )
+        verbose_proxy_logger.debug(f"Using team_id from x-litellm-team-id header: {header_team_id}")
         return header_team_id
 
     @staticmethod
@@ -1237,9 +1210,7 @@ class JWTAuthManager:
 
         # Get IDs
         org_id = jwt_handler.get_org_id(token=jwt_valid_token, default_value=None)
-        end_user_id = jwt_handler.get_end_user_id(
-            token=jwt_valid_token, default_value=None
-        )
+        end_user_id = jwt_handler.get_end_user_id(token=jwt_valid_token, default_value=None)
         team_id: Optional[str] = None
         team_object: Optional[LiteLLM_TeamTable] = None
         object_id = jwt_handler.get_object_id(token=jwt_valid_token, default_value=None)

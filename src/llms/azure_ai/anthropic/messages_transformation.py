@@ -1,6 +1,7 @@
 """
 Azure Anthropic messages transformation config - extends AnthropicMessagesConfig with Azure authentication
 """
+
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from litellm.llms.anthropic.experimental_pass_through.messages.transformation import (
@@ -48,7 +49,7 @@ class AzureAnthropicMessagesConfig(AnthropicMessagesConfig):
         headers = BaseAzureLLM._base_validate_azure_environment(
             headers=headers, litellm_params=litellm_params_obj
         )
-        
+
         # Set anthropic-version header
         if "anthropic-version" not in headers:
             headers["anthropic-version"] = "2023-06-01"
@@ -109,4 +110,3 @@ class AzureAnthropicMessagesConfig(AnthropicMessagesConfig):
             api_base = api_base + "/v1/messages"
 
         return api_base
-

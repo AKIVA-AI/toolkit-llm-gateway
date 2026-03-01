@@ -7,7 +7,6 @@ Docs - https://docs.voyageai.com/docs/reranker
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import httpx
-
 from litellm.llms.base_llm.chat.transformation import LiteLLMLoggingObj
 from litellm.llms.base_llm.rerank.transformation import BaseRerankConfig
 from litellm.secret_managers.main import get_secret_str
@@ -84,9 +83,7 @@ class VoyageRerankConfig(BaseRerankConfig):
         litellm_params: Dict = {},
     ) -> RerankResponse:
         if raw_response.status_code != 200:
-            raise VoyageError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise VoyageError(message=raw_response.text, status_code=raw_response.status_code)
 
         logging_obj.post_call(original_response=raw_response.text)
 

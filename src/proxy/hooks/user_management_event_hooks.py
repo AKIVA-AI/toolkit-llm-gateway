@@ -3,14 +3,12 @@ Hooks that are triggered when a litellm user event occurs
 """
 
 import asyncio
-from litellm._uuid import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from pydantic import BaseModel
-
 import litellm
 from litellm._logging import verbose_proxy_logger
+from litellm._uuid import uuid
 from litellm.proxy._types import (
     AUDIT_ACTIONS,
     CommonProxyErrors,
@@ -24,6 +22,7 @@ from litellm.proxy._types import (
     WebhookEvent,
 )
 from litellm.proxy.management_helpers.audit_logs import create_audit_log_for_update
+from pydantic import BaseModel
 
 
 class UserManagementEventHooks:
@@ -61,9 +60,7 @@ class UserManagementEventHooks:
                 where={"user_id": response.user_id}
             )
 
-            user_row_litellm_typed = LiteLLM_UserTable(
-                **user_row.model_dump(exclude_none=True)
-            )
+            user_row_litellm_typed = LiteLLM_UserTable(**user_row.model_dump(exclude_none=True))
             asyncio.create_task(
                 UserManagementEventHooks.create_internal_user_audit_log(
                     user_id=user_row_litellm_typed.user_id,
@@ -72,9 +69,7 @@ class UserManagementEventHooks:
                     user_api_key_dict=user_api_key_dict,
                     litellm_proxy_admin_name=litellm_proxy_admin_name,
                     before_value=None,
-                    after_value=user_row_litellm_typed.model_dump_json(
-                        exclude_none=True
-                    ),
+                    after_value=user_row_litellm_typed.model_dump_json(exclude_none=True),
                 )
             )
         except Exception as e:

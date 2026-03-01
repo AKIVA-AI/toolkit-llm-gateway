@@ -4,7 +4,7 @@ Type definitions for AWS Bedrock Invoke Agent API responses.
 https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_InvokeAgent.html
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from typing_extensions import TypedDict
 

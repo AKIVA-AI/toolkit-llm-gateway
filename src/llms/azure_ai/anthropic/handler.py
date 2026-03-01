@@ -1,12 +1,12 @@
 """
 Azure Anthropic handler - reuses AnthropicChatCompletion logic with Azure authentication
 """
+
 import copy
 import json
 from typing import TYPE_CHECKING, Callable, Union
 
 import httpx
-
 from litellm.llms.anthropic.chat.handler import AnthropicChatCompletion
 from litellm.llms.custom_httpx.http_handler import (
     AsyncHTTPHandler,
@@ -64,7 +64,7 @@ class AzureAnthropicChatCompletion(AnthropicChatCompletion):
 
         # Use AzureAnthropicConfig for both azure_anthropic and azure_ai Claude models
         config = AzureAnthropicConfig()
-        
+
         headers = config.validate_environment(
             api_key=api_key,
             headers=headers,
@@ -224,4 +224,3 @@ class AzureAnthropicChatCompletion(AnthropicChatCompletion):
             encoding=encoding,
             json_mode=json_mode,
         )
-

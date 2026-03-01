@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
 import httpx
-
 import litellm
 from litellm.llms.custom_httpx.http_handler import get_async_httpx_client
 from litellm.types.utils import LlmProviders
@@ -43,9 +42,7 @@ class GoogleAIStudioTokenCounter:
                     function_response_data = part["functionResponse"]
                     function_response_part = FunctionResponse(**function_response_data)
                     function_response_part.id = None
-                    part["functionResponse"] = function_response_part.model_dump(
-                        exclude_none=True
-                    )
+                    part["functionResponse"] = function_response_part.model_dump(exclude_none=True)
 
         return cleaned_contents
 
@@ -139,9 +136,7 @@ class GoogleAIStudioTokenCounter:
         )
 
         try:
-            response = await async_httpx_client.post(
-                url=url, headers=headers, json=request_body
-            )
+            response = await async_httpx_client.post(url=url, headers=headers, json=request_body)
 
             # Check for HTTP errors
             response.raise_for_status()
@@ -151,7 +146,9 @@ class GoogleAIStudioTokenCounter:
             return result
 
         except httpx.HTTPStatusError as e:
-            error_msg = f"Google Gen AI Studio API error: {e.response.status_code} - {e.response.text}"
+            error_msg = (
+                f"Google Gen AI Studio API error: {e.response.status_code} - {e.response.text}"
+            )
             raise litellm.APIError(
                 message=error_msg,
                 llm_provider="gemini",

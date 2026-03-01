@@ -1,12 +1,11 @@
 import json
 import time
-from litellm._uuid import uuid
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, List, Optional, Union
 
-from httpx._models import Headers, Response
-
 import litellm
+from httpx._models import Headers, Response
 from litellm._logging import verbose_proxy_logger
+from litellm._uuid import uuid
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
     get_str_from_messages,
 )
@@ -265,9 +264,7 @@ class OllamaConfig(BaseConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, Headers]
     ) -> BaseLLMException:
-        return OllamaError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return OllamaError(status_code=status_code, message=error_message, headers=headers)
 
     def transform_response(
         self,
@@ -318,9 +315,7 @@ class OllamaConfig(BaseConfig):
                                     "id": f"call_{str(uuid.uuid4())}",
                                     "function": {
                                         "name": function_call["name"],
-                                        "arguments": json.dumps(
-                                            function_call["arguments"]
-                                        ),
+                                        "arguments": json.dumps(function_call["arguments"]),
                                     },
                                     "type": "function",
                                 }
@@ -341,12 +336,8 @@ class OllamaConfig(BaseConfig):
                     reasoning_content: Optional[str] = None
                     content: Optional[str] = None
                     if response_text is not None:
-                        reasoning_content, content = _parse_content_for_reasoning(
-                            response_text
-                        )
-                    message = litellm.Message(
-                        content=content, reasoning_content=reasoning_content
-                    )
+                        reasoning_content, content = _parse_content_for_reasoning(response_text)
+                    message = litellm.Message(content=content, reasoning_content=reasoning_content)
                     model_response.choices[0].message = message  # type: ignore
                     model_response.choices[0].finish_reason = "stop"
         else:
@@ -387,9 +378,7 @@ class OllamaConfig(BaseConfig):
         litellm_params: dict,
         headers: dict,
     ) -> dict:
-        custom_prompt_dict = (
-            litellm_params.get("custom_prompt_dict") or litellm.custom_prompt_dict
-        )
+        custom_prompt_dict = litellm_params.get("custom_prompt_dict") or litellm.custom_prompt_dict
 
         text_completion_request = litellm_params.get("text_completion")
         if model in custom_prompt_dict:
@@ -427,9 +416,7 @@ class OllamaConfig(BaseConfig):
         if format is not None:
             data["format"] = format
         if images is not None:
-            data["images"] = [
-                _convert_image(convert_to_ollama_image(image)) for image in images
-            ]
+            data["images"] = [_convert_image(convert_to_ollama_image(image)) for image in images]
         if think is not None:
             data["think"] = think
 
@@ -486,9 +473,7 @@ class OllamaConfig(BaseConfig):
 
 
 class OllamaTextCompletionResponseIterator(BaseModelResponseIterator):
-    def __init__(
-        self, streaming_response, sync_stream: bool, json_mode: Optional[bool] = False
-    ):
+    def __init__(self, streaming_response, sync_stream: bool, json_mode: Optional[bool] = False):
         super().__init__(streaming_response, sync_stream, json_mode)
         self.started_reasoning_content: bool = False
         self.finished_reasoning_content: bool = False
@@ -498,9 +483,7 @@ class OllamaTextCompletionResponseIterator(BaseModelResponseIterator):
     ) -> Union[GenericStreamingChunk, ModelResponseStream]:
         return self.chunk_parser(json.loads(str_line))
 
-    def chunk_parser(
-        self, chunk: dict
-    ) -> Union[GenericStreamingChunk, ModelResponseStream]:
+    def chunk_parser(self, chunk: dict) -> Union[GenericStreamingChunk, ModelResponseStream]:
         try:
             if "error" in chunk:
                 raise Exception(f"Ollama Error - {chunk}")
@@ -540,10 +523,7 @@ class OllamaTextCompletionResponseIterator(BaseModelResponseIterator):
                         text = text.replace("</think>", "")
                         self.finished_reasoning_content = True
 
-                    if (
-                        self.started_reasoning_content
-                        and not self.finished_reasoning_content
-                    ):
+                    if self.started_reasoning_content and not self.finished_reasoning_content:
                         reasoning_content = text
                     else:
                         content = text
@@ -552,9 +532,7 @@ class OllamaTextCompletionResponseIterator(BaseModelResponseIterator):
                     choices=[
                         StreamingChoices(
                             index=0,
-                            delta=Delta(
-                                reasoning_content=reasoning_content, content=content
-                            ),
+                            delta=Delta(reasoning_content=reasoning_content, content=content),
                         )
                     ],
                     finish_reason=finish_reason,
@@ -579,7 +557,7 @@ class OllamaTextCompletionResponseIterator(BaseModelResponseIterator):
                 )
             else:
                 # In this case, 'thinking' is not present in the chunk, chunk["done"] is false,
-                # and chunk["response"] is falsy (None or empty string), 
+                # and chunk["response"] is falsy (None or empty string),
                 # but Ollama is just starting to stream, so it should be processed as a normal dict
                 return ModelResponseStream(
                     choices=[

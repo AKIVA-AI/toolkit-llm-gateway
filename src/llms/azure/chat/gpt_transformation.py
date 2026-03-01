@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
-from httpx._models import Headers, Response
-
 import litellm
+from httpx._models import Headers, Response
 from litellm.litellm_core_utils.prompt_templates.factory import (
     convert_to_azure_openai_messages,
 )
@@ -177,11 +176,7 @@ class AzureOpenAIConfig(BaseConfig):
                 tool_choice='required' is not supported as of 2024-05-01-preview
                 """
                 ## check if api version supports this param ##
-                if (
-                    api_version_year is None
-                    or api_version_month is None
-                    or api_version_day is None
-                ):
+                if api_version_year is None or api_version_month is None or api_version_day is None:
                     optional_params["tool_choice"] = value
                 else:
                     if (
@@ -217,8 +212,8 @@ class AzureOpenAIConfig(BaseConfig):
                     else:
                         optional_params["tool_choice"] = value
             elif param == "response_format" and isinstance(value, dict):
-                _is_response_format_supported_model = (
-                    self._is_response_format_supported_model(model)
+                _is_response_format_supported_model = self._is_response_format_supported_model(
+                    model
                 )
 
                 if api_version_year is None or api_version_month is None:
@@ -230,8 +225,7 @@ class AzureOpenAIConfig(BaseConfig):
                         )
                     )
                 is_response_format_supported = (
-                    is_response_format_supported_api_version
-                    and _is_response_format_supported_model
+                    is_response_format_supported_api_version and _is_response_format_supported_model
                 )
 
                 optional_params = self._add_response_format_to_tools(
@@ -315,9 +309,7 @@ class AzureOpenAIConfig(BaseConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, Headers]
     ) -> BaseLLMException:
-        return AzureOpenAIError(
-            message=error_message, status_code=status_code, headers=headers
-        )
+        return AzureOpenAIError(message=error_message, status_code=status_code, headers=headers)
 
     def validate_environment(
         self,

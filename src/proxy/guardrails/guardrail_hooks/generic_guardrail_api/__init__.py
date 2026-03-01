@@ -22,9 +22,7 @@ def initialize_guardrail(litellm_params: "LitellmParams", guardrail: "Guardrail"
         default_on=litellm_params.default_on,
     )
 
-    litellm.logging_callback_manager.add_litellm_callback(
-        _generic_guardrail_api_callback
-    )
+    litellm.logging_callback_manager.add_litellm_callback(_generic_guardrail_api_callback)
     return _generic_guardrail_api_callback
 
 

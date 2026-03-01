@@ -1,7 +1,6 @@
 from typing import Optional
 
 import httpx
-
 import litellm
 from litellm.llms.azure_ai.common_utils import AzureFoundryModelInfo
 from litellm.llms.openai.image_edit.transformation import OpenAIImageEditConfig
@@ -71,9 +70,11 @@ class AzureFoundryFluxImageEditConfig(OpenAIImageEditConfig):
                 "Azure AI API base is required. Set AZURE_AI_API_BASE environment variable or pass api_base parameter."
             )
 
-        api_version = (litellm_params.get("api_version") or litellm.api_version
-                or get_secret_str("AZURE_AI_API_VERSION")
-            )
+        api_version = (
+            litellm_params.get("api_version")
+            or litellm.api_version
+            or get_secret_str("AZURE_AI_API_VERSION")
+        )
         if api_version is None:
             # API version is mandatory for Azure AI Foundry
             raise ValueError(

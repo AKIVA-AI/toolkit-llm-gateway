@@ -1,7 +1,8 @@
 # Duplicate -> https://github.com/confident-ai/deepeval/blob/main/deepeval/tracing/api.py
 from enum import Enum
-from typing import Any, ClassVar, Dict, List, Optional, Union, Literal
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Any, ClassVar, Dict, List, Literal, Optional, Union
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SpanApiType(Enum):

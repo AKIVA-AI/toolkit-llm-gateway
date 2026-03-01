@@ -150,13 +150,9 @@ class VertexAILivePassthroughLoggingHandler(BasePassthroughLoggingHandler):
         """
         try:
             # Get model pricing information
-            model_info = get_model_info(
-                model=model, custom_llm_provider=custom_llm_provider
-            )
+            model_info = get_model_info(model=model, custom_llm_provider=custom_llm_provider)
 
-            verbose_proxy_logger.debug(
-                f"Vertex AI Live API model info for '{model}': {model_info}"
-            )
+            verbose_proxy_logger.debug(f"Vertex AI Live API model info for '{model}': {model_info}")
 
             # Check if pricing info is available
             if not model_info or not model_info.get("input_cost_per_token"):
@@ -180,9 +176,7 @@ class VertexAILivePassthroughLoggingHandler(BasePassthroughLoggingHandler):
 
             # Handle modality-specific costs if present
             prompt_tokens_details = usage_metadata.get("promptTokensDetails", [])
-            candidates_tokens_details = usage_metadata.get(
-                "candidatesTokensDetails", []
-            )
+            candidates_tokens_details = usage_metadata.get("candidatesTokensDetails", [])
 
             # Process prompt tokens by modality
             for detail in prompt_tokens_details:
@@ -190,15 +184,11 @@ class VertexAILivePassthroughLoggingHandler(BasePassthroughLoggingHandler):
                 token_count = detail.get("tokenCount", 0)
 
                 if modality == "AUDIO":
-                    audio_cost_per_token = model_info.get(
-                        "input_cost_per_audio_token", 0.0
-                    )
+                    audio_cost_per_token = model_info.get("input_cost_per_audio_token", 0.0)
                     total_cost += token_count * audio_cost_per_token
                 elif modality == "VIDEO":
                     # Video tokens are typically per second, but we'll treat as per token for now
-                    video_cost_per_token = model_info.get(
-                        "input_cost_per_video_per_second", 0.0
-                    )
+                    video_cost_per_token = model_info.get("input_cost_per_video_per_second", 0.0)
                     total_cost += token_count * video_cost_per_token
                 # TEXT tokens are already handled above
 
@@ -208,22 +198,16 @@ class VertexAILivePassthroughLoggingHandler(BasePassthroughLoggingHandler):
                 token_count = detail.get("tokenCount", 0)
 
                 if modality == "AUDIO":
-                    audio_cost_per_token = model_info.get(
-                        "output_cost_per_audio_token", 0.0
-                    )
+                    audio_cost_per_token = model_info.get("output_cost_per_audio_token", 0.0)
                     total_cost += token_count * audio_cost_per_token
                 elif modality == "VIDEO":
                     # Video tokens are typically per second, but we'll treat as per token for now
-                    video_cost_per_token = model_info.get(
-                        "output_cost_per_video_per_second", 0.0
-                    )
+                    video_cost_per_token = model_info.get("output_cost_per_video_per_second", 0.0)
                     total_cost += token_count * video_cost_per_token
                 # TEXT tokens are already handled above
 
             # Handle web search costs if present
-            tool_use_prompt_token_count = usage_metadata.get(
-                "toolUsePromptTokenCount", 0
-            )
+            tool_use_prompt_token_count = usage_metadata.get("toolUsePromptTokenCount", 0)
             if tool_use_prompt_token_count > 0:
                 # Web search typically has a fixed cost per request
                 web_search_cost = model_info.get("web_search_cost_per_request", 0.0)
@@ -243,9 +227,7 @@ class VertexAILivePassthroughLoggingHandler(BasePassthroughLoggingHandler):
             return total_cost
 
         except Exception as e:
-            verbose_proxy_logger.error(
-                f"Error calculating Vertex AI Live API cost: {e}"
-            )
+            verbose_proxy_logger.error(f"Error calculating Vertex AI Live API cost: {e}")
             return 0.0
 
     @staticmethod
@@ -374,8 +356,11 @@ class VertexAILivePassthroughLoggingHandler(BasePassthroughLoggingHandler):
 
             # Safely log the model name: only allow known safe formats, redact otherwise.
             import re
+
             allowed_pattern = re.compile(r"^[A-Za-z0-9._\-:]+$")
-            safe_model = model if isinstance(model, str) and allowed_pattern.match(model) else "[REDACTED]"
+            safe_model = (
+                model if isinstance(model, str) and allowed_pattern.match(model) else "[REDACTED]"
+            )
             verbose_proxy_logger.debug(
                 f"Vertex AI Live API passthrough cost tracking - "
                 f"Model: {safe_model}, Cost: ${response_cost:.6f}, "
@@ -389,9 +374,7 @@ class VertexAILivePassthroughLoggingHandler(BasePassthroughLoggingHandler):
             }
 
         except Exception as e:
-            verbose_proxy_logger.error(
-                f"Error in Vertex AI Live API passthrough handler: {e}"
-            )
+            verbose_proxy_logger.error(f"Error in Vertex AI Live API passthrough handler: {e}")
             return {
                 "result": None,
                 "kwargs": kwargs,

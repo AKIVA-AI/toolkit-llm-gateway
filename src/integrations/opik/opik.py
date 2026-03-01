@@ -26,9 +26,7 @@ except Exception:
 def _should_skip_event(kwargs: Dict[str, Any]) -> bool:
     """Check if event should be skipped due to missing standard_logging_object."""
     if kwargs.get("standard_logging_object") is None:
-        verbose_logger.debug(
-            "OpikLogger skipping event; no standard_logging_object found"
-        )
+        verbose_logger.debug("OpikLogger skipping event; no standard_logging_object found")
         return True
     return False
 
@@ -169,9 +167,7 @@ class OpikLogger(CustomBatchLogger):
                 f"OpikLogger failed to log success event - {str(e)}\n{traceback.format_exc()}"
             )
 
-    def _sync_send(
-        self, url: str, headers: Dict[str, str], batch: Dict[str, Any]
-    ) -> None:
+    def _sync_send(self, url: str, headers: Dict[str, str], batch: Dict[str, Any]) -> None:
         try:
             response = self.sync_httpx_client.post(
                 url=url, headers=headers, json=batch  # type: ignore
@@ -259,9 +255,7 @@ class OpikLogger(CustomBatchLogger):
                 f"OpikLogger failed to log success event - {str(e)}\n{traceback.format_exc()}"
             )
 
-    async def _submit_batch(
-        self, url: str, headers: Dict[str, str], batch: Dict[str, Any]
-    ) -> None:
+    async def _submit_batch(self, url: str, headers: Dict[str, str], batch: Dict[str, Any]) -> None:
         try:
             response = await self.async_httpx_client.post(
                 url=url, headers=headers, json=batch  # type: ignore
@@ -273,9 +267,7 @@ class OpikLogger(CustomBatchLogger):
                     f"OpikLogger - Error: {response.status_code} - {response.text}"
                 )
             else:
-                verbose_logger.info(
-                    f"OpikLogger - {len(self.log_queue)} Opik events submitted"
-                )
+                verbose_logger.info(f"OpikLogger - {len(self.log_queue)} Opik events submitted")
         except Exception as e:
             verbose_logger.exception(f"OpikLogger failed to send batch - {str(e)}")
 

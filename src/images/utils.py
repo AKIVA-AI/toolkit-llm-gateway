@@ -33,9 +33,7 @@ class ImageEditRequestUtils:
 
         # Check for unsupported parameters
         unsupported_params = [
-            param
-            for param in image_edit_optional_params
-            if param not in supported_params
+            param for param in image_edit_optional_params if param not in supported_params
         ]
 
         if unsupported_params:
@@ -67,9 +65,7 @@ class ImageEditRequestUtils:
             ImageEditOptionalRequestParams instance with only the valid parameters
         """
         valid_keys = get_type_hints(ImageEditOptionalRequestParams).keys()
-        filtered_params = {
-            k: v for k, v in params.items() if k in valid_keys and v is not None
-        }
+        filtered_params = {k: v for k, v in params.items() if k in valid_keys and v is not None}
 
         return cast(ImageEditOptionalRequestParams, filtered_params)
 
@@ -90,9 +86,7 @@ class ImageEditRequestUtils:
                 # Save current position
                 current_pos = image_data.tell()
                 image_data.seek(0)
-                bytes_data = image_data.read(
-                    100
-                )  # First 100 bytes are enough for detection
+                bytes_data = image_data.read(100)  # First 100 bytes are enough for detection
                 # Restore position
                 image_data.seek(current_pos)
             elif isinstance(image_data, BufferedReader):

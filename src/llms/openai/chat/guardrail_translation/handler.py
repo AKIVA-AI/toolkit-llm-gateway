@@ -194,9 +194,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
 
             elif isinstance(content, list) and content_idx_optional is not None:
                 # Replace specific text item in list content
-                messages[msg_idx]["content"][content_idx_optional][
-                    "text"
-                ] = guardrail_response
+                messages[msg_idx]["content"][content_idx_optional]["text"] = guardrail_response
 
     async def _apply_guardrail_responses_to_input_tool_calls(
         self,
@@ -216,9 +214,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
             if task_idx < len(tool_calls):
                 guardrailed_tool_call = tool_calls[task_idx]
                 message_tool_calls = messages[msg_idx].get("tool_calls", None)
-                if message_tool_calls is not None and isinstance(
-                    message_tool_calls, list
-                ):
+                if message_tool_calls is not None and isinstance(message_tool_calls, list):
                     if tool_call_idx < len(message_tool_calls):
                         # Replace the tool call with the guardrailed version
                         message_tool_calls[tool_call_idx] = guardrailed_tool_call
@@ -281,9 +277,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
             request_data: dict = {"response": response}
 
             # Add user API key metadata with prefixed keys
-            user_metadata = self.transform_user_api_key_dict_to_metadata(
-                user_api_key_dict
-            )
+            user_metadata = self.transform_user_api_key_dict_to_metadata(user_api_key_dict)
             if user_metadata:
                 request_data["litellm_metadata"] = user_metadata
 
@@ -411,9 +405,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
             request_data: dict = {"responses": responses_so_far}
 
             # Add user API key metadata with prefixed keys
-            user_metadata = self.transform_user_api_key_dict_to_metadata(
-                user_api_key_dict
-            )
+            user_metadata = self.transform_user_api_key_dict_to_metadata(user_api_key_dict)
             if user_metadata:
                 request_data["litellm_metadata"] = user_metadata
 
@@ -444,9 +436,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
 
         return responses_so_far
 
-    def _has_text_content(
-        self, response: Union["ModelResponse", "ModelResponseStream"]
-    ) -> bool:
+    def _has_text_content(self, response: Union["ModelResponse", "ModelResponseStream"]) -> bool:
         """
         Check if response has any text content or tool calls to process.
 
@@ -458,14 +448,10 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
             for choice in response.choices:
                 if isinstance(choice, litellm.Choices):
                     # Check for text content
-                    if choice.message.content and isinstance(
-                        choice.message.content, str
-                    ):
+                    if choice.message.content and isinstance(choice.message.content, str):
                         return True
                     # Check for tool calls
-                    if choice.message.tool_calls and isinstance(
-                        choice.message.tool_calls, list
-                    ):
+                    if choice.message.tool_calls and isinstance(choice.message.tool_calls, list):
                         if len(choice.message.tool_calls) > 0:
                             return True
         elif isinstance(response, ModelResponseStream):
@@ -475,9 +461,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
                     if choice.delta.content and isinstance(choice.delta.content, str):
                         return True
                     # Check for tool calls
-                    if choice.delta.tool_calls and isinstance(
-                        choice.delta.tool_calls, list
-                    ):
+                    if choice.delta.tool_calls and isinstance(choice.delta.tool_calls, list):
                         if len(choice.delta.tool_calls) > 0:
                             return True
         return False
@@ -497,9 +481,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
 
         Override this method to customize text/image/tool call extraction logic.
         """
-        verbose_proxy_logger.debug(
-            "OpenAI Chat Completions: Processing choice: %s", choice
-        )
+        verbose_proxy_logger.debug("OpenAI Chat Completions: Processing choice: %s", choice)
 
         # Determine content source and tool calls based on choice type
         content = None
@@ -624,9 +606,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
                 choice = cast(Choices, response.choices[choice_idx])
                 choice_tool_calls = choice.message.tool_calls
 
-                if choice_tool_calls is not None and isinstance(
-                    choice_tool_calls, list
-                ):
+                if choice_tool_calls is not None and isinstance(choice_tool_calls, list):
                     if tool_call_idx < len(choice_tool_calls):
                         # Update the tool call with guardrailed version
                         existing_tool_call = choice_tool_calls[tool_call_idx]
@@ -634,9 +614,7 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
                         if "function" in guardrailed_tool_call:
                             func_dict = guardrailed_tool_call["function"]
                             if "arguments" in func_dict:
-                                existing_tool_call.function.arguments = func_dict[
-                                    "arguments"
-                                ]
+                                existing_tool_call.function.arguments = func_dict["arguments"]
                             if "name" in func_dict:
                                 existing_tool_call.function.name = func_dict["name"]
 
@@ -706,7 +684,10 @@ class OpenAIChatCompletionsHandler(BaseTranslation):
                     # List content - handle each content item
                     for content_idx, content_item in enumerate(content):
                         if "text" in content_item:
-                            list_key: Tuple[int, Optional[int]] = (choice_idx_in_response, content_idx)
+                            list_key: Tuple[int, Optional[int]] = (
+                                choice_idx_in_response,
+                                content_idx,
+                            )
                             if list_key in guardrail_map:
                                 if list_key not in already_set:
                                     # First chunk - set the complete guardrailed text

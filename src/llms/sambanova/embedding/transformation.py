@@ -2,10 +2,10 @@
 This is OpenAI compatible - no transformation is applied
 
 """
+
 from typing import List, Optional, Union
 
 import httpx
-
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.llms.base_llm.embedding.transformation import BaseEmbeddingConfig
@@ -134,6 +134,4 @@ class SambaNovaEmbeddingConfig(BaseEmbeddingConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, httpx.Headers]
     ) -> BaseLLMException:
-        return SambaNovaError(
-            message=error_message, status_code=status_code, headers=headers
-        )
+        return SambaNovaError(message=error_message, status_code=status_code, headers=headers)

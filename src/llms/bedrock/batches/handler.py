@@ -1,7 +1,6 @@
+from litellm.types.utils import LiteLLMBatch
 from openai.types.batch import BatchRequestCounts
 from openai.types.batch import Metadata as OpenAIBatchMetadata
-
-from litellm.types.utils import LiteLLMBatch
 
 
 class BedrockBatchesHandler:
@@ -12,6 +11,7 @@ class BedrockBatchesHandler:
 
     E.g. Twelve Labs Embedding Async Invoke
     """
+
     @staticmethod
     def _handle_async_invoke_status(
         batch_id: str, aws_region_name: str, logging_obj=None, **kwargs
@@ -49,9 +49,9 @@ class BedrockBatchesHandler:
             from litellm.types.utils import LiteLLMBatch
 
             openai_batch_metadata: OpenAIBatchMetadata = {
-                "output_file_id": status_response["outputDataConfig"][
-                    "s3OutputDataConfig"
-                ]["s3Uri"],
+                "output_file_id": status_response["outputDataConfig"]["s3OutputDataConfig"][
+                    "s3Uri"
+                ],
                 "failure_message": status_response.get("failureMessage") or "",
                 "model_arn": status_response["modelArn"],
             }
@@ -63,9 +63,11 @@ class BedrockBatchesHandler:
                 created_at=status_response["submitTime"],
                 in_progress_at=status_response["lastModifiedTime"],
                 completed_at=status_response.get("endTime"),
-                failed_at=status_response.get("endTime")
-                if status_response["status"] == "failed"
-                else None,
+                failed_at=(
+                    status_response.get("endTime")
+                    if status_response["status"] == "failed"
+                    else None
+                ),
                 request_counts=BatchRequestCounts(
                     total=1,
                     completed=1 if status_response["status"] == "completed" else 0,

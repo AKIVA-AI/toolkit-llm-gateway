@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 from fastapi import Request
-
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import UserAPIKeyAuth
 
@@ -14,9 +13,7 @@ async def handle_oauth2_proxy_request(request: Request) -> UserAPIKeyAuth:
 
     verbose_proxy_logger.debug("Handling oauth2 proxy request")
     # Define the OAuth2 config mappings
-    oauth2_config_mappings: Dict[str, str] = (
-        general_settings.get("oauth2_config_mappings") or {}
-    )
+    oauth2_config_mappings: Dict[str, str] = general_settings.get("oauth2_config_mappings") or {}
     verbose_proxy_logger.debug(f"Oauth2 config mappings: {oauth2_config_mappings}")
 
     if not oauth2_config_mappings:
@@ -36,9 +33,7 @@ async def handle_oauth2_proxy_request(request: Request) -> UserAPIKeyAuth:
                 auth_data[key] = [model.strip() for model in value.split(",")]
             else:
                 auth_data[key] = value
-    verbose_proxy_logger.debug(
-        f"Auth data before creating UserAPIKeyAuth object: {auth_data}"
-    )
+    verbose_proxy_logger.debug(f"Auth data before creating UserAPIKeyAuth object: {auth_data}")
     user_api_key_auth = UserAPIKeyAuth(**auth_data)
     verbose_proxy_logger.debug(f"UserAPIKeyAuth object created: {user_api_key_auth}")
     # Create and return UserAPIKeyAuth object

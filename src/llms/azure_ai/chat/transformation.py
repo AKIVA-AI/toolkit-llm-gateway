@@ -3,9 +3,8 @@ from typing import Any, List, Optional, Tuple, cast
 from urllib.parse import urlparse
 
 import httpx
-from httpx import Response
-
 import litellm
+from httpx import Response
 from litellm._logging import verbose_logger
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
     _audio_or_image_in_message_content,
@@ -126,7 +125,9 @@ class AzureAIStudioConfig(OpenAIConfig):
 
         # Add the path to the base URL
         if "services.ai.azure.com" in api_base:
-            new_url = _add_path_to_api_base(api_base=api_base, ending_path="/models/chat/completions")
+            new_url = _add_path_to_api_base(
+                api_base=api_base, ending_path="/models/chat/completions"
+            )
         else:
             new_url = _add_path_to_api_base(api_base=api_base, ending_path="/chat/completions")
 
@@ -198,7 +199,9 @@ class AzureAIStudioConfig(OpenAIConfig):
         dynamic_api_key = api_key or get_secret_str("AZURE_AI_API_KEY")
 
         if self._is_azure_openai_model(model=model, api_base=api_base):
-            verbose_logger.debug("Model={} is Azure OpenAI model. Setting custom_llm_provider='azure'.".format(model))
+            verbose_logger.debug(
+                "Model={} is Azure OpenAI model. Setting custom_llm_provider='azure'.".format(model)
+            )
             custom_llm_provider = "azure"
         return api_base, dynamic_api_key, custom_llm_provider
 
@@ -253,21 +256,30 @@ class AzureAIStudioConfig(OpenAIConfig):
 
         if should_drop_params and "Extra inputs are not permitted" in error_text:
             return True
-        elif "unknown field: parameter index is not a valid field" in error_text:  # remove index from tool calls
+        elif (
+            "unknown field: parameter index is not a valid field" in error_text
+        ):  # remove index from tool calls
             return True
         elif (
             AzureFoundryErrorStrings.SET_EXTRA_PARAMETERS_TO_PASS_THROUGH.value in error_text
         ):  # remove extra-parameters from tool calls
             return True
-        return super().should_retry_llm_api_inside_llm_translation_on_http_error(e=e, litellm_params=litellm_params)
+        return super().should_retry_llm_api_inside_llm_translation_on_http_error(
+            e=e, litellm_params=litellm_params
+        )
 
     @property
     def max_retry_on_unprocessable_entity_error(self) -> int:
         return 2
 
-    def transform_request_on_unprocessable_entity_error(self, e: httpx.HTTPStatusError, request_data: dict) -> dict:
+    def transform_request_on_unprocessable_entity_error(
+        self, e: httpx.HTTPStatusError, request_data: dict
+    ) -> dict:
         _messages = cast(Optional[List[AllMessageValues]], request_data.get("messages"))
-        if "unknown field: parameter index is not a valid field" in e.response.text and _messages is not None:
+        if (
+            "unknown field: parameter index is not a valid field" in e.response.text
+            and _messages is not None
+        ):
             litellm.remove_index_from_tool_calls(
                 messages=_messages,
             )

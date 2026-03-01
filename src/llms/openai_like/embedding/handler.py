@@ -6,7 +6,6 @@ import json
 from typing import Optional
 
 import httpx
-
 import litellm
 from litellm.llms.custom_httpx.http_handler import (
     AsyncHTTPHandler,
@@ -59,9 +58,7 @@ class OpenAILikeEmbeddingHandler(OpenAILikeBase):
                     message=e.response.text if e.response else str(e),
                 )
             except httpx.TimeoutException:
-                raise OpenAILikeError(
-                    status_code=408, message="Timeout error occurred."
-                )
+                raise OpenAILikeError(status_code=408, message="Timeout error occurred.")
             except Exception as e:
                 raise OpenAILikeError(status_code=500, message=str(e))
 

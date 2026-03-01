@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, List, Optional
 
 import httpx
-
 from litellm.llms.anthropic.chat.transformation import AnthropicConfig
 from litellm.llms.bedrock.chat.invoke_transformations.base_invoke_transformation import (
     AmazonInvokeConfig,
@@ -61,7 +60,6 @@ class AmazonAnthropicClaudeConfig(AmazonInvokeConfig, AnthropicConfig):
             drop_params,
         )
 
-
     def transform_request(
         self,
         model: str,
@@ -73,17 +71,15 @@ class AmazonAnthropicClaudeConfig(AmazonInvokeConfig, AnthropicConfig):
         # Filter out AWS authentication parameters before passing to Anthropic transformation
         # AWS params should only be used for signing requests, not included in request body
         filtered_params = {
-            k: v
-            for k, v in optional_params.items()
-            if k not in self.aws_authentication_params
+            k: v for k, v in optional_params.items() if k not in self.aws_authentication_params
         }
         filtered_params = self._normalize_bedrock_tool_search_tools(filtered_params)
-        
+
         _anthropic_request = AnthropicConfig.transform_request(
             self,
             model=model,
             messages=messages,
-            optional_params=filtered_params, 
+            optional_params=filtered_params,
             litellm_params=litellm_params,
             headers=headers,
         )
@@ -103,16 +99,13 @@ class AmazonAnthropicClaudeConfig(AmazonInvokeConfig, AnthropicConfig):
             model=model,
             optional_params=optional_params,
             computer_tool_used=self.is_computer_tool_used(tools),
-            prompt_caching_set=False, 
+            prompt_caching_set=False,
             file_id_used=self.is_file_id_used(messages),
             mcp_server_used=self.is_mcp_server_used(optional_params.get("mcp_servers")),
         )
         beta_set.update(auto_betas)
 
-        if (
-            tool_search_used
-            and not (programmatic_tool_calling_used or input_examples_used)
-        ):
+        if tool_search_used and not (programmatic_tool_calling_used or input_examples_used):
             beta_set.discard(ANTHROPIC_TOOL_SEARCH_BETA_HEADER)
             if "opus-4" in model.lower() or "opus_4" in model.lower():
                 beta_set.add("tool-search-tool-2025-10-19")
@@ -139,9 +132,7 @@ class AmazonAnthropicClaudeConfig(AmazonInvokeConfig, AnthropicConfig):
             if tool_type == "tool_search_tool_regex_20251119":
                 normalized_tool = tool.copy()
                 normalized_tool["type"] = "tool_search_tool_regex"
-                normalized_tool["name"] = normalized_tool.get(
-                    "name", "tool_search_tool_regex"
-                )
+                normalized_tool["name"] = normalized_tool.get("name", "tool_search_tool_regex")
                 normalized_tools.append(normalized_tool)
                 continue
             normalized_tools.append(tool)

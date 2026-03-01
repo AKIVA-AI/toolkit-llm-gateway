@@ -16,8 +16,7 @@ def is_tokens_or_list_of_tokens(value: List):
         return True
     # Check if it's a list of lists of integers (list of tokens)
     if isinstance(value, list) and all(
-        isinstance(item, list) and all(isinstance(i, int) for i in item)
-        for item in value
+        isinstance(item, list) and all(isinstance(i, int) for i in item) for item in value
     ):
         return True
     return False

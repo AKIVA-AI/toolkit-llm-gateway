@@ -6,7 +6,6 @@ import json
 from typing import Any, AsyncIterator, Dict, Iterator, List, Literal, Optional, Union
 
 from httpx import Headers, Response
-
 from litellm.constants import DEFAULT_MAX_TOKENS_FOR_TRITON
 from litellm.litellm_core_utils.prompt_templates.factory import prompt_factory
 from litellm.llms.base_llm.base_model_iterator import BaseModelResponseIterator
@@ -38,9 +37,7 @@ class TritonConfig(BaseConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[Dict, Headers]
     ) -> BaseLLMException:
-        return TritonError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return TritonError(status_code=status_code, message=error_message, headers=headers)
 
     def validate_environment(
         self,
@@ -198,9 +195,7 @@ class TritonGenerateConfig(TritonConfig):
         data_for_triton: Dict[str, Any] = {
             "text_input": prompt_factory(model=model, messages=messages),
             "parameters": {
-                "max_tokens": int(
-                    optional_params.get("max_tokens", DEFAULT_MAX_TOKENS_FOR_TRITON)
-                ),
+                "max_tokens": int(optional_params.get("max_tokens", DEFAULT_MAX_TOKENS_FOR_TRITON)),
             },
             "stream": bool(stream),
         }
@@ -224,9 +219,7 @@ class TritonGenerateConfig(TritonConfig):
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise TritonError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise TritonError(message=raw_response.text, status_code=raw_response.status_code)
         model_response.choices = [
             Choices(index=0, message=Message(content=raw_response_json["text_output"]))
         ]
@@ -295,9 +288,7 @@ class TritonInferConfig(TritonConfig):
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise TritonError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise TritonError(message=raw_response.text, status_code=raw_response.status_code)
 
         _triton_response_data = raw_response_json["outputs"][0]["data"]
         triton_response_data: Optional[str] = None

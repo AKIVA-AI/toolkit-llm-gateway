@@ -3,13 +3,12 @@ Transformation logic from OpenAI format to Gemini format.
 
 Why separate file? Make it easy to see how transformation works
 """
+
 import json
 import os
 from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Tuple, Union, cast
 
 import httpx
-from pydantic import BaseModel
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
@@ -48,6 +47,7 @@ from litellm.types.llms.vertex_ai import (
     Tools,
 )
 from litellm.types.utils import GenericImageParsingChunk, LlmProviders
+from pydantic import BaseModel
 
 from ..common_utils import (
     _check_text_in_content,
@@ -74,7 +74,7 @@ def _convert_detail_to_media_resolution_enum(
 
 
 def _process_gemini_image(
-    image_url: str, 
+    image_url: str,
     format: Optional[str] = None,
     media_resolution_enum: Optional[Dict[str, str]] = None,
     model: Optional[str] = None,
@@ -102,9 +102,10 @@ def _process_gemini_image(
                 mime_type = format
             file_data = FileDataType(mime_type=mime_type, file_uri=image_url)
             part: PartType = {"file_data": file_data}
-            
+
             if media_resolution_enum is not None and model is not None:
                 from .vertex_and_google_ai_studio_gemini import VertexGeminiConfig
+
                 if VertexGeminiConfig._is_gemini_3_or_newer(model):
                     part_dict = dict(part)
                     part_dict["media_resolution"] = media_resolution_enum
@@ -112,14 +113,14 @@ def _process_gemini_image(
             return part
         elif (
             "https://" in image_url
-            and (image_type := format or _get_image_mime_type_from_url(image_url))
-            is not None
+            and (image_type := format or _get_image_mime_type_from_url(image_url)) is not None
         ):
             file_data = FileDataType(file_uri=image_url, mime_type=image_type)
             part = {"file_data": file_data}
-            
+
             if media_resolution_enum is not None and model is not None:
                 from .vertex_and_google_ai_studio_gemini import VertexGeminiConfig
+
                 if VertexGeminiConfig._is_gemini_3_or_newer(model):
                     part_dict = dict(part)
                     part_dict["media_resolution"] = media_resolution_enum
@@ -128,11 +129,12 @@ def _process_gemini_image(
         elif "http://" in image_url or "https://" in image_url or "base64" in image_url:
             image = convert_to_anthropic_image_obj(image_url, format=format)
             _blob: BlobType = {"data": image["data"], "mime_type": image["media_type"]}
-            
+
             part = {"inline_data": cast(BlobType, _blob)}
-            
+
             if media_resolution_enum is not None and model is not None:
                 from .vertex_and_google_ai_studio_gemini import VertexGeminiConfig
+
                 if VertexGeminiConfig._is_gemini_3_or_newer(model):
                     part_dict = dict(part)
                     part_dict["media_resolution"] = media_resolution_enum
@@ -190,9 +192,7 @@ def check_if_part_exists_in_parts(
         match_found = True
         for key in keys_to_compare:
             equivalent_key = _get_equivalent_key(key, p_keys)
-            if equivalent_key is None or p.get(equivalent_key, None) != part.get(
-                key, None
-            ):
+            if equivalent_key is None or p.get(equivalent_key, None) != part.get(key, None):
                 match_found = False
                 break
 
@@ -224,9 +224,7 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
             user_content: List[PartType] = []
             init_msg_i = msg_i
             ## MERGE CONSECUTIVE USER CONTENT ##
-            while (
-                msg_i < len(messages) and messages[msg_i]["role"] in user_message_types
-            ):
+            while msg_i < len(messages) and messages[msg_i]["role"] in user_message_types:
                 _message_content = messages[msg_i].get("content")
                 if _message_content is not None and isinstance(_message_content, list):
                     _parts: List[PartType] = []
@@ -248,11 +246,13 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
                                 image_url = img_element["image_url"]["url"]
                                 format = img_element["image_url"].get("format")
                                 detail = img_element["image_url"].get("detail")
-                                media_resolution_enum = _convert_detail_to_media_resolution_enum(detail)
+                                media_resolution_enum = _convert_detail_to_media_resolution_enum(
+                                    detail
+                                )
                             else:
                                 image_url = img_element["image_url"]
                             _part = _process_gemini_image(
-                                image_url=image_url, 
+                                image_url=image_url,
                                 format=format,
                                 media_resolution_enum=media_resolution_enum,
                                 model=model,
@@ -268,13 +268,11 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
                                     if audio_format.startswith("audio/") is False
                                     else audio_format
                                 )  # Gemini expects audio/wav, audio/mp3, etc.
-                                openai_image_str = (
-                                    convert_generic_image_chunk_to_openai_image_obj(
-                                        image_chunk=GenericImageParsingChunk(
-                                            type="base64",
-                                            media_type=audio_format_modified,
-                                            data=audio_data,
-                                        )
+                                openai_image_str = convert_generic_image_chunk_to_openai_image_obj(
+                                    image_chunk=GenericImageParsingChunk(
+                                        type="base64",
+                                        media_type=audio_format_modified,
+                                        data=audio_data,
                                     )
                                 )
                                 _part = _process_gemini_image(
@@ -295,7 +293,7 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
                                 )
                             try:
                                 _part = _process_gemini_image(
-                                    image_url=passed_file, 
+                                    image_url=passed_file,
                                     format=format,
                                     model=model,
                                 )
@@ -307,10 +305,7 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
                                     )
                                 )
                     user_content.extend(_parts)
-                elif (
-                    _message_content is not None
-                    and isinstance(_message_content, str)
-                ):
+                elif _message_content is not None and isinstance(_message_content, str):
                     _part = PartType(text=_message_content)
                     user_content.append(_part)
 
@@ -343,18 +338,13 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
                 reasoning_content = assistant_msg.get("reasoning_content", None)
                 thinking_blocks = assistant_msg.get("thinking_blocks")
                 if reasoning_content is not None:
-                    assistant_content.append(
-                        PartType(thought=True, text=reasoning_content)
-                    )
+                    assistant_content.append(PartType(thought=True, text=reasoning_content))
                 if thinking_blocks is not None:
                     for block in thinking_blocks:
                         if block["type"] == "thinking":
                             block_thinking_str = block.get("thinking")
                             block_signature = block.get("signature")
-                            if (
-                                block_thinking_str is not None
-                                and block_signature is not None
-                            ):
+                            if block_thinking_str is not None and block_signature is not None:
                                 try:
                                     assistant_content.append(
                                         PartType(
@@ -378,10 +368,7 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
                                 _parts.append(_part)
 
                     assistant_content.extend(_parts)
-                elif (
-                    _message_content is not None
-                    and isinstance(_message_content, str)
-                ):
+                elif _message_content is not None and isinstance(_message_content, str):
                     assistant_text = _message_content
                     assistant_content.append(PartType(text=assistant_text))  # type: ignore
 
@@ -410,10 +397,7 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
 
             ## APPEND TOOL CALL MESSAGES ##
             tool_call_message_roles = ["tool", "function"]
-            if (
-                msg_i < len(messages)
-                and messages[msg_i]["role"] in tool_call_message_roles
-            ):
+            if msg_i < len(messages) and messages[msg_i]["role"] in tool_call_message_roles:
                 _part = convert_to_gemini_tool_call_result(
                     messages[msg_i], last_message_with_tool_calls  # type: ignore
                 )
@@ -423,9 +407,7 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
                     tool_call_responses.extend(_part)
                 else:
                     tool_call_responses.append(_part)
-            if msg_i < len(messages) and (
-                messages[msg_i]["role"] not in tool_call_message_roles
-            ):
+            if msg_i < len(messages) and (messages[msg_i]["role"] not in tool_call_message_roles):
                 if len(tool_call_responses) > 0:
                     contents.append(ContentType(parts=tool_call_responses))
                     tool_call_responses = []
@@ -527,9 +509,7 @@ def _transform_request_body(
             k: v for k, v in optional_params.items() if _get_equivalent_key(k, set(config_fields))
         }
 
-        generation_config: Optional[GenerationConfig] = GenerationConfig(
-            **filtered_params
-        )
+        generation_config: Optional[GenerationConfig] = GenerationConfig(**filtered_params)
         data = RequestBody(contents=content)
         if system_instructions is not None:
             data["system_instruction"] = system_instructions
@@ -573,9 +553,9 @@ def sync_transform_request_body(
     context_caching_endpoints = ContextCachingEndpoints()
 
     (
-    messages,
-    optional_params,
-    cached_content,
+        messages,
+        optional_params,
+        cached_content,
     ) = context_caching_endpoints.check_and_create_cache(
         messages=messages,
         optional_params=optional_params,
@@ -592,7 +572,6 @@ def sync_transform_request_body(
         vertex_location=vertex_location,
         vertex_auth_header=vertex_auth_header,
     )
-
 
     return _transform_request_body(
         messages=messages,
@@ -625,9 +604,9 @@ async def async_transform_request_body(
     context_caching_endpoints = ContextCachingEndpoints()
 
     (
-    messages,
-    optional_params,
-    cached_content,
+        messages,
+        optional_params,
+        cached_content,
     ) = await context_caching_endpoints.async_check_and_create_cache(
         messages=messages,
         optional_params=optional_params,

@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import httpx
-
 from litellm.proxy._types import UserAPIKeyAuth
 from litellm.types.llms.openai import (
     AllMessageValues,

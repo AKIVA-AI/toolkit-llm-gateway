@@ -6,7 +6,6 @@ Fetches .prompt files from BitBucket repositories and provides team-based access
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 from jinja2 import DictLoader, Environment, select_autoescape
-
 from litellm.integrations.custom_prompt_management import CustomPromptManagement
 
 if TYPE_CHECKING:
@@ -94,9 +93,7 @@ class BitBucketTemplateManager:
         """Load a specific .prompt file from BitBucket."""
         try:
             # Fetch the .prompt file from BitBucket
-            prompt_content = self.bitbucket_client.get_file_content(
-                f"{prompt_id}.prompt"
-            )
+            prompt_content = self.bitbucket_client.get_file_content(f"{prompt_id}.prompt")
 
             if prompt_content:
                 template = self._parse_prompt_file(prompt_content, prompt_id)
@@ -104,9 +101,7 @@ class BitBucketTemplateManager:
         except Exception as e:
             raise Exception(f"Failed to load prompt '{prompt_id}' from BitBucket: {e}")
 
-    def _parse_prompt_file(
-        self, content: str, prompt_id: str
-    ) -> BitBucketPromptTemplate:
+    def _parse_prompt_file(self, content: str, prompt_id: str) -> BitBucketPromptTemplate:
         """Parse a .prompt file content and extract metadata and template."""
         # Split frontmatter and content
         if content.startswith("---"):
@@ -161,9 +156,7 @@ class BitBucketTemplateManager:
                     result[key] = value.strip("\"'")
         return result
 
-    def render_template(
-        self, template_id: str, variables: Optional[Dict[str, Any]] = None
-    ) -> str:
+    def render_template(self, template_id: str, variables: Optional[Dict[str, Any]] = None) -> str:
         """Render a template with the given variables."""
         if template_id not in self.prompts:
             raise ValueError(f"Template '{template_id}' not found")
@@ -252,9 +245,7 @@ class BitBucketPromptManager(CustomPromptManagement):
             raise ValueError(f"Prompt template '{prompt_id}' not found")
 
         # Render the template
-        rendered_prompt = self.prompt_manager.render_template(
-            prompt_id, prompt_variables or {}
-        )
+        rendered_prompt = self.prompt_manager.render_template(prompt_id, prompt_variables or {})
 
         # Extract metadata
         metadata = {
@@ -284,9 +275,7 @@ class BitBucketPromptManager(CustomPromptManagement):
 
         try:
             # Get the rendered prompt and metadata
-            rendered_prompt, prompt_metadata = self.get_prompt_template(
-                prompt_id, prompt_variables
-            )
+            rendered_prompt, prompt_metadata = self.get_prompt_template(prompt_id, prompt_variables)
 
             # Parse the rendered prompt into messages
             parsed_messages = self._parse_prompt_to_messages(rendered_prompt)
@@ -382,9 +371,7 @@ class BitBucketPromptManager(CustomPromptManagement):
 
         # Add the last message
         if current_role and current_content:
-            messages.append(
-                {"role": current_role, "content": "\n".join(current_content).strip()}
-            )
+            messages.append({"role": current_role, "content": "\n".join(current_content).strip()})
 
         # If no role indicators found, treat as a single user message
         if not messages and prompt_content.strip():
@@ -459,9 +446,7 @@ class BitBucketPromptManager(CustomPromptManagement):
                 self.prompt_manager._load_prompt_from_bitbucket(prompt_id)
 
             # Get the rendered prompt and metadata
-            rendered_prompt, prompt_metadata = self.get_prompt_template(
-                prompt_id, prompt_variables
-            )
+            rendered_prompt, prompt_metadata = self.get_prompt_template(prompt_id, prompt_variables)
 
             # Convert rendered content to chat messages
             messages = self._parse_prompt_to_messages(rendered_prompt)

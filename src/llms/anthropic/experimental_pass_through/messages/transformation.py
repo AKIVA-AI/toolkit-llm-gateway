@@ -1,8 +1,8 @@
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
 
 import httpx
-
-from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj, verbose_logger
+from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
+from litellm.litellm_core_utils.litellm_logging import verbose_logger
 from litellm.llms.base_llm.anthropic_messages.transformation import (
     BaseAnthropicMessagesConfig,
 )
@@ -124,9 +124,7 @@ class AnthropicMessagesConfig(BaseAnthropicMessagesConfig):
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise AnthropicError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise AnthropicError(message=raw_response.text, status_code=raw_response.status_code)
         return AnthropicMessagesResponse(**raw_response_json)
 
     def get_async_streaming_response_iterator(

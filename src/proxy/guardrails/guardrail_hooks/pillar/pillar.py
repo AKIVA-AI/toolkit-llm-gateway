@@ -8,8 +8,8 @@
 # Standard library imports
 import json
 import os
-from urllib.parse import quote
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Type, Union
+from urllib.parse import quote
 
 # Third-party imports
 from fastapi import HTTPException
@@ -201,7 +201,9 @@ class PillarGuardrail(CustomGuardrail):
             LiteLLM virtual key context (user_id, team_id, key_alias, etc.) is always
             automatically passed as X-LiteLLM-* headers to enable application/user tracking.
         """
-        self.async_handler = get_async_httpx_client(llm_provider=httpxSpecialProvider.GuardrailCallback)
+        self.async_handler = get_async_httpx_client(
+            llm_provider=httpxSpecialProvider.GuardrailCallback
+        )
         self.api_key = api_key or os.environ.get("PILLAR_API_KEY")
 
         if self.api_key is None:
@@ -222,7 +224,9 @@ class PillarGuardrail(CustomGuardrail):
                 verbose_proxy_logger.warning(f"Invalid action '{action}', using default")
             self.on_flagged_action = self.DEFAULT_ON_FLAGGED_ACTION
 
-        verbose_proxy_logger.debug(f"Pillar Guardrail: Initialized with on_flagged_action: {self.on_flagged_action}")
+        verbose_proxy_logger.debug(
+            f"Pillar Guardrail: Initialized with on_flagged_action: {self.on_flagged_action}"
+        )
 
         self.async_mode = self._resolve_bool_config(
             provided_value=async_mode,
@@ -260,7 +264,9 @@ class PillarGuardrail(CustomGuardrail):
                 )
             self.fallback_on_error = self.DEFAULT_FALLBACK_ACTION
 
-        verbose_proxy_logger.debug(f"Pillar Guardrail: Initialized with fallback_on_error: {self.fallback_on_error}")
+        verbose_proxy_logger.debug(
+            f"Pillar Guardrail: Initialized with fallback_on_error: {self.fallback_on_error}"
+        )
 
         # Set timeout with graceful fallback on invalid configuration
         if timeout is not None:
@@ -328,14 +334,18 @@ class PillarGuardrail(CustomGuardrail):
         """
         event_type = GuardrailEventHooks.pre_call
         if self.should_run_guardrail(data=data, event_type=event_type) is not True:
-            verbose_proxy_logger.debug(f"Pillar Guardrail: Pre-call scanning disabled for {self.guardrail_name}")
+            verbose_proxy_logger.debug(
+                f"Pillar Guardrail: Pre-call scanning disabled for {self.guardrail_name}"
+            )
             return data
 
         verbose_proxy_logger.debug("Pillar Guardrail: Pre-call hook")
         result = await self.run_pillar_guardrail(data, user_api_key_dict)
 
         # Add guardrail name to response headers
-        add_guardrail_to_applied_guardrails_header(request_data=data, guardrail_name=self.guardrail_name)
+        add_guardrail_to_applied_guardrails_header(
+            request_data=data, guardrail_name=self.guardrail_name
+        )
 
         return result
 
@@ -371,14 +381,18 @@ class PillarGuardrail(CustomGuardrail):
         """
         event_type = GuardrailEventHooks.during_call
         if self.should_run_guardrail(data=data, event_type=event_type) is not True:
-            verbose_proxy_logger.debug(f"Pillar Guardrail: During-call scanning disabled for {self.guardrail_name}")
+            verbose_proxy_logger.debug(
+                f"Pillar Guardrail: During-call scanning disabled for {self.guardrail_name}"
+            )
             return data
 
         verbose_proxy_logger.debug("Pillar Guardrail: During-call moderation hook")
         result = await self.run_pillar_guardrail(data, user_api_key_dict)
 
         # Add guardrail name to response headers
-        add_guardrail_to_applied_guardrails_header(request_data=data, guardrail_name=self.guardrail_name)
+        add_guardrail_to_applied_guardrails_header(
+            request_data=data, guardrail_name=self.guardrail_name
+        )
 
         return result
 
@@ -405,7 +419,9 @@ class PillarGuardrail(CustomGuardrail):
         """
         event_type = GuardrailEventHooks.post_call
         if self.should_run_guardrail(data=data, event_type=event_type) is not True:
-            verbose_proxy_logger.debug(f"Pillar Guardrail: Post-call scanning disabled for {self.guardrail_name}")
+            verbose_proxy_logger.debug(
+                f"Pillar Guardrail: Post-call scanning disabled for {self.guardrail_name}"
+            )
             return response
 
         verbose_proxy_logger.debug("Pillar Guardrail: Post-call hook")
@@ -413,11 +429,15 @@ class PillarGuardrail(CustomGuardrail):
         # Extract response messages in the format Pillar expects
         response_dict = response.model_dump() if hasattr(response, "model_dump") else {}  # type: ignore[union-attr]
         response_messages = [
-            choice.get("message") for choice in response_dict.get("choices", []) if choice.get("message")
+            choice.get("message")
+            for choice in response_dict.get("choices", [])
+            if choice.get("message")
         ]
 
         if not response_messages:
-            verbose_proxy_logger.debug("Pillar Guardrail: No response content to scan, skipping post-call analysis")
+            verbose_proxy_logger.debug(
+                "Pillar Guardrail: No response content to scan, skipping post-call analysis"
+            )
             return response
 
         # Create complete conversation: original messages + response messages
@@ -428,7 +448,9 @@ class PillarGuardrail(CustomGuardrail):
         await self.run_pillar_guardrail(post_call_data, user_api_key_dict)
 
         # Add guardrail name to response headers
-        add_guardrail_to_applied_guardrails_header(request_data=data, guardrail_name=self.guardrail_name)
+        add_guardrail_to_applied_guardrails_header(
+            request_data=data, guardrail_name=self.guardrail_name
+        )
 
         return response
 
@@ -452,7 +474,9 @@ class PillarGuardrail(CustomGuardrail):
         """
         # Check if messages are present
         if not data.get("messages"):
-            verbose_proxy_logger.debug("Pillar Guardrail: No messages detected, bypassing security scan")
+            verbose_proxy_logger.debug(
+                "Pillar Guardrail: No messages detected, bypassing security scan"
+            )
             return data
 
         try:
@@ -534,7 +558,7 @@ class PillarGuardrail(CustomGuardrail):
         headers: Dict[str, str] = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-        }    
+        }
 
         # Add Pillar-specific headers based on configuration
         self._set_bool_header(headers, "plr_scanners", self.include_scanners)
@@ -558,7 +582,9 @@ class PillarGuardrail(CustomGuardrail):
 
         return headers
 
-    def _set_bool_header(self, headers: Dict[str, str], header_name: str, value: Optional[bool]) -> None:
+    def _set_bool_header(
+        self, headers: Dict[str, str], header_name: str, value: Optional[bool]
+    ) -> None:
         """Apply a boolean value as a lowercase string HTTP header when provided."""
 
         if value is None:
@@ -699,7 +725,9 @@ class PillarGuardrail(CustomGuardrail):
         )
         return payload
 
-    async def _call_pillar_api(self, headers: Dict[str, str], payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def _call_pillar_api(
+        self, headers: Dict[str, str], payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Call the Pillar API and return the response.
 
@@ -724,10 +752,14 @@ class PillarGuardrail(CustomGuardrail):
 
         flagged = res.get("flagged")
         session_id = res.get("session_id")
-        verbose_proxy_logger.debug(f"Pillar Guardrail: Analysis complete - flagged={flagged}, session={session_id}")
+        verbose_proxy_logger.debug(
+            f"Pillar Guardrail: Analysis complete - flagged={flagged}, session={session_id}"
+        )
         return res
 
-    def _process_pillar_response(self, pillar_response: Dict[str, Any], original_data: dict) -> None:
+    def _process_pillar_response(
+        self, pillar_response: Dict[str, Any], original_data: dict
+    ) -> None:
         """
         Process the Pillar API response and handle detections based on configuration.
 
@@ -744,19 +776,25 @@ class PillarGuardrail(CustomGuardrail):
         flagged = pillar_response.get("flagged", False)
 
         metadata_field = get_metadata_variable_name_from_kwargs(original_data)
-        if metadata_field not in original_data or not isinstance(original_data.get(metadata_field), dict):
+        if metadata_field not in original_data or not isinstance(
+            original_data.get(metadata_field), dict
+        ):
             original_data[metadata_field] = {}
         metadata_store = original_data[metadata_field]
 
         # Backwards compatibility - ensure metadata alias exists when different key used
         if metadata_field != "metadata":
-            if "metadata" not in original_data or not isinstance(original_data.get("metadata"), dict):
+            if "metadata" not in original_data or not isinstance(
+                original_data.get("metadata"), dict
+            ):
                 original_data["metadata"] = metadata_store
 
         # Store session_id from Pillar response for potential reuse
         pillar_session_id = pillar_response.get("session_id")
         if pillar_session_id:
-            verbose_proxy_logger.debug(f"Pillar Guardrail: Received session_id from server: {pillar_session_id}")
+            verbose_proxy_logger.debug(
+                f"Pillar Guardrail: Received session_id from server: {pillar_session_id}"
+            )
             # Store in request metadata for use in subsequent hooks
             if "pillar_session_id" not in metadata_store:
                 metadata_store["pillar_session_id"] = pillar_session_id
@@ -774,7 +812,9 @@ class PillarGuardrail(CustomGuardrail):
             if self.on_flagged_action == "block":
                 self._raise_pillar_detection_exception(pillar_response)
             elif self.on_flagged_action == "monitor":
-                verbose_proxy_logger.info("Pillar Guardrail: Monitoring mode - allowing flagged content to proceed")
+                verbose_proxy_logger.info(
+                    "Pillar Guardrail: Monitoring mode - allowing flagged content to proceed"
+                )
 
         build_pillar_response_headers(metadata_store)
 
@@ -798,7 +838,9 @@ class PillarGuardrail(CustomGuardrail):
             },
         }
 
-        verbose_proxy_logger.warning("Pillar Guardrail: Request blocked - Security threats detected")
+        verbose_proxy_logger.warning(
+            "Pillar Guardrail: Request blocked - Security threats detected"
+        )
 
         raise HTTPException(status_code=400, detail=error_detail)
 

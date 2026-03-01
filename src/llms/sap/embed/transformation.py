@@ -2,18 +2,17 @@
 Translates from OpenAI's `/v1/embeddings` to IBM's `/text/embeddings` route.
 """
 
-from typing import Optional, List, Dict, Literal, Union
-from pydantic import BaseModel, Field
 from functools import cached_property
+from typing import Dict, List, Literal, Optional, Union
 
 import httpx
-
 from litellm.llms.base_llm.embedding.transformation import (
     BaseEmbeddingConfig,
     LiteLLMLoggingObj,
 )
 from litellm.types.llms.openai import AllEmbeddingInputValues
 from litellm.types.utils import EmbeddingResponse
+from pydantic import BaseModel, Field
 
 from ..chat.handler import GenAIHubOrchestrationError
 from ..credentials import get_token_creator
@@ -26,9 +25,7 @@ class Usage(BaseModel):
 
 class EmbeddingItem(BaseModel):
     object: Literal["embedding"]
-    embedding: List[float] = Field(
-        ..., description="Vector of floats (length varies by model)."
-    )
+    embedding: List[float] = Field(..., description="Vector of floats (length varies by model).")
     index: int
 
 
@@ -89,14 +86,11 @@ class GenAIHubEmbeddingConfig(BaseEmbeddingConfig):
     def deployment_url(self) -> str:
         with httpx.Client(timeout=30) as client:
             valid_deployments = []
-            deployments = client.get(
-                self.base_url + "/lm/deployments", headers=self.headers
-            ).json()
+            deployments = client.get(self.base_url + "/lm/deployments", headers=self.headers).json()
             for deployment in deployments.get("resources", []):
                 if deployment["scenarioId"] == "orchestration":
                     config_details = client.get(
-                        self.base_url
-                        + f'/lm/configurations/{deployment["configurationId"]}',
+                        self.base_url + f'/lm/configurations/{deployment["configurationId"]}',
                         headers=self.headers,
                     ).json()
                     if config_details["executableId"] == "orchestration":
@@ -154,9 +148,7 @@ class GenAIHubEmbeddingConfig(BaseEmbeddingConfig):
         input_dict = {"text": input}
         body = {
             "config": {
-                "modules": {
-                    "embeddings": {"model": validate_dict(model_dict, EmbeddingModel)}
-                }
+                "modules": {"embeddings": {"model": validate_dict(model_dict, EmbeddingModel)}}
             },
             "input": validate_dict(input_dict, EmbeddingInput),
         }

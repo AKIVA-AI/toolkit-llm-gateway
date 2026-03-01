@@ -2,10 +2,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
-from typing_extensions import Required, TypedDict
-
-from litellm.types.llms.openai import AllMessageValues, ChatCompletionToolCallChunk, ChatCompletionToolParam
 from litellm.types.llms.openai import (
     AllMessageValues,
     ChatCompletionToolCallChunk,
@@ -13,9 +9,6 @@ from litellm.types.llms.openai import (
 )
 from litellm.types.proxy.guardrails.guardrail_hooks.enkryptai import (
     EnkryptAIGuardrailConfigs,
-)
-from litellm.types.proxy.guardrails.guardrail_hooks.generic_guardrail_api import (
-    GenericGuardrailAPIOptionalParams,
 )
 from litellm.types.proxy.guardrails.guardrail_hooks.grayswan import (
     GraySwanGuardrailConfigModel,
@@ -26,6 +19,8 @@ from litellm.types.proxy.guardrails.guardrail_hooks.ibm import (
 from litellm.types.proxy.guardrails.guardrail_hooks.tool_permission import (
     ToolPermissionGuardrailConfigModel,
 )
+from pydantic import BaseModel, ConfigDict, Field
+from typing_extensions import Required, TypedDict
 
 """
 Pydantic object defining how to set guardrails on litellm proxy
@@ -305,9 +300,7 @@ class PresidioConfigModel(PresidioPresidioConfigModelUserInterface):
             "'output' runs on model → user traffic, and 'both' applies to both."
         ),
     )
-    presidio_score_thresholds: Optional[
-        Dict[Union[PiiEntityType, str], float]
-    ] = Field(
+    presidio_score_thresholds: Optional[Dict[Union[PiiEntityType, str], float]] = Field(
         default=None,
         description=(
             "Optional per-entity minimum confidence scores for Presidio detections. "
@@ -349,9 +342,7 @@ class BedrockGuardrailConfigModel(BaseModel):
     aws_session_token: Optional[str] = Field(
         default=None, description="AWS session token for temporary credentials"
     )
-    aws_session_name: Optional[str] = Field(
-        default=None, description="Name of the AWS session"
-    )
+    aws_session_name: Optional[str] = Field(default=None, description="Name of the AWS session")
     aws_profile_name: Optional[str] = Field(
         default=None, description="AWS profile name for credential retrieval"
     )
@@ -361,9 +352,7 @@ class BedrockGuardrailConfigModel(BaseModel):
     aws_web_identity_token: Optional[str] = Field(
         default=None, description="Web identity token for AWS role assumption"
     )
-    aws_sts_endpoint: Optional[str] = Field(
-        default=None, description="AWS STS endpoint URL"
-    )
+    aws_sts_endpoint: Optional[str] = Field(default=None, description="AWS STS endpoint URL")
     aws_bedrock_runtime_endpoint: Optional[str] = Field(
         default=None, description="AWS Bedrock runtime endpoint URL"
     )
@@ -372,12 +361,8 @@ class BedrockGuardrailConfigModel(BaseModel):
 class LakeraV2GuardrailConfigModel(BaseModel):
     """Configuration parameters for the Lakera AI v2 guardrail"""
 
-    api_key: Optional[str] = Field(
-        default=None, description="API key for the Lakera AI service"
-    )
-    api_base: Optional[str] = Field(
-        default=None, description="Base URL for the Lakera AI API"
-    )
+    api_key: Optional[str] = Field(default=None, description="API key for the Lakera AI service")
+    api_base: Optional[str] = Field(default=None, description="Base URL for the Lakera AI API")
     project_id: Optional[str] = Field(
         default=None, description="Project ID for the Lakera AI project"
     )
@@ -477,12 +462,8 @@ class ZscalerAIGuardConfigModel(BaseModel):
 class JavelinGuardrailConfigModel(BaseModel):
     """Configuration parameters for the Javelin guardrail"""
 
-    guard_name: Optional[str] = Field(
-        default=None, description="Name of the Javelin guard to use"
-    )
-    api_version: Optional[str] = Field(
-        default="v1", description="API version for Javelin service"
-    )
+    guard_name: Optional[str] = Field(default=None, description="Name of the Javelin guard to use")
+    api_version: Optional[str] = Field(default="v1", description="API version for Javelin service")
     metadata: Optional[Dict] = Field(
         default=None, description="Additional metadata to send with requests"
     )
@@ -553,9 +534,7 @@ class ContentFilterConfigModel(BaseModel):
 
 
 class BaseLitellmParams(BaseModel):  # works for new and patch update guardrails
-    api_key: Optional[str] = Field(
-        default=None, description="API key for the guardrail service"
-    )
+    api_key: Optional[str] = Field(default=None, description="API key for the guardrail service")
     api_base: Optional[str] = Field(
         default=None, description="Base URL for the guardrail service API"
     )
@@ -644,9 +623,7 @@ class BaseLitellmParams(BaseModel):  # works for new and patch update guardrails
 
 class Mode(BaseModel):
     tags: Dict[str, str] = Field(description="Tags for the guardrail mode")
-    default: Optional[str] = Field(
-        default=None, description="Default mode when no tags match"
-    )
+    default: Optional[str] = Field(default=None, description="Default mode when no tags match")
 
 
 class LitellmParams(

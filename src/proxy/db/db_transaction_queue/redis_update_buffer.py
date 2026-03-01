@@ -12,23 +12,23 @@ from litellm._logging import verbose_proxy_logger
 from litellm.caching import RedisCache
 from litellm.constants import (
     MAX_REDIS_BUFFER_DEQUEUE_COUNT,
+    REDIS_DAILY_AGENT_SPEND_UPDATE_BUFFER_KEY,
+    REDIS_DAILY_END_USER_SPEND_UPDATE_BUFFER_KEY,
+    REDIS_DAILY_ORG_SPEND_UPDATE_BUFFER_KEY,
     REDIS_DAILY_SPEND_UPDATE_BUFFER_KEY,
     REDIS_DAILY_TAG_SPEND_UPDATE_BUFFER_KEY,
     REDIS_DAILY_TEAM_SPEND_UPDATE_BUFFER_KEY,
-    REDIS_DAILY_ORG_SPEND_UPDATE_BUFFER_KEY,
-    REDIS_DAILY_END_USER_SPEND_UPDATE_BUFFER_KEY,
-    REDIS_DAILY_AGENT_SPEND_UPDATE_BUFFER_KEY,
     REDIS_UPDATE_BUFFER_KEY,
 )
 from litellm.litellm_core_utils.safe_json_dumps import safe_dumps
 from litellm.proxy._types import (
+    DailyAgentSpendTransaction,
+    DailyEndUserSpendTransaction,
+    DailyOrganizationSpendTransaction,
     DailyTagSpendTransaction,
     DailyTeamSpendTransaction,
     DailyUserSpendTransaction,
-    DailyOrganizationSpendTransaction,
-    DailyEndUserSpendTransaction,
     DBSpendUpdateTransactions,
-    DailyAgentSpendTransaction,
 )
 from litellm.proxy.db.db_transaction_queue.base_update_queue import service_logger_obj
 from litellm.proxy.db.db_transaction_queue.daily_spend_update_queue import (
@@ -67,8 +67,8 @@ class RedisUpdateBuffer:
         """
         from litellm.proxy.proxy_server import general_settings
 
-        _use_redis_transaction_buffer: Optional[Union[bool, str]] = (
-            general_settings.get("use_redis_transaction_buffer", False)
+        _use_redis_transaction_buffer: Optional[Union[bool, str]] = general_settings.get(
+            "use_redis_transaction_buffer", False
         )
         if isinstance(_use_redis_transaction_buffer, str):
             _use_redis_transaction_buffer = str_to_bool(_use_redis_transaction_buffer)
@@ -367,7 +367,7 @@ class RedisUpdateBuffer:
 
     async def get_all_daily_org_spend_update_transactions_from_redis_buffer(
         self,
-    ) -> Optional[Dict[str, DailyOrganizationSpendTransaction]]: 
+    ) -> Optional[Dict[str, DailyOrganizationSpendTransaction]]:
         """
         Gets all the daily organization spend update transactions from Redis
         """
@@ -383,7 +383,7 @@ class RedisUpdateBuffer:
             json.loads(transaction) for transaction in list_of_transactions
         ]
         return cast(
-            Dict[str, DailyOrganizationSpendTransaction], 
+            Dict[str, DailyOrganizationSpendTransaction],
             DailySpendUpdateQueue.get_aggregated_daily_spend_update_transactions(
                 list_of_daily_spend_update_transactions
             ),

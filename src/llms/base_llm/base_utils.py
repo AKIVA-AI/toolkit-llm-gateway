@@ -7,12 +7,11 @@ import json
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Type, Union
 
-from openai.lib import _parsing, _pydantic
-from pydantic import BaseModel
-
 from litellm._logging import verbose_logger
 from litellm.types.llms.openai import AllMessageValues, ChatCompletionToolCallChunk
 from litellm.types.utils import Message, ProviderSpecificModelInfo, TokenCountResponse
+from openai.lib import _parsing, _pydantic
+from pydantic import BaseModel
 
 
 class BaseTokenCounter(ABC):
@@ -96,7 +95,7 @@ class BaseLLMModelInfo(ABC):
     def get_token_counter(self) -> Optional[BaseTokenCounter]:
         """
         Factory method to create a token counter for this provider.
-        
+
         Returns:
             Optional TokenCounterInterface implementation for this provider,
             or None if token counting is not supported.

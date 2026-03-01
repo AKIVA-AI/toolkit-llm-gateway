@@ -67,9 +67,7 @@ def _generic_cost_per_character(
         Exception if 'input_cost_per_character' or 'output_cost_per_character' is missing from model_info
     """
     ## GET MODEL INFO
-    model_info = litellm.get_model_info(
-        model=model, custom_llm_provider=custom_llm_provider
-    )
+    model_info = litellm.get_model_info(model=model, custom_llm_provider=custom_llm_provider)
 
     ## CALCULATE INPUT COST
     try:
@@ -155,15 +153,11 @@ def _get_token_base_cost(
     cache_creation_cost_key = _get_service_tier_cost_key(
         "cache_creation_input_token_cost", service_tier
     )
-    cache_read_cost_key = _get_service_tier_cost_key(
-        "cache_read_input_token_cost", service_tier
-    )
+    cache_read_cost_key = _get_service_tier_cost_key("cache_read_input_token_cost", service_tier)
 
     prompt_base_cost = cast(float, _get_cost_per_unit(model_info, input_cost_key))
     completion_base_cost = cast(float, _get_cost_per_unit(model_info, output_cost_key))
-    cache_creation_cost = cast(
-        float, _get_cost_per_unit(model_info, cache_creation_cost_key)
-    )
+    cache_creation_cost = cast(float, _get_cost_per_unit(model_info, cache_creation_cost_key))
     cache_creation_cost_above_1hr = cast(
         float,
         _get_cost_per_unit(model_info, "cache_creation_input_token_cost_above_1hr"),
@@ -215,9 +209,7 @@ def _get_token_base_cost(
                     if cache_read_tiered_key in model_info:
                         cache_read_cost = cast(
                             float,
-                            _get_cost_per_unit(
-                                model_info, cache_read_tiered_key, cache_read_cost
-                            ),
+                            _get_cost_per_unit(model_info, cache_read_tiered_key, cache_read_cost),
                         )
 
                     break
@@ -314,12 +306,8 @@ def calculate_cache_writing_cost(
     total_cost: float = 0.0
     if cache_creation_token_details is not None:
         # get the number of 5m and 1h cache creation tokens
-        cache_creation_tokens_5m = (
-            cache_creation_token_details.ephemeral_5m_input_tokens
-        )
-        cache_creation_tokens_1h = (
-            cache_creation_token_details.ephemeral_1h_input_tokens
-        )
+        cache_creation_tokens_5m = cache_creation_token_details.ephemeral_5m_input_tokens
+        cache_creation_tokens_1h = cache_creation_token_details.ephemeral_1h_input_tokens
         # add the number of 5m and 1h cache creation tokens to the cache creation tokens
         total_cost += (
             cache_creation_tokens_5m * cache_creation_cost
@@ -349,8 +337,7 @@ class PromptTokensDetailsResult(TypedDict):
 
 def _parse_prompt_tokens_details(usage: Usage) -> PromptTokensDetailsResult:
     cache_hit_tokens = (
-        cast(Optional[int], getattr(usage.prompt_tokens_details, "cached_tokens", 0))
-        or 0
+        cast(Optional[int], getattr(usage.prompt_tokens_details, "cached_tokens", 0)) or 0
     )
     cache_creation_tokens = (
         cast(
@@ -370,10 +357,7 @@ def _parse_prompt_tokens_details(usage: Usage) -> PromptTokensDetailsResult:
         cast(Optional[int], getattr(usage.prompt_tokens_details, "text_tokens", None))
         or 0  # default to prompt tokens, if this field is not set
     )
-    audio_tokens = (
-        cast(Optional[int], getattr(usage.prompt_tokens_details, "audio_tokens", 0))
-        or 0
-    )
+    audio_tokens = cast(Optional[int], getattr(usage.prompt_tokens_details, "audio_tokens", 0)) or 0
     character_count = (
         cast(
             Optional[int],
@@ -381,9 +365,7 @@ def _parse_prompt_tokens_details(usage: Usage) -> PromptTokensDetailsResult:
         )
         or 0
     )
-    image_count = (
-        cast(Optional[int], getattr(usage.prompt_tokens_details, "image_count", 0)) or 0
-    )
+    image_count = cast(Optional[int], getattr(usage.prompt_tokens_details, "image_count", 0)) or 0
     video_length_seconds = (
         cast(
             Optional[int],
@@ -473,9 +455,7 @@ def _calculate_input_cost(
     ### CACHE WRITING COST - Now uses tiered pricing
     prompt_cost += calculate_cache_writing_cost(
         cache_creation_tokens=prompt_tokens_details["cache_creation_tokens"],
-        cache_creation_token_details=prompt_tokens_details[
-            "cache_creation_token_details"
-        ],
+        cache_creation_token_details=prompt_tokens_details["cache_creation_token_details"],
         cache_creation_cost_above_1hr=cache_creation_cost_above_1hr,
         cache_creation_cost=cache_creation_cost,
     )
@@ -557,9 +537,7 @@ def generic_cost_per_token(
         cache_creation_cost,
         cache_creation_cost_above_1hr,
         cache_read_cost,
-    ) = _get_token_base_cost(
-        model_info=model_info, usage=usage, service_tier=service_tier
-    )
+    ) = _get_token_base_cost(model_info=model_info, usage=usage, service_tier=service_tier)
 
     prompt_cost = _calculate_input_cost(
         prompt_tokens_details=prompt_tokens_details,

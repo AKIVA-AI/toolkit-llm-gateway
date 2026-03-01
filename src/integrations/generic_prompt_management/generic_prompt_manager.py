@@ -7,7 +7,6 @@ import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 import httpx
-
 from litellm.integrations.custom_prompt_management import CustomPromptManagement
 from litellm.integrations.prompt_management_base import (
     PromptManagementBase,
@@ -74,9 +73,7 @@ class GenericPromptManager(CustomPromptManagement):
         self.api_key = api_key
         self.timeout = timeout
         self.prompt_id = prompt_id
-        self.additional_provider_specific_query_params = (
-            additional_provider_specific_query_params
-        )
+        self.additional_provider_specific_query_params = additional_provider_specific_query_params
         self._prompt_cache: Dict[str, PromptManagementClient] = {}
 
     @property
@@ -148,8 +145,7 @@ class GenericPromptManager(CustomPromptManagement):
             "prompt_id": prompt_id,
             **(
                 prompt_spec.litellm_params.provider_specific_query_params
-                if prompt_spec
-                and prompt_spec.litellm_params.provider_specific_query_params
+                if prompt_spec and prompt_spec.litellm_params.provider_specific_query_params
                 else {}
             ),
         }
@@ -205,9 +201,7 @@ class GenericPromptManager(CustomPromptManagement):
             prompt_id=prompt_id,
             prompt_template=api_response.get("prompt_template", []),
             prompt_template_model=api_response.get("prompt_template_model"),
-            prompt_template_optional_params=api_response.get(
-                "prompt_template_optional_params"
-            ),
+            prompt_template_optional_params=api_response.get("prompt_template_optional_params"),
             completed_messages=None,
         )
 
@@ -300,9 +294,7 @@ class GenericPromptManager(CustomPromptManagement):
             api_response = self._fetch_prompt_from_api(prompt_id, prompt_spec)
 
             # Parse the response
-            prompt_client = self._parse_api_response(
-                prompt_id, prompt_spec, api_response
-            )
+            prompt_client = self._parse_api_response(prompt_id, prompt_spec, api_response)
 
             # Cache the result
             self._prompt_cache[cache_key] = prompt_client
@@ -346,9 +338,7 @@ class GenericPromptManager(CustomPromptManagement):
             )
 
             # Parse the response
-            prompt_client = self._parse_api_response(
-                prompt_id, prompt_spec, api_response
-            )
+            prompt_client = self._parse_api_response(prompt_id, prompt_spec, api_response)
 
             # Cache the result
             self._prompt_cache[cache_key] = prompt_client
@@ -385,15 +375,11 @@ class GenericPromptManager(CustomPromptManagement):
         updated_messages: List[AllMessageValues] = []
         for message in prompt_client["prompt_template"]:
             updated_message = dict(message)  # type: ignore
-            if "content" in updated_message and isinstance(
-                updated_message["content"], str
-            ):
+            if "content" in updated_message and isinstance(updated_message["content"], str):
                 content = updated_message["content"]
                 for key, value in variables.items():
                     content = content.replace(f"{{{key}}}", str(value))
-                    content = content.replace(
-                        f"{{{{{key}}}}}", str(value)
-                    )  # Also support {{key}}
+                    content = content.replace(f"{{{{{key}}}}}", str(value))  # Also support {{key}}
                 updated_message["content"] = content
             updated_messages.append(updated_message)  # type: ignore
 
@@ -401,9 +387,7 @@ class GenericPromptManager(CustomPromptManagement):
             prompt_id=prompt_client["prompt_id"],
             prompt_template=updated_messages,
             prompt_template_model=prompt_client["prompt_template_model"],
-            prompt_template_optional_params=prompt_client[
-                "prompt_template_optional_params"
-            ],
+            prompt_template_optional_params=prompt_client["prompt_template_optional_params"],
             completed_messages=None,
         )
 

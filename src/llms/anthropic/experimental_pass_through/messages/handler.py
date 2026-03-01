@@ -181,28 +181,26 @@ def anthropic_messages_handler(
         )
     if anthropic_messages_provider_config is None:
         # Handle non-Anthropic models using the adapter
-        return (
-            LiteLLMMessagesToCompletionTransformationHandler.anthropic_messages_handler(
-                max_tokens=max_tokens,
-                messages=messages,
-                model=model,
-                metadata=metadata,
-                stop_sequences=stop_sequences,
-                stream=stream,
-                system=system,
-                temperature=temperature,
-                thinking=thinking,
-                tool_choice=tool_choice,
-                tools=tools,
-                top_k=top_k,
-                top_p=top_p,
-                _is_async=is_async,
-                api_key=api_key,
-                api_base=api_base,
-                client=client,
-                custom_llm_provider=custom_llm_provider,
-                **kwargs,
-            )
+        return LiteLLMMessagesToCompletionTransformationHandler.anthropic_messages_handler(
+            max_tokens=max_tokens,
+            messages=messages,
+            model=model,
+            metadata=metadata,
+            stop_sequences=stop_sequences,
+            stream=stream,
+            system=system,
+            temperature=temperature,
+            thinking=thinking,
+            tool_choice=tool_choice,
+            tools=tools,
+            top_k=top_k,
+            top_p=top_p,
+            _is_async=is_async,
+            api_key=api_key,
+            api_base=api_base,
+            client=client,
+            custom_llm_provider=custom_llm_provider,
+            **kwargs,
         )
 
     if custom_llm_provider is None:
@@ -220,9 +218,7 @@ def anthropic_messages_handler(
         model=model,
         messages=messages,
         anthropic_messages_provider_config=anthropic_messages_provider_config,
-        anthropic_messages_optional_request_params=dict(
-            anthropic_messages_optional_request_params
-        ),
+        anthropic_messages_optional_request_params=dict(anthropic_messages_optional_request_params),
         _is_async=is_async,
         client=client,
         custom_llm_provider=custom_llm_provider,

@@ -3,11 +3,11 @@ Functions to create audit logs for LiteLLM Proxy
 """
 
 import json
-from litellm._uuid import uuid
 from datetime import datetime, timezone
 
 import litellm
 from litellm._logging import verbose_proxy_logger
+from litellm._uuid import uuid
 from litellm.proxy._types import (
     AUDIT_ACTIONS,
     LiteLLM_AuditLogs,
@@ -40,9 +40,7 @@ async def create_object_audit_log(
     """
     from litellm.secret_managers.main import get_secret_bool
 
-    store_audit_logs = litellm.store_audit_logs or get_secret_bool(
-        "LITELLM_STORE_AUDIT_LOGS"
-    )
+    store_audit_logs = litellm.store_audit_logs or get_secret_bool("LITELLM_STORE_AUDIT_LOGS")
 
     if store_audit_logs is not True:
         return
@@ -51,9 +49,7 @@ async def create_object_audit_log(
         request_data=LiteLLM_AuditLogs(
             id=str(uuid.uuid4()),
             updated_at=datetime.now(timezone.utc),
-            changed_by=litellm_changed_by
-            or user_api_key_dict.user_id
-            or litellm_proxy_admin_name,
+            changed_by=litellm_changed_by or user_api_key_dict.user_id or litellm_proxy_admin_name,
             changed_by_api_key=user_api_key_dict.api_key,
             table_name=table_name,
             object_id=object_id,
@@ -70,9 +66,7 @@ async def create_audit_log_for_update(request_data: LiteLLM_AuditLogs):
     """
     from litellm.secret_managers.main import get_secret_bool
 
-    store_audit_logs = litellm.store_audit_logs or get_secret_bool(
-        "LITELLM_STORE_AUDIT_LOGS"
-    )
+    store_audit_logs = litellm.store_audit_logs or get_secret_bool("LITELLM_STORE_AUDIT_LOGS")
     if store_audit_logs is not True:
         return
 

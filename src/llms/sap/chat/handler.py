@@ -5,7 +5,6 @@ import time
 from typing import AsyncIterator, Iterator, Optional
 
 import httpx
-
 from litellm.llms.base_llm.chat.transformation import BaseConfig, BaseLLMException
 from litellm.types.llms.openai import OpenAIChatCompletionChunk
 
@@ -139,9 +138,7 @@ class SAPStreamIterator:
             if not line:
                 continue
 
-            payload = (
-                line[len(self._prefix) :] if line.startswith(self._prefix) else line
-            )
+            payload = line[len(self._prefix) :] if line.startswith(self._prefix) else line
             if payload == self._final:
                 self._safe_close()
                 raise StopIteration
@@ -181,7 +178,7 @@ class AsyncSAPStreamIterator:
 
     def __init__(
         self,
-        response:AsyncIterator,
+        response: AsyncIterator,
         event_prefix: str = "data: ",
         final_msg: str = "[DONE]",
     ):
@@ -213,9 +210,7 @@ class AsyncSAPStreamIterator:
                 continue
 
             # now = lambda: int(time.time() * 1000)
-            payload = (
-                line[len(self._prefix) :] if line.startswith(self._prefix) else line
-            )
+            payload = line[len(self._prefix) :] if line.startswith(self._prefix) else line
             if payload == self._final:
                 await self._aclose()
                 raise StopAsyncIteration
@@ -251,11 +246,8 @@ class AsyncSAPStreamIterator:
 # -------------------------------
 class GenAIHubOrchestration(BaseLLMHTTPHandler):
     def _add_stream_param_to_request_body(
-            self,
-            data: dict,
-            provider_config: BaseConfig,
-            fake_stream: bool
-            ):
+        self, data: dict, provider_config: BaseConfig, fake_stream: bool
+    ):
         if data.get("config", {}).get("stream", None) is not None:
             data["config"]["stream"]["enabled"] = True
         else:

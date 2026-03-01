@@ -71,7 +71,11 @@ class A2AStreamingIterator:
     def _collect_text_from_chunk(self, chunk: Any) -> None:
         """Extract text from a streaming chunk and add to collected parts."""
         try:
-            chunk_dict = chunk.model_dump(mode="json", exclude_none=True) if hasattr(chunk, "model_dump") else {}
+            chunk_dict = (
+                chunk.model_dump(mode="json", exclude_none=True)
+                if hasattr(chunk, "model_dump")
+                else {}
+            )
             text = A2ARequestUtils.extract_text_from_response(chunk_dict)
             if text:
                 self.collected_text_parts.append(text)
@@ -81,7 +85,11 @@ class A2AStreamingIterator:
     def _is_completed_chunk(self, chunk: Any) -> bool:
         """Check if chunk indicates stream completion."""
         try:
-            chunk_dict = chunk.model_dump(mode="json", exclude_none=True) if hasattr(chunk, "model_dump") else {}
+            chunk_dict = (
+                chunk.model_dump(mode="json", exclude_none=True)
+                if hasattr(chunk, "model_dump")
+                else {}
+            )
             result = chunk_dict.get("result", {})
             if isinstance(result, dict):
                 status = result.get("status", {})
@@ -170,4 +178,3 @@ class A2AStreamingIterator:
                 pass
 
         return result
-

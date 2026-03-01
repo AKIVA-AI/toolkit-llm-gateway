@@ -5,7 +5,6 @@ Contains utils used by OpenAI compatible endpoints
 from typing import Optional, Set
 
 from fastapi import Request
-
 from litellm.litellm_core_utils.sensitive_data_masker import SensitiveDataMasker
 from litellm.proxy.common_utils.http_parsing_utils import _read_request_body
 
@@ -60,6 +59,7 @@ def get_custom_llm_provider_from_request_query(request: Request) -> Optional[str
     if "custom_llm_provider" in request.query_params:
         return request.query_params["custom_llm_provider"]
     return None
+
 
 def get_custom_llm_provider_from_request_headers(request: Request) -> Optional[str]:
     """

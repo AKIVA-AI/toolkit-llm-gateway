@@ -5,7 +5,6 @@ Translate between Cohere's `/rerank` format and Deepinfra's `/rerank` format.
 from typing import Any, Dict, List, Optional, Union
 
 import httpx
-
 from litellm._uuid import uuid
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.base_llm.rerank.transformation import (
@@ -29,8 +28,8 @@ class DeepinfraRerankConfig(BaseRerankConfig):
     """
 
     def get_complete_url(
-        self, 
-        api_base: Optional[str], 
+        self,
+        api_base: Optional[str],
         model: str,
         optional_params: Optional[dict] = None,
     ) -> str:
@@ -53,9 +52,7 @@ class DeepinfraRerankConfig(BaseRerankConfig):
             )
 
         # Remove 'openai' from the base if present
-        api_base_clean = (
-            api_base.replace("openai", "") if "openai" in api_base else api_base
-        )
+        api_base_clean = api_base.replace("openai", "") if "openai" in api_base else api_base
 
         # Remove any trailing slashes for consistency, then add one
         api_base_clean = api_base_clean.rstrip("/") + "/"
@@ -169,9 +166,7 @@ class DeepinfraRerankConfig(BaseRerankConfig):
             # Create RerankResponse
             results = []
             for i, score in enumerate(scores):
-                results.append(
-                    RerankResponseResult(index=i, relevance_score=float(score))
-                )
+                results.append(RerankResponseResult(index=i, relevance_score=float(score)))
 
             # Create metadata for the response
             tokens = RerankTokens(

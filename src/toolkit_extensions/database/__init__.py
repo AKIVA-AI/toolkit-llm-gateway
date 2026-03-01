@@ -5,15 +5,15 @@ SQLAlchemy models for cost tracking and budget management.
 """
 
 from toolkit_extensions.database.models import (
+    APIKey,
     Base,
-    User,
-    Team,
-    Project,
-    LLMRequest,
     Budget,
     BudgetAlert,
-    APIKey,
     CostAggregate,
+    LLMRequest,
+    Project,
+    Team,
+    User,
 )
 
 __all__ = [
@@ -27,5 +27,3 @@ __all__ = [
     "APIKey",
     "CostAggregate",
 ]
-
-

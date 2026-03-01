@@ -18,9 +18,7 @@ def cost_per_token(model: str, usage: "Usage") -> Tuple[float, float]:
     """
     from litellm.litellm_core_utils.llm_cost_calc.utils import generic_cost_per_token
 
-    return generic_cost_per_token(
-        model=model, usage=usage, custom_llm_provider="gemini"
-    )
+    return generic_cost_per_token(model=model, usage=usage, custom_llm_provider="gemini")
 
 
 def cost_per_web_search_request(usage: "Usage", model_info: "ModelInfo") -> float:

@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Callable, Optional, Type
 
 # Type annotations for cached imports
 if TYPE_CHECKING:
-    from litellm.litellm_core_utils.litellm_logging import Logging
     from litellm.litellm_core_utils.coroutine_checker import CoroutineChecker
+    from litellm.litellm_core_utils.litellm_logging import Logging
 
 # Global cache variables
 _LiteLLMLogging: Optional[Type["Logging"]] = None
@@ -24,6 +24,7 @@ def get_litellm_logging_class() -> Type["Logging"]:
     if _LiteLLMLogging is not None:
         return _LiteLLMLogging
     from litellm.litellm_core_utils.litellm_logging import Logging
+
     _LiteLLMLogging = Logging
     return _LiteLLMLogging
 
@@ -34,6 +35,7 @@ def get_coroutine_checker() -> "CoroutineChecker":
     if _coroutine_checker is not None:
         return _coroutine_checker
     from litellm.litellm_core_utils.coroutine_checker import coroutine_checker
+
     _coroutine_checker = coroutine_checker
     return _coroutine_checker
 
@@ -44,6 +46,7 @@ def get_set_callbacks() -> Callable:
     if _set_callbacks is not None:
         return _set_callbacks
     from litellm.litellm_core_utils.litellm_logging import set_callbacks
+
     _set_callbacks = set_callbacks
     return _set_callbacks
 

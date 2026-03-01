@@ -1,8 +1,7 @@
 from typing import Dict, List, Optional
 
-from mcp.server.auth.middleware.bearer_auth import AuthenticatedUser
-
 from litellm.proxy._types import UserAPIKeyAuth
+from mcp.server.auth.middleware.bearer_auth import AuthenticatedUser
 
 
 class MCPAuthenticatedUser(AuthenticatedUser):

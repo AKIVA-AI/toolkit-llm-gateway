@@ -1,5 +1,7 @@
+from typing import Any, Dict, List, Optional, Union
+
 import requests
-from typing import List, Dict, Any, Optional, Union
+
 from .exceptions import UnauthorizedError
 
 

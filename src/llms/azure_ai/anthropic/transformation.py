@@ -1,6 +1,7 @@
 """
 Azure Anthropic transformation config - extends AnthropicConfig with Azure authentication
 """
+
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from litellm.llms.anthropic.chat.transformation import AnthropicConfig
@@ -50,7 +51,7 @@ class AzureAnthropicConfig(AnthropicConfig):
             # Set api_key if provided and not already set
             if api_key and not litellm_params_obj.api_key:
                 litellm_params_obj.api_key = api_key
-        
+
         # Use Azure authentication logic
         headers = BaseAzureLLM._base_validate_azure_environment(
             headers=headers, litellm_params=litellm_params_obj
@@ -60,9 +61,7 @@ class AzureAnthropicConfig(AnthropicConfig):
         tools = optional_params.get("tools")
         prompt_caching_set = self.is_cache_control_set(messages=messages)
         computer_tool_used = self.is_computer_tool_used(tools=tools)
-        mcp_server_used = self.is_mcp_server_used(
-            mcp_servers=optional_params.get("mcp_servers")
-        )
+        mcp_server_used = self.is_mcp_server_used(mcp_servers=optional_params.get("mcp_servers"))
         pdf_used = self.is_pdf_used(messages=messages)
         file_id_used = self.is_file_id_used(messages=messages)
         user_anthropic_beta_headers = self._get_user_anthropic_beta_headers(
@@ -116,4 +115,3 @@ class AzureAnthropicConfig(AnthropicConfig):
         data.pop("stream_options", None)
 
         return data
-

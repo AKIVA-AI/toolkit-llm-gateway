@@ -6,11 +6,10 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, List, Optional, Union
 
 if TYPE_CHECKING:
-    from pydantic import BaseModel
-
     from litellm import LiteLLMLoggingObj, ModelResponse
     from litellm.llms.base_llm.base_model_iterator import BaseModelResponseIterator
     from litellm.types.llms.openai import AllMessageValues
+    from pydantic import BaseModel
 
 
 class CompletionTransformationBridge(ABC):

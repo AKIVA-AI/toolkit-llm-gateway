@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Any, List, Optional
 
 import httpx
 from aiohttp import ClientResponse
-
 from litellm.llms.base_llm.chat.transformation import BaseConfig
 from litellm.types.llms.openai import (
     AllMessageValues,
@@ -26,9 +25,7 @@ else:
 
 class BaseImageVariationConfig(BaseConfig, ABC):
     @abstractmethod
-    def get_supported_openai_params(
-        self, model: str
-    ) -> List[OpenAIImageVariationOptionalParams]:
+    def get_supported_openai_params(self, model: str) -> List[OpenAIImageVariationOptionalParams]:
         pass
 
     def get_complete_url(

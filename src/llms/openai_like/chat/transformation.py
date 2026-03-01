@@ -5,7 +5,6 @@ OpenAI-like chat completion transformation
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 import httpx
-
 from litellm.secret_managers.main import get_secret_str
 from litellm.types.llms.openai import AllMessageValues, ChatCompletionAssistantMessage
 from litellm.types.utils import ModelResponse
@@ -107,19 +106,15 @@ class OpenAILikeChatConfig(OpenAIGPTConfig):
 
         if json_mode:
             for choice in response_json["choices"]:
-                message = (
-                    OpenAILikeChatConfig._json_mode_convert_tool_response_to_message(
-                        choice.get("message"), json_mode
-                    )
+                message = OpenAILikeChatConfig._json_mode_convert_tool_response_to_message(
+                    choice.get("message"), json_mode
                 )
                 choice["message"] = message
 
         returned_response = ModelResponse(**response_json)
 
         if custom_llm_provider is not None:
-            returned_response.model = (
-                custom_llm_provider + "/" + (returned_response.model or "")
-            )
+            returned_response.model = custom_llm_provider + "/" + (returned_response.model or "")
 
         if base_model is not None:
             returned_response._hidden_params["model"] = base_model

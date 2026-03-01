@@ -15,7 +15,6 @@ from functools import partial
 from typing import Any, Coroutine, Dict, Literal, Optional, Union
 
 import httpx
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.llms.azure.fine_tuning.handler import AzureOpenAIFineTuningAPI
@@ -52,9 +51,7 @@ async def acreate_fine_tuning_job(
     Async: Creates and executes a batch from an uploaded file of request
 
     """
-    verbose_logger.debug(
-        "inside acreate_fine_tuning_job model=%s and kwargs=%s", model, kwargs
-    )
+    verbose_logger.debug("inside acreate_fine_tuning_job model=%s and kwargs=%s", model, kwargs)
     try:
         loop = asyncio.get_event_loop()
         kwargs["acreate_fine_tuning_job"] = True

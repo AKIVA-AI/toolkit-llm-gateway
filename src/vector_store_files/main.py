@@ -6,7 +6,6 @@ from functools import partial
 from typing import Any, Coroutine, Dict, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.constants import request_timeout
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -43,10 +42,8 @@ def _prepare_registry_credentials(
     if litellm.vector_store_registry is None:
         return
     try:
-        registry_credentials = (
-            litellm.vector_store_registry.get_credentials_for_vector_store(
-                vector_store_id
-            )
+        registry_credentials = litellm.vector_store_registry.get_credentials_for_vector_store(
+            vector_store_id
         )
         if registry_credentials:
             kwargs.update(registry_credentials)
@@ -130,17 +127,13 @@ def create(
 
         _prepare_registry_credentials(vector_store_id=vector_store_id, kwargs=kwargs)
 
-        litellm_params = GenericLiteLLMParams(
-            vector_store_id=vector_store_id, **kwargs
-        )
+        litellm_params = GenericLiteLLMParams(vector_store_id=vector_store_id, **kwargs)
 
         provider_config = ProviderConfigManager.get_provider_vector_store_files_config(
             provider=LlmProviders(custom_llm_provider)
         )
         if provider_config is None:
-            raise ValueError(
-                f"Vector store file create is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"Vector store file create is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
         create_request: VectorStoreFileCreateRequest = (
@@ -264,17 +257,13 @@ def list(
 
         _prepare_registry_credentials(vector_store_id=vector_store_id, kwargs=kwargs)
 
-        litellm_params = GenericLiteLLMParams(
-            vector_store_id=vector_store_id, **kwargs
-        )
+        litellm_params = GenericLiteLLMParams(vector_store_id=vector_store_id, **kwargs)
 
         provider_config = ProviderConfigManager.get_provider_vector_store_files_config(
             provider=LlmProviders(custom_llm_provider)
         )
         if provider_config is None:
-            raise ValueError(
-                f"Vector store file list is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"Vector store file list is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
         list_query: VectorStoreFileListQueryParams = (
@@ -379,9 +368,7 @@ def retrieve(
 
         _prepare_registry_credentials(vector_store_id=vector_store_id, kwargs=kwargs)
 
-        litellm_params = GenericLiteLLMParams(
-            vector_store_id=vector_store_id, **kwargs
-        )
+        litellm_params = GenericLiteLLMParams(vector_store_id=vector_store_id, **kwargs)
 
         provider_config = ProviderConfigManager.get_provider_vector_store_files_config(
             provider=LlmProviders(custom_llm_provider)
@@ -479,9 +466,7 @@ def retrieve_content(
     timeout: Optional[Union[float, httpx.Timeout]] = None,
     custom_llm_provider: Optional[str] = None,
     **kwargs,
-) -> Union[
-    VectorStoreFileContentResponse, Coroutine[Any, Any, VectorStoreFileContentResponse]
-]:
+) -> Union[VectorStoreFileContentResponse, Coroutine[Any, Any, VectorStoreFileContentResponse]]:
     local_vars = locals()
     try:
         litellm_logging_obj: LiteLLMLoggingObj = kwargs.get("litellm_logging_obj")  # type: ignore
@@ -492,9 +477,7 @@ def retrieve_content(
 
         _prepare_registry_credentials(vector_store_id=vector_store_id, kwargs=kwargs)
 
-        litellm_params = GenericLiteLLMParams(
-            vector_store_id=vector_store_id, **kwargs
-        )
+        litellm_params = GenericLiteLLMParams(vector_store_id=vector_store_id, **kwargs)
 
         provider_config = ProviderConfigManager.get_provider_vector_store_files_config(
             provider=LlmProviders(custom_llm_provider)
@@ -609,17 +592,13 @@ def update(
 
         _prepare_registry_credentials(vector_store_id=vector_store_id, kwargs=kwargs)
 
-        litellm_params = GenericLiteLLMParams(
-            vector_store_id=vector_store_id, **kwargs
-        )
+        litellm_params = GenericLiteLLMParams(vector_store_id=vector_store_id, **kwargs)
 
         provider_config = ProviderConfigManager.get_provider_vector_store_files_config(
             provider=LlmProviders(custom_llm_provider)
         )
         if provider_config is None:
-            raise ValueError(
-                f"Vector store file update is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"Vector store file update is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
         update_request: VectorStoreFileUpdateRequest = (
@@ -718,9 +697,7 @@ def delete(
     timeout: Optional[Union[float, httpx.Timeout]] = None,
     custom_llm_provider: Optional[str] = None,
     **kwargs,
-) -> Union[
-    VectorStoreFileDeleteResponse, Coroutine[Any, Any, VectorStoreFileDeleteResponse]
-]:
+) -> Union[VectorStoreFileDeleteResponse, Coroutine[Any, Any, VectorStoreFileDeleteResponse]]:
     local_vars = locals()
     try:
         litellm_logging_obj: LiteLLMLoggingObj = kwargs.get("litellm_logging_obj")  # type: ignore
@@ -731,17 +708,13 @@ def delete(
 
         _prepare_registry_credentials(vector_store_id=vector_store_id, kwargs=kwargs)
 
-        litellm_params = GenericLiteLLMParams(
-            vector_store_id=vector_store_id, **kwargs
-        )
+        litellm_params = GenericLiteLLMParams(vector_store_id=vector_store_id, **kwargs)
 
         provider_config = ProviderConfigManager.get_provider_vector_store_files_config(
             provider=LlmProviders(custom_llm_provider)
         )
         if provider_config is None:
-            raise ValueError(
-                f"Vector store file delete is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"Vector store file delete is not supported for {custom_llm_provider}")
 
         litellm_logging_obj.update_environment_variables(
             model=None,

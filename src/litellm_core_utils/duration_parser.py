@@ -122,9 +122,7 @@ def get_next_standardized_reset_time(
     value, unit = _parse_duration(duration)
     if value is None:
         # Fall back to default if format is invalid
-        return current_time.replace(
-            hour=0, minute=0, second=0, microsecond=0
-        ) + timedelta(days=1)
+        return current_time.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
 
     # Midnight of the current day in the specified timezone
     base_midnight = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -145,9 +143,7 @@ def get_next_standardized_reset_time(
         return base_midnight + timedelta(days=1)
 
 
-def _setup_timezone(
-    current_time: datetime, timezone_str: str = "UTC"
-) -> Tuple[datetime, timezone]:
+def _setup_timezone(current_time: datetime, timezone_str: str = "UTC") -> Tuple[datetime, timezone]:
     """Set up timezone and normalize current time to that timezone."""
     try:
         if timezone_str is None:
@@ -230,14 +226,12 @@ def _handle_day_reset(
             )
         return next_reset
     else:  # Custom day value - next interval is value days from current
-        return current_time.replace(
-            hour=0, minute=0, second=0, microsecond=0
-        ) + timedelta(days=value)
+        return current_time.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(
+            days=value
+        )
 
 
-def _handle_hour_reset(
-    current_time: datetime, base_midnight: datetime, value: int
-) -> datetime:
+def _handle_hour_reset(current_time: datetime, base_midnight: datetime, value: int) -> datetime:
     """Handle hour-based reset times."""
     # Handle zero value - immediate expiration
     if value == 0:
@@ -271,9 +265,7 @@ def _handle_hour_reset(
     return current_time.replace(hour=next_hour, minute=0, second=0, microsecond=0)
 
 
-def _handle_minute_reset(
-    current_time: datetime, base_midnight: datetime, value: int
-) -> datetime:
+def _handle_minute_reset(current_time: datetime, base_midnight: datetime, value: int) -> datetime:
     """Handle minute-based reset times."""
     # Handle zero value - immediate expiration
     if value == 0:
@@ -306,18 +298,12 @@ def _handle_minute_reset(
     if next_hour >= 24:
         next_hour = next_hour % 24
         next_day = base_midnight + timedelta(days=1)
-        return next_day.replace(
-            hour=next_hour, minute=next_minute, second=0, microsecond=0
-        )
+        return next_day.replace(hour=next_hour, minute=next_minute, second=0, microsecond=0)
 
-    return current_time.replace(
-        hour=next_hour, minute=next_minute, second=0, microsecond=0
-    )
+    return current_time.replace(hour=next_hour, minute=next_minute, second=0, microsecond=0)
 
 
-def _handle_second_reset(
-    current_time: datetime, base_midnight: datetime, value: int
-) -> datetime:
+def _handle_second_reset(current_time: datetime, base_midnight: datetime, value: int) -> datetime:
     """Handle second-based reset times."""
     # Handle zero value - immediate expiration
     if value == 0:
@@ -364,9 +350,7 @@ def _handle_second_reset(
     )
 
 
-def _handle_month_reset(
-    current_time: datetime, base_midnight: datetime, value: int
-) -> datetime:
+def _handle_month_reset(current_time: datetime, base_midnight: datetime, value: int) -> datetime:
     """
     Handle monthly reset times. For monthly resets, we always reset at the start of the next month.
 

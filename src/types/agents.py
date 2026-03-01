@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
+from litellm.types.llms.base import LiteLLMPydanticObjectBase
 from pydantic import BaseModel, PrivateAttr
 from typing_extensions import Required, TypedDict
-
-from litellm.types.llms.base import LiteLLMPydanticObjectBase
 
 if TYPE_CHECKING:
     from a2a.types import SendMessageResponse
@@ -230,9 +229,7 @@ class LiteLLMSendMessageResponse(LiteLLMPydanticObjectBase):
     _hidden_params: dict = PrivateAttr(default_factory=dict)
 
     @classmethod
-    def from_a2a_response(
-        cls, response: "SendMessageResponse"
-    ) -> "LiteLLMSendMessageResponse":
+    def from_a2a_response(cls, response: "SendMessageResponse") -> "LiteLLMSendMessageResponse":
         """
         Create a LiteLLMSendMessageResponse from an a2a SDK SendMessageResponse.
 

@@ -4,9 +4,8 @@ CRUD endpoints for storing reusable credentials.
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, Path
-
 import litellm
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response
 from litellm._logging import verbose_proxy_logger
 from litellm.litellm_core_utils.credential_accessor import CredentialAccessor
 from litellm.litellm_core_utils.litellm_logging import _get_masked_values
@@ -70,9 +69,7 @@ async def create_credential(
             model = llm_router.get_deployment(credential.model_id)
             if model is None:
                 raise HTTPException(status_code=404, detail="Model not found")
-            credential_values = llm_router.get_deployment_credentials(
-                credential.model_id
-            )
+            credential_values = llm_router.get_deployment_credentials(credential.model_id)
             if credential_values is None:
                 raise HTTPException(status_code=404, detail="Model not found")
             credential.credential_values = credential_values
@@ -87,9 +84,7 @@ async def create_credential(
             credential_values=credential.credential_values,
             credential_info=credential.credential_info,
         )
-        encrypted_credential = CredentialHelperUtils.encrypt_credential_values(
-            processed_credential
-        )
+        encrypted_credential = CredentialHelperUtils.encrypt_credential_values(processed_credential)
         credentials_dict = encrypted_credential.model_dump()
         credentials_dict_jsonified = jsonify_object(credentials_dict)
         await prisma_client.db.litellm_credentialstable.create(
@@ -151,7 +146,9 @@ async def get_credentials(
 async def get_credential(
     request: Request,
     fastapi_response: Response,
-    credential_name: str = Path(..., description="The credential name, percent-decoded; may contain slashes"),
+    credential_name: str = Path(
+        ..., description="The credential name, percent-decoded; may contain slashes"
+    ),
     model_id: Optional[str] = None,
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
 ):
@@ -200,9 +197,7 @@ async def get_credential(
                 detail="Credential not found. Got credential name: " + credential_name,
             )
         else:
-            raise HTTPException(
-                status_code=404, detail="Credential name or model ID required"
-            )
+            raise HTTPException(status_code=404, detail="Credential name or model ID required")
     except Exception as e:
         verbose_proxy_logger.exception(e)
         raise handle_exception_on_proxy(e)
@@ -216,7 +211,9 @@ async def get_credential(
 async def delete_credential(
     request: Request,
     fastapi_response: Response,
-    credential_name: str = Path(..., description="The credential name, percent-decoded; may contain slashes"),
+    credential_name: str = Path(
+        ..., description="The credential name, percent-decoded; may contain slashes"
+    ),
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
 ):
     """
@@ -236,9 +233,7 @@ async def delete_credential(
 
         ## DELETE FROM LITELLM ##
         litellm.credential_list = [
-            cred
-            for cred in litellm.credential_list
-            if cred.credential_name != credential_name
+            cred for cred in litellm.credential_list if cred.credential_name != credential_name
         ]
         return {"success": True, "message": "Credential deleted successfully"}
     except Exception as e:
@@ -257,9 +252,7 @@ def update_db_credential(
         credential_values=db_credential.credential_values,
     )
 
-    encrypted_credential = CredentialHelperUtils.encrypt_credential_values(
-        updated_patch
-    )
+    encrypted_credential = CredentialHelperUtils.encrypt_credential_values(updated_patch)
     # update model name
     if encrypted_credential.credential_name:
         merged_credential.credential_name = encrypted_credential.credential_name
@@ -267,9 +260,7 @@ def update_db_credential(
     # update litellm params
     if encrypted_credential.credential_values:
         # Encrypt any sensitive values
-        encrypted_params = {
-            k: v for k, v in encrypted_credential.credential_values.items()
-        }
+        encrypted_params = {k: v for k, v in encrypted_credential.credential_values.items()}
 
         merged_credential.credential_values.update(encrypted_params)
 
@@ -292,7 +283,9 @@ async def update_credential(
     request: Request,
     fastapi_response: Response,
     credential: CredentialItem,
-    credential_name: str = Path(..., description="The credential name, percent-decoded; may contain slashes"),
+    credential_name: str = Path(
+        ..., description="The credential name, percent-decoded; may contain slashes"
+    ),
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
 ):
     """

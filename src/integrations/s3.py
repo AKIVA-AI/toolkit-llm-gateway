@@ -47,15 +47,11 @@ class S3Logger:
                 s3_use_ssl = litellm.s3_callback_params.get("s3_use_ssl", True)
                 s3_verify = litellm.s3_callback_params.get("s3_verify")
                 s3_endpoint_url = litellm.s3_callback_params.get("s3_endpoint_url")
-                s3_aws_access_key_id = litellm.s3_callback_params.get(
-                    "s3_aws_access_key_id"
-                )
+                s3_aws_access_key_id = litellm.s3_callback_params.get("s3_aws_access_key_id")
                 s3_aws_secret_access_key = litellm.s3_callback_params.get(
                     "s3_aws_secret_access_key"
                 )
-                s3_aws_session_token = litellm.s3_callback_params.get(
-                    "s3_aws_session_token"
-                )
+                s3_aws_session_token = litellm.s3_callback_params.get("s3_aws_session_token")
                 s3_config = litellm.s3_callback_params.get("s3_config")
                 s3_path = litellm.s3_callback_params.get("s3_path")
                 # done reading litellm.s3_callback_params
@@ -84,16 +80,12 @@ class S3Logger:
             print_verbose(f"Got exception on init s3 client {str(e)}")
             raise e
 
-    async def _async_log_event(
-        self, kwargs, response_obj, start_time, end_time, print_verbose
-    ):
+    async def _async_log_event(self, kwargs, response_obj, start_time, end_time, print_verbose):
         self.log_event(kwargs, response_obj, start_time, end_time, print_verbose)
 
     def log_event(self, kwargs, response_obj, start_time, end_time, print_verbose):
         try:
-            verbose_logger.debug(
-                f"s3 Logging - Enters logging function for model {kwargs}"
-            )
+            verbose_logger.debug(f"s3 Logging - Enters logging function for model {kwargs}")
 
             # construct payload to send to s3
             # follows the same params as langfuse.py

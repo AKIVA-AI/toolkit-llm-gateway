@@ -6,7 +6,6 @@ import json
 from typing import Any, Callable, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.custom_httpx.http_handler import (
@@ -41,9 +40,7 @@ class CohereError(Exception):
     def __init__(self, status_code, message):
         self.status_code = status_code
         self.message = message
-        self.request = httpx.Request(
-            method="POST", url="https://api.cohere.ai/v1/generate"
-        )
+        self.request = httpx.Request(method="POST", url="https://api.cohere.ai/v1/generate")
         self.response = httpx.Response(status_code=status_code, request=self.request)
         super().__init__(
             self.message
@@ -154,9 +151,7 @@ def embedding(
             headers=headers,
             encoding=encoding,
             client=(
-                client
-                if client is not None and isinstance(client, AsyncHTTPHandler)
-                else None
+                client if client is not None and isinstance(client, AsyncHTTPHandler) else None
             ),
         )
 

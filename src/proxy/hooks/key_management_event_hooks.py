@@ -80,9 +80,7 @@ class KeyManagementEventHooks:
                 secret_token=response.key,
             )
         except Exception as e:
-            verbose_proxy_logger.warning(
-                f"Failed to store virtual key in secret manager: {e}"
-            )
+            verbose_proxy_logger.warning(f"Failed to store virtual key in secret manager: {e}")
 
     @staticmethod
     async def async_key_updated_hook(
@@ -145,8 +143,7 @@ class KeyManagementEventHooks:
         if data is not None and response.token_id is not None:
             try:
                 initial_secret_name = (
-                    existing_key_row.key_alias
-                    or f"virtual-key-{existing_key_row.token}"
+                    existing_key_row.key_alias or f"virtual-key-{existing_key_row.token}"
                 )
                 await KeyManagementEventHooks._rotate_virtual_key_in_secret_manager(
                     current_secret_name=initial_secret_name,
@@ -154,9 +151,7 @@ class KeyManagementEventHooks:
                     new_secret_value=response.key,
                 )
             except Exception as e:
-                verbose_proxy_logger.warning(
-                    f"Failed to rotate virtual key in secret manager: {e}"
-                )
+                verbose_proxy_logger.warning(f"Failed to rotate virtual key in secret manager: {e}")
 
         # Send key rotated email if configured - non-blocking, independent operation
         try:
@@ -182,9 +177,7 @@ class KeyManagementEventHooks:
                         object_id=existing_key_row.token,
                         action="rotated",
                         updated_values=response.model_dump_json(exclude_none=True),
-                        before_value=existing_key_row.model_dump_json(
-                            exclude_none=True
-                        ),
+                        before_value=existing_key_row.model_dump_json(exclude_none=True),
                     )
                 )
             )
@@ -258,20 +251,16 @@ class KeyManagementEventHooks:
                 # store the key in the secret manager
                 if isinstance(litellm.secret_manager_client, BaseSecretManager):
                     tags = getattr(litellm._key_management_settings, "tags", None)
-                    description = getattr(
-                        litellm._key_management_settings, "description", None
-                    )
+                    description = getattr(litellm._key_management_settings, "description", None)
                     verbose_proxy_logger.debug(
                         f"Creating secret with {secret_name} and tags={tags} and description={description}"
                     )
 
                     await litellm.secret_manager_client.async_write_secret(
-                        secret_name=KeyManagementEventHooks._get_secret_name(
-                            secret_name
-                        ),
+                        secret_name=KeyManagementEventHooks._get_secret_name(secret_name),
                         description=description,
                         secret_value=secret_token,
-                        tags=tags
+                        tags=tags,
                     )
 
     @staticmethod
@@ -297,20 +286,18 @@ class KeyManagementEventHooks:
                         current_secret_name=KeyManagementEventHooks._get_secret_name(
                             current_secret_name
                         ),
-                        new_secret_name=KeyManagementEventHooks._get_secret_name(
-                            new_secret_name
-                        ),
+                        new_secret_name=KeyManagementEventHooks._get_secret_name(new_secret_name),
                         new_secret_value=new_secret_value,
                     )
 
     @staticmethod
     def _get_secret_name(secret_name: str) -> str:
-        if litellm._key_management_settings.prefix_for_stored_virtual_keys.endswith(
-            "/"
-        ):
+        if litellm._key_management_settings.prefix_for_stored_virtual_keys.endswith("/"):
             return f"{litellm._key_management_settings.prefix_for_stored_virtual_keys}{secret_name}"
         else:
-            return f"{litellm._key_management_settings.prefix_for_stored_virtual_keys}/{secret_name}"
+            return (
+                f"{litellm._key_management_settings.prefix_for_stored_virtual_keys}/{secret_name}"
+            )
 
     @staticmethod
     async def _delete_virtual_keys_from_secret_manager(
@@ -332,9 +319,7 @@ class KeyManagementEventHooks:
                     for key in keys_being_deleted:
                         if key.key_alias is not None:
                             await litellm.secret_manager_client.async_delete_secret(
-                                secret_name=KeyManagementEventHooks._get_secret_name(
-                                    key.key_alias
-                                )
+                                secret_name=KeyManagementEventHooks._get_secret_name(key.key_alias)
                             )
                         else:
                             verbose_proxy_logger.warning(
@@ -383,9 +368,7 @@ class KeyManagementEventHooks:
         """
         # Early exit if email is not enabled
         if not KeyManagementEventHooks._is_email_sending_enabled():
-            verbose_proxy_logger.debug(
-                "Email sending not enabled, skipping key created email"
-            )
+            verbose_proxy_logger.debug("Email sending not enabled, skipping key created email")
             return
 
         from litellm.proxy.proxy_server import general_settings, proxy_logging_obj
@@ -462,9 +445,7 @@ class KeyManagementEventHooks:
         """
         # Early exit if email is not enabled
         if not KeyManagementEventHooks._is_email_sending_enabled():
-            verbose_proxy_logger.debug(
-                "Email sending not enabled, skipping key rotated email"
-            )
+            verbose_proxy_logger.debug("Email sending not enabled, skipping key rotated email")
             return
 
         try:
@@ -483,9 +464,7 @@ class KeyManagementEventHooks:
                 SendKeyRotatedEmailEvent,
             )
         except ImportError:
-            verbose_proxy_logger.debug(
-                "Enterprise types not available, skipping key rotated email"
-            )
+            verbose_proxy_logger.debug("Enterprise types not available, skipping key rotated email")
             return
 
         event = SendKeyRotatedEmailEvent(
@@ -504,10 +483,8 @@ class KeyManagementEventHooks:
         ##########################
         # v2 integration for emails
         ##########################
-        initialized_email_loggers = (
-            litellm.logging_callback_manager.get_custom_loggers_for_type(
-                callback_type=BaseEmailLogger
-            )
+        initialized_email_loggers = litellm.logging_callback_manager.get_custom_loggers_for_type(
+            callback_type=BaseEmailLogger
         )
         if len(initialized_email_loggers) > 0:
             for email_logger in initialized_email_loggers:

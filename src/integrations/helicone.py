@@ -93,14 +93,12 @@ class HeliconeLogger:
         if metadata is None:
             metadata = {}
 
-        proxy_headers = (
-            litellm_params.get("proxy_server_request", {}).get("headers", {}) or {}
-        )
+        proxy_headers = litellm_params.get("proxy_server_request", {}).get("headers", {}) or {}
 
         for header_key in proxy_headers:
             if header_key.startswith("helicone_"):
                 metadata[header_key] = proxy_headers.get(header_key)
-        
+
         # Remove OpenTelemetry span from metadata as it's not JSON serializable
         # The span is used internally for tracing but shouldn't be logged to external services
         if "litellm_parent_otel_span" in metadata:
@@ -113,19 +111,14 @@ class HeliconeLogger:
     ):
         # Method definition
         try:
-            print_verbose(
-                f"Helicone Logging - Enters logging function for model {model}"
-            )
+            print_verbose(f"Helicone Logging - Enters logging function for model {model}")
             litellm_params = kwargs.get("litellm_params", {})
             kwargs.get("litellm_call_id", None)
             metadata = litellm_params.get("metadata", {}) or {}
             metadata = self.add_metadata_from_header(litellm_params, metadata)
             model = (
                 model
-                if any(
-                    accepted_model in model
-                    for accepted_model in self.helicone_model_list
-                )
+                if any(accepted_model in model for accepted_model in self.helicone_model_list)
                 else "gpt-3.5-turbo"
             )
             provider_request = {"model": model, "messages": messages}
@@ -156,13 +149,9 @@ class HeliconeLogger:
                 "Content-Type": "application/json",
             }
             start_time_seconds = int(start_time.timestamp())
-            start_time_milliseconds = int(
-                (start_time.timestamp() - start_time_seconds) * 1000
-            )
+            start_time_milliseconds = int((start_time.timestamp() - start_time_seconds) * 1000)
             end_time_seconds = int(end_time.timestamp())
-            end_time_milliseconds = int(
-                (end_time.timestamp() - end_time_seconds) * 1000
-            )
+            end_time_milliseconds = int((end_time.timestamp() - end_time_seconds) * 1000)
             meta = {"Helicone-Auth": f"Bearer {self.key}"}
             meta.update(metadata)
             data = {

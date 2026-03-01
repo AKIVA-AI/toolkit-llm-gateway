@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import httpx
-
 import litellm
 from litellm.llms.base_llm.vector_store.transformation import BaseVectorStoreConfig
 from litellm.secret_managers.main import get_secret_str
@@ -65,9 +64,7 @@ class MilvusVectorStoreConfig(BaseVectorStoreConfig):
 
         return headers
 
-    def get_auth_credentials(
-        self, litellm_params: dict
-    ) -> BaseVectorStoreAuthCredentials:
+    def get_auth_credentials(self, litellm_params: dict) -> BaseVectorStoreAuthCredentials:
         api_key = litellm_params.get("api_key")
         if not api_key:
             raise ValueError(
@@ -211,17 +208,15 @@ class MilvusVectorStoreConfig(BaseVectorStoreConfig):
             results = response_json.get("data", [])
 
             # Try to get text_field from optional_params first, then litellm_params
-            optional_params = litellm_logging_obj.model_call_details.get(
-                "optional_params", {}
-            )
+            optional_params = litellm_logging_obj.model_call_details.get("optional_params", {})
             text_field = optional_params.get("milvus_text_field", "")
 
             # Fallback to litellm_params if not in optional_params
 
             if not text_field:
-                text_field = litellm_logging_obj.model_call_details.get(
-                    "litellm_params", {}
-                ).get("milvus_text_field", "")
+                text_field = litellm_logging_obj.model_call_details.get("litellm_params", {}).get(
+                    "milvus_text_field", ""
+                )
 
             # Transform results to standard format
             search_results: List[VectorStoreSearchResult] = []

@@ -1,6 +1,7 @@
 """
 Base class for in memory buffer for database transactions
 """
+
 import asyncio
 from typing import Optional
 
@@ -24,9 +25,7 @@ class BaseUpdateQueue:
         """Enqueue an update."""
         verbose_proxy_logger.debug("Adding update to queue: %s", update)
         await self.update_queue.put(update)
-        await self._emit_new_item_added_to_queue_event(
-            queue_size=self.update_queue.qsize()
-        )
+        await self._emit_new_item_added_to_queue_event(queue_size=self.update_queue.qsize())
 
     async def flush_all_updates_from_in_memory_queue(self):
         """Get all updates from the queue."""

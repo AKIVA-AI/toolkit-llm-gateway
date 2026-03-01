@@ -3,7 +3,6 @@ import os
 from typing import TYPE_CHECKING, Any, Optional, Type
 
 from fastapi import HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.dual_cache import DualCache
 from litellm.integrations.custom_guardrail import (
@@ -88,9 +87,7 @@ class PangeaHandler(CustomGuardrail):
 
         # Default Pangea base URL if not provided
         self.api_base = (
-            api_base
-            or os.environ.get("PANGEA_API_BASE")
-            or "https://ai-guard.aws.us.pangea.cloud"
+            api_base or os.environ.get("PANGEA_API_BASE") or "https://ai-guard.aws.us.pangea.cloud"
         )
         self.pangea_input_recipe = pangea_input_recipe
         self.pangea_output_recipe = pangea_output_recipe
@@ -101,9 +98,7 @@ class PangeaHandler(CustomGuardrail):
             f"Initialized Pangea Guardrail: name={guardrail_name}, recipe={pangea_input_recipe}, api_base={self.api_base}"
         )
 
-    async def _call_pangea_ai_guard(
-        self, api: str, payload: dict, hook_name: str
-    ) -> dict:
+    async def _call_pangea_ai_guard(self, api: str, payload: dict, hook_name: str) -> dict:
         """
         Makes the API call to the Pangea AI Guard endpoint.
         The function itself will raise an error in the case that a response
@@ -134,9 +129,7 @@ class PangeaHandler(CustomGuardrail):
             f"Pangea Guardrail ({hook_name}): Calling endpoint {endpoint} with payload: {payload}"
         )
 
-        response = await self.async_handler.post(
-            url=endpoint, json=payload, headers=headers
-        )
+        response = await self.async_handler.post(url=endpoint, json=payload, headers=headers)
         response.raise_for_status()
 
         result = response.json()
@@ -159,11 +152,7 @@ class PangeaHandler(CustomGuardrail):
         return result
 
     async def _async_pre_call_hook(
-        self,
-        user_api_key_dict: UserAPIKeyAuth,
-        cache: DualCache,
-        data: dict,
-        call_type: str
+        self, user_api_key_dict: UserAPIKeyAuth, cache: DualCache, data: dict, call_type: str
     ):
         transformer = None
         messages: Any = None
@@ -175,10 +164,7 @@ class PangeaHandler(CustomGuardrail):
 
         ai_guard_payload = {
             "debug": False,
-            "input": {
-                "messages": messages,  # type: ignore
-                "tools": data.get("tools")
-            },
+            "input": {"messages": messages, "tools": data.get("tools")},  # type: ignore
             "event_type": "input",
         }
         if self.pangea_input_recipe:
@@ -196,11 +182,10 @@ class PangeaHandler(CustomGuardrail):
 
         output = ai_guard_response.get("result", {}).get("output", {})
         if call_type == "text_completion" or call_type == "atext_completion":
-            data = transformer.update_original_body(output["messages"]) # type: ignore
+            data = transformer.update_original_body(output["messages"])  # type: ignore
         else:
             data["messages"] = output["messages"]
         return data
-
 
     @log_guardrail_information
     async def async_pre_call_hook(
@@ -228,7 +213,7 @@ class PangeaHandler(CustomGuardrail):
                     "error": "Error in Pangea Guardrail",
                     "guardrail_name": self.guardrail_name,
                     "exceptions": str(e),
-                }
+                },
             ) from e
 
     async def _async_post_call_success_hook(
@@ -319,7 +304,7 @@ class PangeaHandler(CustomGuardrail):
                     "error": "Error in Pangea Guardrail",
                     "guardrail_name": self.guardrail_name,
                     "exceptions": str(e),
-                }
+                },
             ) from e
 
     @staticmethod

@@ -1,11 +1,10 @@
 import json
 import os
 import time
-from litellm._uuid import uuid
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from httpx import Headers, Response
-
+from litellm._uuid import uuid
 from litellm.files.utils import FilesAPIUtils
 from litellm.litellm_core_utils.prompt_templates.common_utils import extract_file_data
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
@@ -120,9 +119,7 @@ class VertexAIFilesConfig(VertexBase, BaseFilesConfig):
         object_name = f"litellm-vertex-files/{_model}/{uuid.uuid4()}"
         return object_name
 
-    def get_object_name(
-        self, extracted_file_data: ExtractedFileData, purpose: str
-    ) -> str:
+    def get_object_name(self, extracted_file_data: ExtractedFileData, purpose: str) -> str:
         """
         Get the object name for the request
         """
@@ -133,9 +130,7 @@ class VertexAIFilesConfig(VertexBase, BaseFilesConfig):
 
         if purpose == "batch":
             ## 1. If jsonl, check if there's a model name
-            file_content = self._get_content_from_openai_file(
-                extracted_file_data_content
-            )
+            file_content = self._get_content_from_openai_file(extracted_file_data_content)
 
             # Split into lines and parse each line as JSON
             openai_jsonl_content = [
@@ -174,9 +169,7 @@ class VertexAIFilesConfig(VertexBase, BaseFilesConfig):
             raise ValueError("purpose is required")
         extracted_file_data = extract_file_data(file_data)
         object_name = self.get_object_name(extracted_file_data, purpose)
-        endpoint = (
-            f"upload/storage/v1/b/{bucket_name}/o?uploadType=media&name={object_name}"
-        )
+        endpoint = f"upload/storage/v1/b/{bucket_name}/o?uploadType=media&name={object_name}"
         api_base = api_base or "https://storage.googleapis.com"
         if not api_base:
             raise ValueError("api_base is required")
@@ -270,18 +263,14 @@ class VertexAIFilesConfig(VertexBase, BaseFilesConfig):
             extracted_file_data=extracted_file_data,
         ):
             ## 1. If jsonl, check if there's a model name
-            file_content = self._get_content_from_openai_file(
-                extracted_file_data_content
-            )
+            file_content = self._get_content_from_openai_file(extracted_file_data_content)
 
             # Split into lines and parse each line as JSON
             openai_jsonl_content = [
                 json.loads(line) for line in file_content.splitlines() if line.strip()
             ]
-            vertex_jsonl_content = (
-                self._transform_openai_jsonl_content_to_vertex_ai_jsonl_content(
-                    openai_jsonl_content
-                )
+            vertex_jsonl_content = self._transform_openai_jsonl_content_to_vertex_ai_jsonl_content(
+                openai_jsonl_content
             )
             return "\n".join(json.dumps(item) for item in vertex_jsonl_content)
         elif isinstance(extracted_file_data_content, bytes):
@@ -329,9 +318,7 @@ class VertexAIFilesConfig(VertexBase, BaseFilesConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[Dict, Headers]
     ) -> BaseLLMException:
-        return VertexAIError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return VertexAIError(status_code=status_code, message=error_message, headers=headers)
 
 
 class VertexAIJsonlFilesTransformation(VertexGeminiConfig):
@@ -355,17 +342,11 @@ class VertexAIJsonlFilesTransformation(VertexGeminiConfig):
         openai_jsonl_content = [
             json.loads(line) for line in file_content.splitlines() if line.strip()
         ]
-        vertex_jsonl_content = (
-            self._transform_openai_jsonl_content_to_vertex_ai_jsonl_content(
-                openai_jsonl_content
-            )
+        vertex_jsonl_content = self._transform_openai_jsonl_content_to_vertex_ai_jsonl_content(
+            openai_jsonl_content
         )
-        vertex_jsonl_string = "\n".join(
-            json.dumps(item) for item in vertex_jsonl_content
-        )
-        object_name = self._get_gcs_object_name(
-            openai_jsonl_content=openai_jsonl_content
-        )
+        vertex_jsonl_string = "\n".join(json.dumps(item) for item in vertex_jsonl_content)
+        object_name = self._get_gcs_object_name(openai_jsonl_content=openai_jsonl_content)
         return vertex_jsonl_string, object_name
 
     def _transform_openai_jsonl_content_to_vertex_ai_jsonl_content(

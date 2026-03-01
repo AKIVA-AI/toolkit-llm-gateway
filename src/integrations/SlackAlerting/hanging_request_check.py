@@ -38,8 +38,7 @@ class AlertingHangingRequestCheck:
         self.slack_alerting_object = slack_alerting_object
         self.hanging_request_cache = InMemoryCache(
             default_ttl=int(
-                self.slack_alerting_object.alerting_threshold
-                + HANGING_ALERT_BUFFER_TIME_SECONDS
+                self.slack_alerting_object.alerting_threshold + HANGING_ALERT_BUFFER_TIME_SECONDS
             ),
         )
 
@@ -77,8 +76,7 @@ class AlertingHangingRequestCheck:
             key=hanging_request_data.request_id,
             value=hanging_request_data,
             ttl=int(
-                self.slack_alerting_object.alerting_threshold
-                + HANGING_ALERT_BUFFER_TIME_SECONDS
+                self.slack_alerting_object.alerting_threshold + HANGING_ALERT_BUFFER_TIME_SECONDS
             ),
         )
         return
@@ -111,12 +109,10 @@ class AlertingHangingRequestCheck:
             if hanging_request_data is None:
                 continue
 
-            request_status = (
-                await proxy_logging_obj.internal_usage_cache.async_get_cache(
-                    key="request_status:{}".format(hanging_request_data.request_id),
-                    litellm_parent_otel_span=None,
-                    local_only=True,
-                )
+            request_status = await proxy_logging_obj.internal_usage_cache.async_get_cache(
+                key="request_status:{}".format(hanging_request_data.request_id),
+                litellm_parent_otel_span=None,
+                local_only=True,
             )
             # this means the request status was either success or fail
             # and is not hanging
@@ -130,9 +126,7 @@ class AlertingHangingRequestCheck:
             ################
             # Send the Alert on Slack
             ################
-            await self.send_hanging_request_alert(
-                hanging_request_data=hanging_request_data
-            )
+            await self.send_hanging_request_alert(hanging_request_data=hanging_request_data)
 
         return
 

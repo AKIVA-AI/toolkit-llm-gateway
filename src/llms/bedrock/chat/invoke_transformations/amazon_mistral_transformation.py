@@ -1,5 +1,5 @@
 import types
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from litellm.llms.base_llm.chat.transformation import BaseConfig
 from litellm.llms.bedrock.chat.invoke_transformations.base_invoke_transformation import (
@@ -101,10 +101,14 @@ class AmazonMistralConfig(AmazonInvokeConfig, BaseConfig):
         """
         if "choices" in completion_response:
             outputText = completion_response["choices"][0]["message"]["content"]
-            model_response.choices[0].finish_reason = completion_response["choices"][0]["finish_reason"]
+            model_response.choices[0].finish_reason = completion_response["choices"][0][
+                "finish_reason"
+            ]
         elif "outputs" in completion_response:
             outputText = completion_response["outputs"][0]["text"]
-            model_response.choices[0].finish_reason = completion_response["outputs"][0]["stop_reason"]
+            model_response.choices[0].finish_reason = completion_response["outputs"][0][
+                "stop_reason"
+            ]
         else:
             raise BedrockError(message="Unexpected mistral completion response", status_code=400)
 

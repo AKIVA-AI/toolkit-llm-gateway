@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import ORJSONResponse
-
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import UserAPIKeyAuth, user_api_key_auth
 from litellm.proxy.common_request_processing import ProxyBaseLLMRequestProcessing
@@ -91,10 +90,10 @@ async def create_container(
         or await get_custom_llm_provider_from_request_body(request=request)
         or "openai"
     )
-    
+
     # Add custom_llm_provider to data
     data["custom_llm_provider"] = custom_llm_provider
-    
+
     # Process request using ProxyBaseLLMRequestProcessing
     processor = ProxyBaseLLMRequestProcessing(data=data)
     try:
@@ -184,7 +183,7 @@ async def list_containers(
         or get_custom_llm_provider_from_request_query(request=request)
         or "openai"
     )
-    
+
     # Add custom_llm_provider to data
     data["custom_llm_provider"] = custom_llm_provider
 
@@ -278,7 +277,7 @@ async def retrieve_container(
         or get_custom_llm_provider_from_request_query(request=request)
         or "openai"
     )
-    
+
     # Add custom_llm_provider to data
     data["custom_llm_provider"] = custom_llm_provider
 
@@ -372,7 +371,7 @@ async def delete_container(
         or get_custom_llm_provider_from_request_query(request=request)
         or "openai"
     )
-    
+
     # Add custom_llm_provider to data
     data["custom_llm_provider"] = custom_llm_provider
 

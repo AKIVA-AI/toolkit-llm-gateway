@@ -12,7 +12,6 @@ from functools import partial
 from typing import Any, Coroutine, Dict, Literal, Optional, Union, cast
 
 import httpx
-
 import litellm
 from litellm import get_secret_str
 from litellm.litellm_core_utils.get_llm_provider_logic import get_llm_provider
@@ -60,7 +59,9 @@ async def acreate_file(
     file: FileTypes,
     purpose: Literal["assistants", "batch", "fine-tune"],
     expires_after: Optional[FileExpiresAfter] = None,
-    custom_llm_provider: Literal["openai", "azure", "vertex_ai", "bedrock", "hosted_vllm"] = "openai",
+    custom_llm_provider: Literal[
+        "openai", "azure", "vertex_ai", "bedrock", "hosted_vllm"
+    ] = "openai",
     extra_headers: Optional[Dict[str, str]] = None,
     extra_body: Optional[Dict[str, str]] = None,
     **kwargs,
@@ -105,7 +106,9 @@ def create_file(
     file: FileTypes,
     purpose: Literal["assistants", "batch", "fine-tune"],
     expires_after: Optional[FileExpiresAfter] = None,
-    custom_llm_provider: Optional[Literal["openai", "azure", "vertex_ai", "bedrock", "hosted_vllm"]] = None,
+    custom_llm_provider: Optional[
+        Literal["openai", "azure", "vertex_ai", "bedrock", "hosted_vllm"]
+    ] = None,
     extra_headers: Optional[Dict[str, str]] = None,
     extra_body: Optional[Dict[str, str]] = None,
     **kwargs,
@@ -121,9 +124,7 @@ def create_file(
         _is_async = kwargs.pop("acreate_file", False) is True
         optional_params = GenericLiteLLMParams(**kwargs)
         litellm_params_dict = dict(**kwargs)
-        logging_obj = cast(
-            Optional[LiteLLMLoggingObj], kwargs.get("litellm_logging_obj")
-        )
+        logging_obj = cast(Optional[LiteLLMLoggingObj], kwargs.get("litellm_logging_obj"))
         if logging_obj is None:
             raise ValueError("logging_obj is required")
         client = kwargs.get("client")
@@ -176,8 +177,7 @@ def create_file(
                 _is_async=_is_async,
                 client=(
                     client
-                    if client is not None
-                    and isinstance(client, (HTTPHandler, AsyncHTTPHandler))
+                    if client is not None and isinstance(client, (HTTPHandler, AsyncHTTPHandler))
                     else None
                 ),
                 timeout=timeout,
@@ -507,9 +507,7 @@ def file_delete(
     try:
         try:
             if model is not None:
-                _, custom_llm_provider, _, _ = get_llm_provider(
-                    model, custom_llm_provider
-                )
+                _, custom_llm_provider, _, _ = get_llm_provider(model, custom_llm_provider)
         except Exception:
             pass
         optional_params = GenericLiteLLMParams(**kwargs)
@@ -771,7 +769,9 @@ def file_list(
 @client
 async def afile_content(
     file_id: str,
-    custom_llm_provider: Literal["openai", "azure", "vertex_ai", "bedrock", "hosted_vllm", "anthropic"] = "openai",
+    custom_llm_provider: Literal[
+        "openai", "azure", "vertex_ai", "bedrock", "hosted_vllm", "anthropic"
+    ] = "openai",
     extra_headers: Optional[Dict[str, str]] = None,
     extra_body: Optional[Dict[str, str]] = None,
     **kwargs,
@@ -837,9 +837,7 @@ def file_content(
 
         try:
             if model is not None:
-                _, custom_llm_provider, _, _ = get_llm_provider(
-                    model, custom_llm_provider
-                )
+                _, custom_llm_provider, _, _ = get_llm_provider(model, custom_llm_provider)
         except Exception:
             pass
 

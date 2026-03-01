@@ -55,16 +55,11 @@ class _PROXY_VirtualKeyModelMaxBudgetLimiter(RouterBudgetLimiting):
             model=model, internal_model_max_budget=internal_model_max_budget
         )
         if _current_model_budget_info is None:
-            verbose_proxy_logger.debug(
-                f"Model {model} not found in internal_model_max_budget"
-            )
+            verbose_proxy_logger.debug(f"Model {model} not found in internal_model_max_budget")
             return True
 
         # check if current model is within budget
-        if (
-            _current_model_budget_info.max_budget
-            and _current_model_budget_info.max_budget > 0
-        ):
+        if _current_model_budget_info.max_budget and _current_model_budget_info.max_budget > 0:
             _current_spend = await self._get_virtual_key_spend_for_model(
                 user_api_key_hash=user_api_key_dict.token,
                 model=model,
@@ -121,9 +116,7 @@ class _PROXY_VirtualKeyModelMaxBudgetLimiter(RouterBudgetLimiting):
         1. Check if `model` is in `internal_model_max_budget`
         2. If not, check if `model` without custom llm provider is in `internal_model_max_budget`
         """
-        return internal_model_max_budget.get(
-            model, None
-        ) or internal_model_max_budget.get(
+        return internal_model_max_budget.get(model, None) or internal_model_max_budget.get(
             self._get_model_without_custom_llm_provider(model), None
         )
 
@@ -160,10 +153,7 @@ class _PROXY_VirtualKeyModelMaxBudgetLimiter(RouterBudgetLimiting):
         user_api_key_model_max_budget: Optional[dict] = _metadata.get(
             "user_api_key_model_max_budget", None
         )
-        if (
-            user_api_key_model_max_budget is None
-            or len(user_api_key_model_max_budget) == 0
-        ):
+        if user_api_key_model_max_budget is None or len(user_api_key_model_max_budget) == 0:
             verbose_proxy_logger.debug(
                 "Not running _PROXY_VirtualKeyModelMaxBudgetLimiter.async_log_success_event because user_api_key_model_max_budget is None or empty. `user_api_key_model_max_budget`=%s",
                 user_api_key_model_max_budget,
@@ -186,7 +176,5 @@ class _PROXY_VirtualKeyModelMaxBudgetLimiter(RouterBudgetLimiting):
             )
         verbose_proxy_logger.debug(
             "current state of in memory cache %s",
-            json.dumps(
-                self.dual_cache.in_memory_cache.cache_dict, indent=4, default=str
-            ),
+            json.dumps(self.dual_cache.in_memory_cache.cache_dict, indent=4, default=str),
         )

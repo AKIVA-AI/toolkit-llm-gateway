@@ -7,8 +7,6 @@ https://humanloop.com/
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import httpx
-from typing_extensions import TypedDict
-
 import litellm
 from litellm.caching import DualCache
 from litellm.llms.custom_httpx.http_handler import _get_httpx_client
@@ -16,6 +14,7 @@ from litellm.secret_managers.main import get_secret_str
 from litellm.types.llms.openai import AllMessageValues
 from litellm.types.prompts.init_prompts import PromptSpec
 from litellm.types.utils import StandardCallbackDynamicParams
+from typing_extensions import TypedDict
 
 from .custom_logger import CustomLogger
 
@@ -35,9 +34,7 @@ class HumanLoopPromptManager(DualCache):
     def _get_prompt_from_id_cache(
         self, humanloop_prompt_id: str
     ) -> Optional[PromptManagementClient]:
-        return cast(
-            Optional[PromptManagementClient], self.get_cache(key=humanloop_prompt_id)
-        )
+        return cast(Optional[PromptManagementClient], self.get_cache(key=humanloop_prompt_id))
 
     def _compile_prompt_helper(
         self, prompt_template: List[AllMessageValues], prompt_variables: Dict[str, Any]
@@ -109,9 +106,7 @@ class HumanLoopPromptManager(DualCache):
     ) -> PromptManagementClient:
         prompt = self._get_prompt_from_id_cache(humanloop_prompt_id)
         if prompt is None:
-            prompt = self._get_prompt_from_id_api(
-                humanloop_prompt_id, humanloop_api_key
-            )
+            prompt = self._get_prompt_from_id_api(humanloop_prompt_id, humanloop_api_key)
             self.set_cache(
                 key=humanloop_prompt_id,
                 value=prompt,
@@ -167,9 +162,9 @@ class HumanloopLogger(CustomLogger):
         List[AllMessageValues],
         dict,
     ]:
-        humanloop_api_key = dynamic_callback_params.get(
-            "humanloop_api_key"
-        ) or get_secret_str("HUMANLOOP_API_KEY")
+        humanloop_api_key = dynamic_callback_params.get("humanloop_api_key") or get_secret_str(
+            "HUMANLOOP_API_KEY"
+        )
 
         if prompt_id is None:
             raise ValueError("prompt_id is required for Humanloop integration")

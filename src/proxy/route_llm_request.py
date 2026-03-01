@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, Any, Literal, Optional
 
-from fastapi import HTTPException, status
-
 import litellm
+from fastapi import HTTPException, status
 
 if TYPE_CHECKING:
     from litellm.router import Router as _Router
@@ -218,17 +217,13 @@ async def route_request(
             return getattr(litellm, f"{route_type}")(**data)
 
         team_model_name = (
-            llm_router.map_team_model(data["model"], team_id)
-            if team_id is not None
-            else None
+            llm_router.map_team_model(data["model"], team_id) if team_id is not None else None
         )
         if team_model_name is not None:
             data["model"] = team_model_name
             return getattr(llm_router, f"{route_type}")(**data)
 
-        elif data["model"] in router_model_names or llm_router.has_model_id(
-            data["model"]
-        ):
+        elif data["model"] in router_model_names or llm_router.has_model_id(data["model"]):
             return getattr(llm_router, f"{route_type}")(**data)
 
         elif (
@@ -238,9 +233,7 @@ async def route_request(
             return getattr(llm_router, f"{route_type}")(**data)
 
         elif data["model"] in llm_router.deployment_names:
-            return getattr(llm_router, f"{route_type}")(
-                **data, specific_deployment=True
-            )
+            return getattr(llm_router, f"{route_type}")(**data, specific_deployment=True)
 
         elif data["model"] not in router_model_names:
             if llm_router.router_general_settings.pass_through_all_models:

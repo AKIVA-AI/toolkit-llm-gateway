@@ -79,9 +79,7 @@ class BedrockCountTokensConfig(BaseAWSLLM):
         else:
             return self._transform_to_invoke_model_format(request_data)
 
-    def _transform_to_converse_format(
-        self, messages: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _transform_to_converse_format(self, messages: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Transform to Converse input format."""
         # Extract system messages if present
         system_messages = []
@@ -115,9 +113,7 @@ class BedrockCountTokensConfig(BaseAWSLLM):
         # Build the complete request
         return {"input": {"converse": converse_input}}
 
-    def _transform_to_invoke_model_format(
-        self, request_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _transform_to_invoke_model_format(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
         """Transform to InvokeModel input format."""
         import json
 
@@ -127,9 +123,7 @@ class BedrockCountTokensConfig(BaseAWSLLM):
 
         return {"input": {"invokeModel": {"body": json.dumps(body_data)}}}
 
-    def get_bedrock_count_tokens_endpoint(
-        self, model: str, aws_region_name: str
-    ) -> str:
+    def get_bedrock_count_tokens_endpoint(self, model: str, aws_region_name: str) -> str:
         """
         Construct the AWS Bedrock CountTokens API endpoint using existing LiteLLM functions.
 

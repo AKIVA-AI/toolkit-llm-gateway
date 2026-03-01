@@ -35,15 +35,11 @@ def load_compatible_callbacks() -> Dict:
         Dict: Dictionary of compatible callbacks configuration
     """
     try:
-        json_path = os.path.join(
-            os.path.dirname(__file__), "generic_api_compatible_callbacks.json"
-        )
+        json_path = os.path.join(os.path.dirname(__file__), "generic_api_compatible_callbacks.json")
         with open(json_path, "r") as f:
             return json.load(f)
     except Exception as e:
-        verbose_logger.warning(
-            f"Error loading generic_api_compatible_callbacks.json: {str(e)}"
-        )
+        verbose_logger.warning(f"Error loading generic_api_compatible_callbacks.json: {str(e)}")
         return {}
 
 
@@ -117,9 +113,7 @@ class GenericAPILogger(CustomBatchLogger):
         #########################################################
         if callback_name:
             if is_callback_compatible(callback_name):
-                verbose_logger.debug(
-                    f"Loading configuration for callback: {callback_name}"
-                )
+                verbose_logger.debug(f"Loading configuration for callback: {callback_name}")
                 callback_config = get_callback_config(callback_name)
 
                 # Use config from JSON if not explicitly provided
@@ -316,9 +310,7 @@ class GenericAPILogger(CustomBatchLogger):
         finally:
             self.log_queue.clear()
 
-    def _get_v1_logging_payload(
-        self, kwargs, response_obj, start_time, end_time
-    ) -> dict:
+    def _get_v1_logging_payload(self, kwargs, response_obj, start_time, end_time) -> dict:
         """
         Maintained for backwards compatibility with old logging payload
 
@@ -331,9 +323,7 @@ class GenericAPILogger(CustomBatchLogger):
         # construct payload to send custom logger
         # follows the same params as langfuse.py
         litellm_params = kwargs.get("litellm_params", {})
-        metadata = (
-            litellm_params.get("metadata", {}) or {}
-        )  # if litellm_params['metadata'] == None
+        metadata = litellm_params.get("metadata", {}) or {}  # if litellm_params['metadata'] == None
         messages = kwargs.get("messages")
         cost = kwargs.get("response_cost", 0.0)
         optional_params = kwargs.get("optional_params", {})

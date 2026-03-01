@@ -2,11 +2,11 @@ import asyncio
 import json
 import os
 import time
-from litellm._uuid import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
 from litellm._logging import verbose_logger
+from litellm._uuid import uuid
 from litellm.constants import _DEFAULT_TTL_FOR_HTTPX_CLIENTS, AZURE_STORAGE_MSFT_VERSION
 from litellm.integrations.custom_batch_logger import CustomBatchLogger
 from litellm.llms.azure.common_utils import get_azure_ad_token_from_entra_id
@@ -24,17 +24,13 @@ class AzureBlobStorageLogger(CustomBatchLogger):
         **kwargs,
     ):
         try:
-            verbose_logger.debug(
-                "AzureBlobStorageLogger: in init azure blob storage logger"
-            )
+            verbose_logger.debug("AzureBlobStorageLogger: in init azure blob storage logger")
 
             # Env Variables used for Azure Storage Authentication
             self.tenant_id = os.getenv("AZURE_STORAGE_TENANT_ID")
             self.client_id = os.getenv("AZURE_STORAGE_CLIENT_ID")
             self.client_secret = os.getenv("AZURE_STORAGE_CLIENT_SECRET")
-            self.azure_storage_account_key: Optional[str] = os.getenv(
-                "AZURE_STORAGE_ACCOUNT_KEY"
-            )
+            self.azure_storage_account_key: Optional[str] = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
 
             # Required Env Variables for Azure Storage
             _azure_storage_account_name = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
@@ -45,9 +41,7 @@ class AzureBlobStorageLogger(CustomBatchLogger):
             self.azure_storage_account_name: str = _azure_storage_account_name
             _azure_storage_file_system = os.getenv("AZURE_STORAGE_FILE_SYSTEM")
             if not _azure_storage_file_system:
-                raise ValueError(
-                    "Missing required environment variable: AZURE_STORAGE_FILE_SYSTEM"
-                )
+                raise ValueError("Missing required environment variable: AZURE_STORAGE_FILE_SYSTEM")
             self.azure_storage_file_system: str = _azure_storage_file_system
             self._service_client = None
             # Time that the azure service client expires, in order to reset the connection pool and keep it fresh
@@ -143,13 +137,9 @@ class AzureBlobStorageLogger(CustomBatchLogger):
                 await self.async_upload_payload_to_azure_blob_storage(payload=payload)
 
         except Exception as e:
-            verbose_logger.exception(
-                f"AzureBlobStorageLogger Error sending batch API - {str(e)}"
-            )
+            verbose_logger.exception(f"AzureBlobStorageLogger Error sending batch API - {str(e)}")
 
-    async def async_upload_payload_to_azure_blob_storage(
-        self, payload: StandardLoggingPayload
-    ):
+    async def async_upload_payload_to_azure_blob_storage(self, payload: StandardLoggingPayload):
         """
         Uploads the payload to Azure Blob Storage using a 3-step process:
         1. Create file resource
@@ -158,18 +148,14 @@ class AzureBlobStorageLogger(CustomBatchLogger):
         """
         try:
             if self.azure_storage_account_key:
-                await self.upload_to_azure_data_lake_with_azure_account_key(
-                    payload=payload
-                )
+                await self.upload_to_azure_data_lake_with_azure_account_key(payload=payload)
             else:
                 # Get a valid token instead of always requesting a new one
                 await self.set_valid_azure_ad_token()
                 async_client = get_async_httpx_client(
                     llm_provider=httpxSpecialProvider.LoggingCallback
                 )
-                json_payload = (
-                    json.dumps(payload) + "\n"
-                )  # Add newline for each log entry
+                json_payload = json.dumps(payload) + "\n"  # Add newline for each log entry
                 payload_bytes = json_payload.encode("utf-8")
                 filename = f"{payload.get('id') or str(uuid.uuid4())}.json"
                 base_url = f"https://{self.azure_storage_account_name}.dfs.core.windows.net/{self.azure_storage_file_system}/{filename}"
@@ -179,9 +165,7 @@ class AzureBlobStorageLogger(CustomBatchLogger):
                 await self._append_data(async_client, base_url, json_payload)
                 await self._flush_data(async_client, base_url, len(payload_bytes))
 
-                verbose_logger.debug(
-                    f"Successfully uploaded log to Azure Blob Storage: {filename}"
-                )
+                verbose_logger.debug(f"Successfully uploaded log to Azure Blob Storage: {filename}")
 
         except Exception as e:
             verbose_logger.exception(f"Error uploading to Azure Blob Storage: {str(e)}")
@@ -203,9 +187,7 @@ class AzureBlobStorageLogger(CustomBatchLogger):
             verbose_logger.exception(f"Error creating file resource: {str(e)}")
             raise
 
-    async def _append_data(
-        self, client: AsyncHTTPHandler, base_url: str, json_payload: str
-    ):
+    async def _append_data(self, client: AsyncHTTPHandler, base_url: str, json_payload: str):
         """Helper method to append data to the file"""
         try:
             verbose_logger.debug(f"Appending data to file: {base_url}")
@@ -283,17 +265,11 @@ class AzureBlobStorageLogger(CustomBatchLogger):
             client_secret,
         )
         if tenant_id is None:
-            raise ValueError(
-                "Missing required environment variable: AZURE_STORAGE_TENANT_ID"
-            )
+            raise ValueError("Missing required environment variable: AZURE_STORAGE_TENANT_ID")
         if client_id is None:
-            raise ValueError(
-                "Missing required environment variable: AZURE_STORAGE_CLIENT_ID"
-            )
+            raise ValueError("Missing required environment variable: AZURE_STORAGE_CLIENT_ID")
         if client_secret is None:
-            raise ValueError(
-                "Missing required environment variable: AZURE_STORAGE_CLIENT_SECRET"
-            )
+            raise ValueError("Missing required environment variable: AZURE_STORAGE_CLIENT_SECRET")
 
         token_provider = get_azure_ad_token_from_entra_id(
             tenant_id=tenant_id,
@@ -392,9 +368,7 @@ class AzureBlobStorageLogger(CustomBatchLogger):
             # Flush the content to finalize the file
             await file_client.flush_data(position=len(content), offset=0)
 
-            verbose_logger.debug(
-                f"Successfully uploaded and wrote to {today}/{file_name}"
-            )
+            verbose_logger.debug(f"Successfully uploaded and wrote to {today}/{file_name}")
 
         except Exception as e:
             verbose_logger.exception(f"Error occurred: {str(e)}")

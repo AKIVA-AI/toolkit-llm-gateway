@@ -9,7 +9,6 @@ from functools import partial
 from typing import Any, Coroutine, Dict, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.constants import request_timeout
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -43,7 +42,7 @@ async def acreate_skill(
 ) -> Skill:
     """
     Async: Create a new skill
-    
+
     Args:
         files: Files to upload for the skill. All files must be in the same top-level directory and must include a SKILL.md file at the root.
         display_title: Optional display title for the skill
@@ -53,7 +52,7 @@ async def acreate_skill(
         timeout: Request timeout
         custom_llm_provider: Provider name (e.g., 'anthropic')
         **kwargs: Additional parameters
-        
+
     Returns:
         Skill object
     """
@@ -106,7 +105,7 @@ def create_skill(
 ) -> Union[Skill, Coroutine[Any, Any, Skill]]:
     """
     Create a new skill
-    
+
     Args:
         files: Files to upload for the skill. All files must be in the same top-level directory and must include a SKILL.md file at the root.
         display_title: Optional display title for the skill
@@ -116,7 +115,7 @@ def create_skill(
         timeout: Request timeout
         custom_llm_provider: Provider name (e.g., 'anthropic')
         **kwargs: Additional parameters
-        
+
     Returns:
         Skill object
     """
@@ -141,9 +140,7 @@ def create_skill(
         )
 
         if skills_api_provider_config is None:
-            raise ValueError(
-                f"CREATE skill is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"CREATE skill is not supported for {custom_llm_provider}")
 
         # Build create request
         create_request: CreateSkillRequest = {}
@@ -173,9 +170,7 @@ def create_skill(
         from litellm.llms.anthropic.common_utils import AnthropicModelInfo
 
         api_base = AnthropicModelInfo.get_api_base(litellm_params.api_base)
-        url = skills_api_provider_config.get_complete_url(
-            api_base=api_base, endpoint="skills"
-        )
+        url = skills_api_provider_config.get_complete_url(api_base=api_base, endpoint="skills")
 
         # Pre-call logging
         litellm_logging_obj.update_environment_variables(
@@ -226,7 +221,7 @@ async def alist_skills(
 ) -> ListSkillsResponse:
     """
     Async: List all skills
-    
+
     Args:
         limit: Number of results to return per page (max 100, default 20)
         page: Pagination token for fetching a specific page of results
@@ -236,7 +231,7 @@ async def alist_skills(
         timeout: Request timeout
         custom_llm_provider: Provider name (e.g., 'anthropic')
         **kwargs: Additional parameters
-        
+
     Returns:
         ListSkillsResponse object
     """
@@ -289,7 +284,7 @@ def list_skills(
 ) -> Union[ListSkillsResponse, Coroutine[Any, Any, ListSkillsResponse]]:
     """
     List all skills
-    
+
     Args:
         limit: Number of results to return per page (max 100, default 20)
         page: Pagination token for fetching a specific page of results
@@ -299,7 +294,7 @@ def list_skills(
         timeout: Request timeout
         custom_llm_provider: Provider name (e.g., 'anthropic')
         **kwargs: Additional parameters
-        
+
     Returns:
         ListSkillsResponse object
     """
@@ -399,7 +394,7 @@ async def aget_skill(
 ) -> Skill:
     """
     Async: Get a skill by ID
-    
+
     Args:
         skill_id: The ID of the skill to fetch
         extra_headers: Additional headers for the request
@@ -407,7 +402,7 @@ async def aget_skill(
         timeout: Request timeout
         custom_llm_provider: Provider name (e.g., 'anthropic')
         **kwargs: Additional parameters
-        
+
     Returns:
         Skill object
     """
@@ -456,7 +451,7 @@ def get_skill(
 ) -> Union[Skill, Coroutine[Any, Any, Skill]]:
     """
     Get a skill by ID
-    
+
     Args:
         skill_id: The ID of the skill to fetch
         extra_headers: Additional headers for the request
@@ -464,7 +459,7 @@ def get_skill(
         timeout: Request timeout
         custom_llm_provider: Provider name (e.g., 'anthropic')
         **kwargs: Additional parameters
-        
+
     Returns:
         Skill object
     """
@@ -556,7 +551,7 @@ async def adelete_skill(
 ) -> DeleteSkillResponse:
     """
     Async: Delete a skill by ID
-    
+
     Args:
         skill_id: The ID of the skill to delete
         extra_headers: Additional headers for the request
@@ -564,7 +559,7 @@ async def adelete_skill(
         timeout: Request timeout
         custom_llm_provider: Provider name (e.g., 'anthropic')
         **kwargs: Additional parameters
-        
+
     Returns:
         DeleteSkillResponse object
     """
@@ -613,7 +608,7 @@ def delete_skill(
 ) -> Union[DeleteSkillResponse, Coroutine[Any, Any, DeleteSkillResponse]]:
     """
     Delete a skill by ID
-    
+
     Args:
         skill_id: The ID of the skill to delete
         extra_headers: Additional headers for the request
@@ -621,7 +616,7 @@ def delete_skill(
         timeout: Request timeout
         custom_llm_provider: Provider name (e.g., 'anthropic')
         **kwargs: Additional parameters
-        
+
     Returns:
         DeleteSkillResponse object
     """
@@ -646,9 +641,7 @@ def delete_skill(
         )
 
         if skills_api_provider_config is None:
-            raise ValueError(
-                f"DELETE skill is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"DELETE skill is not supported for {custom_llm_provider}")
 
         # Validate environment and get headers
         headers = extra_headers or {}
@@ -702,4 +695,3 @@ def delete_skill(
             completion_kwargs=local_vars,
             extra_kwargs=kwargs,
         )
-

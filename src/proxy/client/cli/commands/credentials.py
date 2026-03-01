@@ -2,8 +2,8 @@ import json
 from typing import Literal
 
 import click
-import rich
 import requests
+import rich
 from rich.table import Table
 
 from ...credentials import CredentialsManagementClient

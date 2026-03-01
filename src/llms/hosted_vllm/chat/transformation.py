@@ -41,9 +41,7 @@ class HostedVLLMChatConfig(OpenAIGPTConfig):
             _tools = _remove_strict_from_schema(_tools)
         if _tools is not None:
             non_default_params["tools"] = _tools
-        return super().map_openai_params(
-            non_default_params, optional_params, model, drop_params
-        )
+        return super().map_openai_params(non_default_params, optional_params, model, drop_params)
 
     def _get_openai_compatible_provider_info(
         self, api_base: Optional[str], api_key: Optional[str]
@@ -100,8 +98,7 @@ class HostedVLLMChatConfig(OpenAIGPTConfig):
     @overload
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: Literal[True]
-    ) -> Coroutine[Any, Any, List[AllMessageValues]]:
-        ...
+    ) -> Coroutine[Any, Any, List[AllMessageValues]]: ...
 
     @overload
     def _transform_messages(
@@ -109,8 +106,7 @@ class HostedVLLMChatConfig(OpenAIGPTConfig):
         messages: List[AllMessageValues],
         model: str,
         is_async: Literal[False] = False,
-    ) -> List[AllMessageValues]:
-        ...
+    ) -> List[AllMessageValues]: ...
 
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: bool = False
@@ -122,22 +118,16 @@ class HostedVLLMChatConfig(OpenAIGPTConfig):
             if message["role"] == "user":
                 message_content = message.get("content")
                 if message_content and isinstance(message_content, list):
-                    replaced_content_items: List[
-                        Tuple[int, ChatCompletionFileObject]
-                    ] = []
+                    replaced_content_items: List[Tuple[int, ChatCompletionFileObject]] = []
                     for idx, content_item in enumerate(message_content):
                         if content_item.get("type") == "file":
                             content_item = cast(ChatCompletionFileObject, content_item)
                             if self._is_video_file(content_item):
                                 replaced_content_items.append((idx, content_item))
                     for idx, content_item in replaced_content_items:
-                        message_content[idx] = self._convert_file_to_video_url(
-                            content_item
-                        )
+                        message_content[idx] = self._convert_file_to_video_url(content_item)
         if is_async:
-            return super()._transform_messages(
-                messages, model, is_async=cast(Literal[True], True)
-            )
+            return super()._transform_messages(messages, model, is_async=cast(Literal[True], True))
         else:
             return super()._transform_messages(
                 messages, model, is_async=cast(Literal[False], False)

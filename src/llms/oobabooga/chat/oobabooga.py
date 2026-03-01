@@ -126,9 +126,7 @@ def embedding(
         optional_params=optional_params,
         litellm_params={},
     )
-    response = litellm.module_level_client.post(
-        embeddings_url, headers=headers, json=data
-    )
+    response = litellm.module_level_client.post(embeddings_url, headers=headers, json=data)
     completion_response = response.json()
 
     # Check for errors in response

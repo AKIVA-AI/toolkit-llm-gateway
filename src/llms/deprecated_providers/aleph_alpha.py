@@ -4,7 +4,6 @@ import types
 from typing import Callable, Optional
 
 import httpx  # type: ignore
-
 import litellm
 from litellm.utils import Choices, Message, ModelResponse, Usage
 
@@ -13,9 +12,7 @@ class AlephAlphaError(Exception):
     def __init__(self, status_code, message):
         self.status_code = status_code
         self.message = message
-        self.request = httpx.Request(
-            method="POST", url="https://api.aleph-alpha.com/complete"
-        )
+        self.request = httpx.Request(method="POST", url="https://api.aleph-alpha.com/complete")
         self.response = httpx.Response(status_code=status_code, request=self.request)
         super().__init__(
             self.message
@@ -77,9 +74,7 @@ class AlephAlphaConfig:
     - `control_log_additive` (boolean; default value: true): Method of applying control to attention scores.
     """
 
-    maximum_tokens: Optional[
-        int
-    ] = litellm.max_tokens  # aleph alpha requires max tokens
+    maximum_tokens: Optional[int] = litellm.max_tokens  # aleph alpha requires max tokens
     minimum_tokens: Optional[int] = None
     echo: Optional[bool] = None
     temperature: Optional[int] = None

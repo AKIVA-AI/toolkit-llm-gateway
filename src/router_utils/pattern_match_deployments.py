@@ -26,16 +26,12 @@ class PatternUtils:
         complexity_chars = ["*", "+", "?", "\\", "^", "$", "|", "(", ")"]
         ret_val = (
             len(pattern),  # Longer patterns more specific
-            sum(
-                pattern.count(char) for char in complexity_chars
-            ),  # More regex complexity
+            sum(pattern.count(char) for char in complexity_chars),  # More regex complexity
         )
         return ret_val
 
     @staticmethod
-    def sorted_patterns(
-        patterns: Dict[str, List[Dict]]
-    ) -> List[Tuple[str, List[Dict]]]:
+    def sorted_patterns(patterns: Dict[str, List[Dict]]) -> List[Tuple[str, List[Dict]]]:
         """
         Cached property for patterns sorted by specificity.
 
@@ -105,11 +101,11 @@ class PatternMatchRouter:
         new_deployments = []
         for deployment in deployments:
             new_deployment = copy.deepcopy(deployment)
-            new_deployment["litellm_params"][
-                "model"
-            ] = PatternMatchRouter.set_deployment_model_name(
-                matched_pattern=matched_pattern,
-                litellm_deployment_litellm_model=deployment["litellm_params"]["model"],
+            new_deployment["litellm_params"]["model"] = (
+                PatternMatchRouter.set_deployment_model_name(
+                    matched_pattern=matched_pattern,
+                    litellm_deployment_litellm_model=deployment["litellm_params"]["model"],
+                )
             )
             new_deployments.append(new_deployment)
 
@@ -142,10 +138,7 @@ class PatternMatchRouter:
                 else []
             )
             for pattern, llm_deployments in sorted_patterns:
-                if (
-                    filtered_model_names is not None
-                    and pattern not in regex_filtered_model_names
-                ):
+                if filtered_model_names is not None and pattern not in regex_filtered_model_names:
                     continue
                 pattern_match = re.match(pattern, request)
                 if pattern_match:

@@ -5,7 +5,6 @@ Translates from OpenAI's `/v1/embeddings` to IBM's `/text/embeddings` route.
 from typing import Optional
 
 import httpx
-
 from litellm.llms.base_llm.embedding.transformation import (
     BaseEmbeddingConfig,
     LiteLLMLoggingObj,

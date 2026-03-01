@@ -35,8 +35,7 @@ class TeamMemberPermissionChecks:
             team_table.team_member_permissions, list
         ):
             return [
-                KeyManagementRoutes(permission)
-                for permission in team_table.team_member_permissions
+                KeyManagementRoutes(permission) for permission in team_table.team_member_permissions
             ]
 
         return DEFAULT_TEAM_MEMBER_PERMISSIONS
@@ -111,21 +110,15 @@ class TeamMemberPermissionChecks:
         if team_member_object.role == "admin":
             return True
 
-        _team_member_permissions = (
-            TeamMemberPermissionChecks.get_permissions_for_team_member(
-                team_member_object=team_member_object,
-                team_table=team_table,
-            )
+        _team_member_permissions = TeamMemberPermissionChecks.get_permissions_for_team_member(
+            team_member_object=team_member_object,
+            team_table=team_table,
         )
-        team_member_permissions = (
-            TeamMemberPermissionChecks._get_list_of_route_enum_as_str(
-                _team_member_permissions
-            )
+        team_member_permissions = TeamMemberPermissionChecks._get_list_of_route_enum_as_str(
+            _team_member_permissions
         )
 
-        if not RouteChecks.check_route_access(
-            route=route, allowed_routes=team_member_permissions
-        ):
+        if not RouteChecks.check_route_access(route=route, allowed_routes=team_member_permissions):
             raise ProxyException(
                 message=f"Team member does not have permissions for endpoint: {route}. You only have access to the following endpoints: {team_member_permissions} for team {team_table.team_id}. To create keys for this team, please ask your proxy admin to check the team member permission settings and update the settings to allow team member users to create keys.",
                 type=ProxyErrorTypes.team_member_permission_error,

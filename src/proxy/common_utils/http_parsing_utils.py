@@ -4,7 +4,6 @@ from typing import Any, Collection, Dict, List, Optional
 
 import orjson
 from fastapi import Request, UploadFile, status
-
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import ProxyException
 from litellm.proxy.common_utils.callback_utils import (
@@ -28,9 +27,7 @@ async def _read_request_body(request: Optional[Request]) -> Dict:
             return {}
 
         # Check if we already read and parsed the body
-        _cached_request_body: Optional[dict] = _safe_get_request_parsed_body(
-            request=request
-        )
+        _cached_request_body: Optional[dict] = _safe_get_request_parsed_body(request=request)
         if _cached_request_body is not None:
             return _cached_request_body
 
@@ -58,13 +55,9 @@ async def _read_request_body(request: Optional[Request]) -> Dict:
 
                     # Replace invalid surrogate pairs
                     # This regex finds incomplete surrogate pairs
-                    body_str = re.sub(
-                        r"[\uD800-\uDBFF](?![\uDC00-\uDFFF])", "", body_str
-                    )
+                    body_str = re.sub(r"[\uD800-\uDBFF](?![\uDC00-\uDFFF])", "", body_str)
                     # This regex finds low surrogates without high surrogates
-                    body_str = re.sub(
-                        r"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]", "", body_str
-                    )
+                    body_str = re.sub(r"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]", "", body_str)
 
                     try:
                         parsed_body = json.loads(body_str)
@@ -88,9 +81,7 @@ async def _read_request_body(request: Optional[Request]) -> Dict:
         raise
     except Exception as e:
         # Catch unexpected errors to avoid crashes
-        verbose_proxy_logger.exception(
-            "Unexpected error reading request body - {}".format(e)
-        )
+        verbose_proxy_logger.exception("Unexpected error reading request body - {}".format(e))
         return {}
 
 
@@ -106,6 +97,7 @@ def _safe_get_request_parsed_body(request: Optional[Request]) -> Optional[dict]:
         return {key: parsed_body[key] for key in accepted_keys}
     return None
 
+
 def _safe_get_request_query_params(request: Optional[Request]) -> Dict:
     if request is None:
         return {}
@@ -114,10 +106,9 @@ def _safe_get_request_query_params(request: Optional[Request]) -> Dict:
             return dict(request.query_params)
         return {}
     except Exception as e:
-        verbose_proxy_logger.debug(
-            "Unexpected error reading request query params - {}".format(e)
-        )
+        verbose_proxy_logger.debug("Unexpected error reading request query params - {}".format(e))
         return {}
+
 
 def _safe_set_request_parsed_body(
     request: Optional[Request],
@@ -128,9 +119,7 @@ def _safe_set_request_parsed_body(
             return
         request.scope["parsed_body"] = (tuple(parsed_body.keys()), parsed_body)
     except Exception as e:
-        verbose_proxy_logger.debug(
-            "Unexpected error setting request parsed body - {}".format(e)
-        )
+        verbose_proxy_logger.debug("Unexpected error setting request parsed body - {}".format(e))
 
 
 def _safe_get_request_headers(request: Optional[Request]) -> dict:
@@ -142,9 +131,7 @@ def _safe_get_request_headers(request: Optional[Request]) -> dict:
             return {}
         return dict(request.headers)
     except Exception as e:
-        verbose_proxy_logger.debug(
-            "Unexpected error reading request headers - {}".format(e)
-        )
+        verbose_proxy_logger.debug("Unexpected error reading request headers - {}".format(e))
         return {}
 
 
@@ -175,9 +162,7 @@ def check_file_size_under_limit(
 
     if llm_router is not None and request_data["model"] in router_model_names:
         try:
-            deployment: Optional[
-                Deployment
-            ] = llm_router.get_deployment_by_model_group_name(
+            deployment: Optional[Deployment] = llm_router.get_deployment_by_model_group_name(
                 model_group_name=request_data["model"]
             )
             if (
@@ -187,9 +172,7 @@ def check_file_size_under_limit(
             ):
                 max_file_size_mb = deployment.litellm_params.max_file_size_mb
         except Exception as e:
-            verbose_proxy_logger.error(
-                "Got error when checking file size: %s", (str(e))
-            )
+            verbose_proxy_logger.error("Got error when checking file size: %s", (str(e)))
 
     if max_file_size_mb is not None:
         verbose_proxy_logger.debug(
@@ -234,21 +217,19 @@ async def get_form_data(request: Request) -> Dict[str, Any]:
     return parsed_form_data
 
 
-async def convert_upload_files_to_file_data(
-    form_data: Dict[str, Any]
-) -> Dict[str, Any]:
+async def convert_upload_files_to_file_data(form_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Convert FastAPI UploadFile objects to file data tuples for litellm.
-    
+
     Converts UploadFile objects to tuples of (filename, content, content_type)
     which is the format expected by httpx and litellm's HTTP handlers.
-    
+
     Args:
         form_data: Dictionary containing form data with potential UploadFile objects
-        
+
     Returns:
         Dictionary with UploadFile objects converted to file data tuples
-        
+
     Example:
         ```python
         form_data = await get_form_data(request)
@@ -286,25 +267,22 @@ async def get_request_body(request: Request) -> Dict[str, Any]:
     if request.method == "POST":
         if request.headers.get("content-type", "") == "application/json":
             return await _read_request_body(request)
-        elif (
-            "multipart/form-data" in request.headers.get("content-type", "")
-            or "application/x-www-form-urlencoded" in request.headers.get("content-type", "")
-        ):
+        elif "multipart/form-data" in request.headers.get(
+            "content-type", ""
+        ) or "application/x-www-form-urlencoded" in request.headers.get("content-type", ""):
             return await get_form_data(request)
         else:
-            raise ValueError(
-                f"Unsupported content type: {request.headers.get('content-type')}"
-            )
+            raise ValueError(f"Unsupported content type: {request.headers.get('content-type')}")
     return {}
 
 
 def get_tags_from_request_body(request_body: dict) -> List[str]:
     """
     Extract tags from request body metadata.
-    
+
     Args:
         request_body: The request body dictionary
-        
+
     Returns:
         List of tag names (strings), empty list if no valid tags found
     """
@@ -325,23 +303,21 @@ def get_tags_from_request_body(request_body: dict) -> List[str]:
     return [tag for tag in combined_tags if isinstance(tag, str)]
 
 
-def populate_request_with_path_params(
-    request_data: dict, request: Request
-) -> dict:
+def populate_request_with_path_params(request_data: dict, request: Request) -> dict:
     """
     Copy FastAPI path params into the request payload so downstream checks
     (e.g. vector store RBAC) see them the same way as body params.
-    
+
     Since path_params may not be available during dependency injection,
     we parse the URL path directly for known patterns.
-    
+
     Args:
         request_data: The request data dictionary to populate
         request: The FastAPI Request object
-        
+
     Returns:
         dict: Updated request_data with path parameters added
-    """    
+    """
     # Try to get path_params if available (sometimes populated by FastAPI)
     path_params = getattr(request, "path_params", None)
     if isinstance(path_params, dict) and path_params:
@@ -372,7 +348,7 @@ def _add_vector_store_id_from_path(request_data: dict, request: Request) -> None
     Parse the request path to find /vector_stores/{vector_store_id}/... segments.
 
     When found, ensure both vector_store_id and vector_store_ids are populated.
-    
+
     Args:
         request_data: The request data dictionary to populate
         request: The FastAPI Request object
@@ -398,4 +374,3 @@ def _add_vector_store_id_from_path(request_data: dict, request: Request) -> None
         verbose_proxy_logger.debug(
             f"populate_request_with_path_params: No vector_store_id present in path={path}"
         )
-

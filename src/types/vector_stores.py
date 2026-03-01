@@ -86,9 +86,7 @@ class VectorStoreSearchResult(TypedDict, total=False):
 class VectorStoreSearchResponse(TypedDict, total=False):
     """Response after searching a vector store"""
 
-    object: Literal[
-        "vector_store.search_results.page"
-    ]  # Always "vector_store.search_results.page"
+    object: Literal["vector_store.search_results.page"]  # Always "vector_store.search_results.page"
     search_query: Optional[str]
     data: Optional[List[VectorStoreSearchResult]]
 
@@ -112,9 +110,7 @@ class VectorStoreSearchRequest(VectorStoreSearchOptionalRequestParams, total=Fal
 class VectorStoreExpirationPolicy(TypedDict, total=False):
     """The expiration policy for a vector store"""
 
-    anchor: Literal[
-        "last_active_at"
-    ]  # Anchor timestamp after which the expiration policy applies
+    anchor: Literal["last_active_at"]  # Anchor timestamp after which the expiration policy applies
     days: int  # Number of days after anchor time that the vector store will expire
 
 
@@ -161,12 +157,8 @@ class VectorStoreCreateOptionalRequestParams(TypedDict, total=False):
 
     name: Optional[str]  # Name of the vector store
     file_ids: Optional[List[str]]  # List of File IDs that the vector store should use
-    expires_after: Optional[
-        VectorStoreExpirationPolicy
-    ]  # Expiration policy for the vector store
-    chunking_strategy: Optional[
-        VectorStoreChunkingStrategy
-    ]  # Chunking strategy for the files
+    expires_after: Optional[VectorStoreExpirationPolicy]  # Expiration policy for the vector store
+    chunking_strategy: Optional[VectorStoreChunkingStrategy]  # Chunking strategy for the files
     metadata: Optional[Dict[str, str]]  # Set of key-value pairs for metadata
 
 
@@ -188,9 +180,7 @@ class VectorStoreCreateResponse(TypedDict, total=False):
     status: Literal["expired", "in_progress", "completed"]  # Status of the vector store
     expires_after: Optional[VectorStoreExpirationPolicy]  # Expiration policy
     expires_at: Optional[int]  # Unix timestamp of when the vector store expires
-    last_active_at: Optional[
-        int
-    ]  # Unix timestamp of when the vector store was last active
+    last_active_at: Optional[int]  # Unix timestamp of when the vector store was last active
     metadata: Optional[Dict[str, str]]  # Metadata associated with the vector store
 
 
@@ -239,6 +229,8 @@ class VectorStoreIndexEndpoints(TypedDict):
     write: List[
         Tuple[Literal["GET", "POST", "PUT", "DELETE", "PATCH"], str]
     ]  # endpoints for writing a vector store index
+
+
 VECTOR_STORE_OPENAI_PARAMS = Literal[
     "filters",
     "max_num_results",
@@ -247,14 +239,14 @@ VECTOR_STORE_OPENAI_PARAMS = Literal[
 ]
 
 
-
 @dataclass
 class VectorStoreToolParams:
     """Parameters extracted from a file_search tool definition"""
+
     filters: Optional[Dict] = None
     max_num_results: Optional[int] = None
     ranking_options: Optional[Dict] = None
-    
+
     def to_dict(self) -> Dict:
         """Convert to dict, excluding None values"""
         return {

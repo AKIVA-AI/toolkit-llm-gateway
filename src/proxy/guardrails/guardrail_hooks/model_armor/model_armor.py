@@ -105,9 +105,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
         else:
             return {"modelResponseData": {"text": content}}
 
-    def _extract_content_from_response(
-        self, response: Union[Any, ModelResponse]
-    ) -> str:
+    def _extract_content_from_response(self, response: Union[Any, ModelResponse]) -> str:
         """
         Extract text content from model response.
 
@@ -164,9 +162,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
         elif content is not None:
             body = self._create_sanitize_request(content, source)
         else:
-            raise ValueError(
-                "Either content or file_bytes and file_type must be provided."
-            )
+            raise ValueError("Either content or file_bytes and file_type must be provided.")
 
         # Set headers
         headers = {
@@ -225,9 +221,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
         base64_data = base64.b64encode(file_bytes).decode("utf-8")
         if source == "user_prompt":
             return {
-                "userPromptData": {
-                    "byteItem": {"byteDataType": file_type, "byteData": base64_data}
-                }
+                "userPromptData": {"byteItem": {"byteDataType": file_type, "byteData": base64_data}}
             }
         else:
             return {
@@ -236,9 +230,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
                 }
             }
 
-    def _should_block_content(
-        self, armor_response: dict, allow_sanitization: bool = False
-    ) -> bool:
+    def _should_block_content(self, armor_response: dict, allow_sanitization: bool = False) -> bool:
         """Check if Model Armor response indicates content should be blocked, including both inspectResult and deidentifyResult."""
         sanitization_result = armor_response.get("sanitizationResult", {})
         filter_results = sanitization_result.get("filterResults", {})
@@ -254,20 +246,11 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
             # Check RAI, PI/Jailbreak, Malicious URI, CSAM, Virus scan as before
             if filt.get("raiFilterResult", {}).get("matchState") == "MATCH_FOUND":
                 return True
-            if (
-                filt.get("piAndJailbreakFilterResult", {}).get("matchState")
-                == "MATCH_FOUND"
-            ):
+            if filt.get("piAndJailbreakFilterResult", {}).get("matchState") == "MATCH_FOUND":
                 return True
-            if (
-                filt.get("maliciousUriFilterResult", {}).get("matchState")
-                == "MATCH_FOUND"
-            ):
+            if filt.get("maliciousUriFilterResult", {}).get("matchState") == "MATCH_FOUND":
                 return True
-            if (
-                filt.get("csamFilterFilterResult", {}).get("matchState")
-                == "MATCH_FOUND"
-            ):
+            if filt.get("csamFilterFilterResult", {}).get("matchState") == "MATCH_FOUND":
                 return True
             if filt.get("virusScanFilterResult", {}).get("matchState") == "MATCH_FOUND":
                 return True
@@ -333,9 +316,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
         This prevents circular references in logging.
         """
         # Retrieve the Model Armor response & status stored on the per-request `metadata` object.
-        metadata = (
-            request_data.get("metadata", {}) if isinstance(request_data, dict) else {}
-        )
+        metadata = request_data.get("metadata", {}) if isinstance(request_data, dict) else {}
 
         guardrail_response = metadata.get("_model_armor_response", {})
 
@@ -375,9 +356,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
 
         messages = data.get("messages")
         if not messages:
-            verbose_proxy_logger.warning(
-                "Model Armor: not running guardrail. No messages in data"
-            )
+            verbose_proxy_logger.warning("Model Armor: not running guardrail. No messages in data")
             return data
 
         # Extract content from messages using helper from common_utils
@@ -438,16 +417,12 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
                         set_last_user_message,
                     )
 
-                    data["messages"] = set_last_user_message(
-                        messages, sanitized_content
-                    )
+                    data["messages"] = set_last_user_message(messages, sanitized_content)
 
         except HTTPException:
             raise
         except Exception as e:
-            verbose_proxy_logger.error(
-                "Model Armor pre-call error: %s", str(e), exc_info=True
-            )
+            verbose_proxy_logger.error("Model Armor pre-call error: %s", str(e), exc_info=True)
             # Depending on configuration, either fail or continue
             if self.optional_params.get("fail_on_error", True):
                 raise
@@ -479,9 +454,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
 
         messages = data.get("messages")
         if not messages:
-            verbose_proxy_logger.warning(
-                "Model Armor: not running guardrail. No messages in data"
-            )
+            verbose_proxy_logger.warning("Model Armor: not running guardrail. No messages in data")
             return data
 
         # Extract content from messages
@@ -533,16 +506,12 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
                         set_last_user_message,
                     )
 
-                    data["messages"] = set_last_user_message(
-                        messages, sanitized_content
-                    )
+                    data["messages"] = set_last_user_message(messages, sanitized_content)
 
         except HTTPException:
             raise
         except Exception as e:
-            verbose_proxy_logger.error(
-                "Model Armor moderation error: %s", str(e), exc_info=True
-            )
+            verbose_proxy_logger.error("Model Armor moderation error: %s", str(e), exc_info=True)
             if self.optional_params.get("fail_on_error", True):
                 raise
 
@@ -567,9 +536,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
         )
 
         if (
-            self.should_run_guardrail(
-                data=data, event_type=GuardrailEventHooks.post_call
-            )
+            self.should_run_guardrail(data=data, event_type=GuardrailEventHooks.post_call)
             is not True
         ):
             return
@@ -603,15 +570,13 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
                         else "success"
                     ),
                 }
-                standard_logging_guardrail_information = (
-                    StandardLoggingGuardrailInformation(
-                        guardrail_name=self.guardrail_name,
-                        guardrail_provider="model_armor",
-                        guardrail_mode=GuardrailEventHooks.post_call,
-                        guardrail_response=model_armor_logged_object,
-                        guardrail_status="success",
-                        start_time=data.get("start_time"),
-                    )
+                standard_logging_guardrail_information = StandardLoggingGuardrailInformation(
+                    guardrail_name=self.guardrail_name,
+                    guardrail_provider="model_armor",
+                    guardrail_mode=GuardrailEventHooks.post_call,
+                    guardrail_response=model_armor_logged_object,
+                    guardrail_status="success",
+                    start_time=data.get("start_time"),
                 )
                 add_guardrail_response_to_standard_logging_object(
                     litellm_logging_obj=data.get("litellm_logging_obj"),
@@ -644,9 +609,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
         except HTTPException:
             raise
         except Exception as e:
-            verbose_proxy_logger.error(
-                "Model Armor post-call error: %s", str(e), exc_info=True
-            )
+            verbose_proxy_logger.error("Model Armor post-call error: %s", str(e), exc_info=True)
             if self.optional_params.get("fail_on_error", True):
                 raise
 
@@ -694,9 +657,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
                         metadata = request_data.setdefault("metadata", {})
                         metadata["_model_armor_response"] = armor_response
                         metadata["_model_armor_status"] = (
-                            "blocked"
-                            if self._should_block_content(armor_response)
-                            else "success"
+                            "blocked" if self._should_block_content(armor_response) else "success"
                         )
 
                     # Check if blocked
@@ -720,9 +681,7 @@ class ModelArmorGuardrail(CustomGuardrail, VertexBase):
                                         choice.message.content = sanitized_content
 
                             # Return sanitized stream
-                            mock_response = MockResponseIterator(
-                                model_response=assembled_response
-                            )
+                            mock_response = MockResponseIterator(model_response=assembled_response)
                             async for chunk in mock_response:
                                 yield chunk
                             return

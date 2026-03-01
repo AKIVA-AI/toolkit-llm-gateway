@@ -48,9 +48,7 @@ class A2ACompletionBridgeHandler:
         message = params.get("message", {})
 
         # Transform A2A message to OpenAI format
-        openai_messages = A2ACompletionBridgeTransformation.a2a_message_to_openai_messages(
-            message
-        )
+        openai_messages = A2ACompletionBridgeTransformation.a2a_message_to_openai_messages(message)
 
         # Get completion params
         custom_llm_provider = litellm_params.get("custom_llm_provider")
@@ -63,9 +61,7 @@ class A2ACompletionBridgeHandler:
         else:
             full_model = model
 
-        verbose_logger.info(
-            f"A2A completion bridge: model={full_model}, api_base={api_base}"
-        )
+        verbose_logger.info(f"A2A completion bridge: model={full_model}, api_base={api_base}")
 
         # Build completion params dict
         completion_params = {
@@ -76,8 +72,7 @@ class A2ACompletionBridgeHandler:
         }
         # Add litellm_params (contains api_key, client_id, client_secret, tenant_id, etc.)
         litellm_params_to_add = {
-            k: v for k, v in litellm_params.items()
-            if k not in ("model", "custom_llm_provider")
+            k: v for k, v in litellm_params.items() if k not in ("model", "custom_llm_provider")
         }
         completion_params.update(litellm_params_to_add)
 
@@ -129,9 +124,7 @@ class A2ACompletionBridgeHandler:
         )
 
         # Transform A2A message to OpenAI format
-        openai_messages = A2ACompletionBridgeTransformation.a2a_message_to_openai_messages(
-            message
-        )
+        openai_messages = A2ACompletionBridgeTransformation.a2a_message_to_openai_messages(message)
 
         # Get completion params
         custom_llm_provider = litellm_params.get("custom_llm_provider")
@@ -157,8 +150,7 @@ class A2ACompletionBridgeHandler:
         }
         # Add litellm_params (contains api_key, client_id, client_secret, tenant_id, etc.)
         litellm_params_to_add = {
-            k: v for k, v in litellm_params.items()
-            if k not in ("model", "custom_llm_provider")
+            k: v for k, v in litellm_params.items() if k not in ("model", "custom_llm_provider")
         }
         completion_params.update(litellm_params_to_add)
 

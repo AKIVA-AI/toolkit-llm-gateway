@@ -5,9 +5,8 @@ Handles Authentication Errors
 import asyncio
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from fastapi import HTTPException, Request, status
-
 import litellm
+from fastapi import HTTPException, Request, status
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import ProxyErrorTypes, ProxyException, UserAPIKeyAuth
 from litellm.proxy.auth.auth_utils import _get_request_ip_address

@@ -8,8 +8,10 @@ import litellm
 from litellm import ModelResponse, token_counter, verbose_logger
 from litellm.caching.caching import DualCache
 from litellm.integrations.custom_logger import CustomLogger
-from litellm.litellm_core_utils.core_helpers import safe_divide_seconds
-from litellm.litellm_core_utils.core_helpers import _get_parent_otel_span_from_kwargs
+from litellm.litellm_core_utils.core_helpers import (
+    _get_parent_otel_span_from_kwargs,
+    safe_divide_seconds,
+)
 from litellm.types.utils import LiteLLMPydanticObjectBase
 
 if TYPE_CHECKING:
@@ -31,15 +33,11 @@ class LowestLatencyLoggingHandler(CustomLogger):
     logged_success: int = 0
     logged_failure: int = 0
 
-    def __init__(
-        self, router_cache: DualCache, routing_args: dict = {}
-    ):
+    def __init__(self, router_cache: DualCache, routing_args: dict = {}):
         self.router_cache = router_cache
         self.routing_args = RoutingArgs(**routing_args)
 
-    def log_success_event(  # noqa: PLR0915
-        self, kwargs, response_obj, start_time, end_time
-    ):
+    def log_success_event(self, kwargs, response_obj, start_time, end_time):  # noqa: PLR0915
         try:
             """
             Update latency usage on success
@@ -48,9 +46,7 @@ class LowestLatencyLoggingHandler(CustomLogger):
             if kwargs["litellm_params"].get(metadata_field) is None:
                 pass
             else:
-                model_group = kwargs["litellm_params"][metadata_field].get(
-                    "model_group", None
-                )
+                model_group = kwargs["litellm_params"][metadata_field].get("model_group", None)
 
                 id = kwargs["litellm_params"].get("model_info", {}).get("id", None)
                 if model_group is None or id is None:
@@ -96,13 +92,13 @@ class LowestLatencyLoggingHandler(CustomLogger):
                     if _usage is not None:
                         completion_tokens = _usage.completion_tokens
                         total_tokens = _usage.total_tokens
-                        
+
                         # Handle both timedelta and float response times
                         if isinstance(response_ms, timedelta):
                             response_seconds = response_ms.total_seconds()
                         else:
                             response_seconds = response_ms
-                            
+
                         final_value = safe_divide_seconds(response_seconds, completion_tokens)
                         if final_value is not None:
                             final_value = float(final_value)
@@ -123,9 +119,7 @@ class LowestLatencyLoggingHandler(CustomLogger):
                 # ------------
                 parent_otel_span = _get_parent_otel_span_from_kwargs(kwargs)
                 request_count_dict = (
-                    self.router_cache.get_cache(
-                        key=latency_key, parent_otel_span=parent_otel_span
-                    )
+                    self.router_cache.get_cache(key=latency_key, parent_otel_span=parent_otel_span)
                     or {}
                 )
 
@@ -139,9 +133,9 @@ class LowestLatencyLoggingHandler(CustomLogger):
                 ):
                     request_count_dict[id].setdefault("latency", []).append(final_value)
                 else:
-                    request_count_dict[id]["latency"] = request_count_dict[id][
-                        "latency"
-                    ][: self.routing_args.max_latency_list_size - 1] + [final_value]
+                    request_count_dict[id]["latency"] = request_count_dict[id]["latency"][
+                        : self.routing_args.max_latency_list_size - 1
+                    ] + [final_value]
 
                 ## Time to first token
                 if time_to_first_token is not None:
@@ -149,17 +143,13 @@ class LowestLatencyLoggingHandler(CustomLogger):
                         len(request_count_dict[id].get("time_to_first_token", []))
                         < self.routing_args.max_latency_list_size
                     ):
-                        request_count_dict[id].setdefault(
-                            "time_to_first_token", []
-                        ).append(time_to_first_token)
-                    else:
-                        request_count_dict[id][
-                            "time_to_first_token"
-                        ] = request_count_dict[id]["time_to_first_token"][
-                            : self.routing_args.max_latency_list_size - 1
-                        ] + [
+                        request_count_dict[id].setdefault("time_to_first_token", []).append(
                             time_to_first_token
-                        ]
+                        )
+                    else:
+                        request_count_dict[id]["time_to_first_token"] = request_count_dict[id][
+                            "time_to_first_token"
+                        ][: self.routing_args.max_latency_list_size - 1] + [time_to_first_token]
 
                 if precise_minute not in request_count_dict[id]:
                     request_count_dict[id][precise_minute] = {}
@@ -200,9 +190,7 @@ class LowestLatencyLoggingHandler(CustomLogger):
                 if kwargs["litellm_params"].get(metadata_field) is None:
                     pass
                 else:
-                    model_group = kwargs["litellm_params"][metadata_field].get(
-                        "model_group", None
-                    )
+                    model_group = kwargs["litellm_params"][metadata_field].get("model_group", None)
 
                     id = kwargs["litellm_params"].get("model_info", {}).get("id", None)
                     if model_group is None or id is None:
@@ -238,9 +226,9 @@ class LowestLatencyLoggingHandler(CustomLogger):
                     ):
                         request_count_dict[id].setdefault("latency", []).append(1000.0)
                     else:
-                        request_count_dict[id]["latency"] = request_count_dict[id][
-                            "latency"
-                        ][: self.routing_args.max_latency_list_size - 1] + [1000.0]
+                        request_count_dict[id]["latency"] = request_count_dict[id]["latency"][
+                            : self.routing_args.max_latency_list_size - 1
+                        ] + [1000.0]
 
                     await self.router_cache.async_set_cache(
                         key=latency_key,
@@ -269,9 +257,7 @@ class LowestLatencyLoggingHandler(CustomLogger):
             if kwargs["litellm_params"].get(metadata_field) is None:
                 pass
             else:
-                model_group = kwargs["litellm_params"][metadata_field].get(
-                    "model_group", None
-                )
+                model_group = kwargs["litellm_params"][metadata_field].get("model_group", None)
 
                 id = kwargs["litellm_params"].get("model_info", {}).get("id", None)
                 if model_group is None or id is None:
@@ -317,13 +303,13 @@ class LowestLatencyLoggingHandler(CustomLogger):
                     if _usage is not None:
                         completion_tokens = _usage.completion_tokens
                         total_tokens = _usage.total_tokens
-                        
+
                         # Handle both timedelta and float response times
                         if isinstance(response_ms, timedelta):
                             response_seconds = response_ms.total_seconds()
                         else:
                             response_seconds = response_ms
-                            
+
                         final_value = safe_divide_seconds(response_seconds, completion_tokens)
                         if final_value is not None:
                             final_value = float(final_value)
@@ -361,9 +347,9 @@ class LowestLatencyLoggingHandler(CustomLogger):
                 ):
                     request_count_dict[id].setdefault("latency", []).append(final_value)
                 else:
-                    request_count_dict[id]["latency"] = request_count_dict[id][
-                        "latency"
-                    ][: self.routing_args.max_latency_list_size - 1] + [final_value]
+                    request_count_dict[id]["latency"] = request_count_dict[id]["latency"][
+                        : self.routing_args.max_latency_list_size - 1
+                    ] + [final_value]
 
                 ## Time to first token
                 if time_to_first_token is not None:
@@ -371,17 +357,13 @@ class LowestLatencyLoggingHandler(CustomLogger):
                         len(request_count_dict[id].get("time_to_first_token", []))
                         < self.routing_args.max_latency_list_size
                     ):
-                        request_count_dict[id].setdefault(
-                            "time_to_first_token", []
-                        ).append(time_to_first_token)
-                    else:
-                        request_count_dict[id][
-                            "time_to_first_token"
-                        ] = request_count_dict[id]["time_to_first_token"][
-                            : self.routing_args.max_latency_list_size - 1
-                        ] + [
+                        request_count_dict[id].setdefault("time_to_first_token", []).append(
                             time_to_first_token
-                        ]
+                        )
+                    else:
+                        request_count_dict[id]["time_to_first_token"] = request_count_dict[id][
+                            "time_to_first_token"
+                        ][: self.routing_args.max_latency_list_size - 1] + [time_to_first_token]
 
                 if precise_minute not in request_count_dict[id]:
                     request_count_dict[id][precise_minute] = {}
@@ -510,9 +492,7 @@ class LowestLatencyLoggingHandler(CustomLogger):
             # -------------- #
             # We use _latency_per_deployment to log to langfuse, slack - this is not used to make a decision on routing
             # this helps a user to debug why the router picked a specfic deployment      #
-            _deployment_api_base = _deployment.get("litellm_params", {}).get(
-                "api_base", ""
-            )
+            _deployment_api_base = _deployment.get("litellm_params", {}).get("api_base", "")
             if _deployment_api_base is not None:
                 _latency_per_deployment[_deployment_api_base] = item_latency
             # -------------- #
@@ -520,8 +500,7 @@ class LowestLatencyLoggingHandler(CustomLogger):
             # -------------- #
 
             if (
-                item_tpm + input_tokens > _deployment_tpm
-                or item_rpm + 1 > _deployment_rpm
+                item_tpm + input_tokens > _deployment_tpm or item_rpm + 1 > _deployment_rpm
             ):  # if user passed in tpm / rpm in the model_list
                 continue
             else:
@@ -539,18 +518,14 @@ class LowestLatencyLoggingHandler(CustomLogger):
         # Find deployments within buffer of lowest latency
         buffer = self.routing_args.lowest_latency_buffer * lowest_latency
 
-        valid_deployments = [
-            x for x in sorted_deployments if x[1] <= lowest_latency + buffer
-        ]
+        valid_deployments = [x for x in sorted_deployments if x[1] <= lowest_latency + buffer]
 
         # Pick a random deployment from valid deployments
         random_valid_deployment = random.choice(valid_deployments)
         deployment = random_valid_deployment[0]
         metadata_field = self._select_metadata_field(request_kwargs)
         if request_kwargs is not None and metadata_field in request_kwargs:
-            request_kwargs[metadata_field][
-                "_latency_per_deployment"
-            ] = _latency_per_deployment
+            request_kwargs[metadata_field]["_latency_per_deployment"] = _latency_per_deployment
         return deployment
 
     async def async_get_available_deployments(
@@ -564,9 +539,7 @@ class LowestLatencyLoggingHandler(CustomLogger):
         # get list of potential deployments
         latency_key = f"{model_group}_map"
 
-        parent_otel_span: Optional[Span] = _get_parent_otel_span_from_kwargs(
-            request_kwargs
-        )
+        parent_otel_span: Optional[Span] = _get_parent_otel_span_from_kwargs(request_kwargs)
         request_count_dict = (
             await self.router_cache.async_get_cache(
                 key=latency_key, parent_otel_span=parent_otel_span
@@ -597,14 +570,9 @@ class LowestLatencyLoggingHandler(CustomLogger):
         # get list of potential deployments
         latency_key = f"{model_group}_map"
 
-        parent_otel_span: Optional[Span] = _get_parent_otel_span_from_kwargs(
-            request_kwargs
-        )
+        parent_otel_span: Optional[Span] = _get_parent_otel_span_from_kwargs(request_kwargs)
         request_count_dict = (
-            self.router_cache.get_cache(
-                key=latency_key, parent_otel_span=parent_otel_span
-            )
-            or {}
+            self.router_cache.get_cache(key=latency_key, parent_otel_span=parent_otel_span) or {}
         )
 
         return self._get_available_deployments(

@@ -93,8 +93,7 @@ def get_litellm_params(
         "text_completion": text_completion,
         "azure_ad_token_provider": azure_ad_token_provider,
         "user_continue_message": user_continue_message,
-        "base_model": base_model
-        or _get_base_model_from_litellm_call_metadata(metadata=metadata),
+        "base_model": base_model or _get_base_model_from_litellm_call_metadata(metadata=metadata),
         "litellm_trace_id": litellm_trace_id,
         "litellm_session_id": litellm_session_id,
         "hf_model_name": hf_model_name,

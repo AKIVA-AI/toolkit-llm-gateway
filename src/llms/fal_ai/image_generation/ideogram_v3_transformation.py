@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, List, Optional
 
 import httpx
-
 from litellm.types.llms.openai import OpenAIImageGenerationOptionalParams
 from litellm.types.utils import ImageObject, ImageResponse
 
@@ -38,9 +37,7 @@ class FalAIIdeogramV3Config(FalAIBaseConfig):
         "1024x1536": "portrait_16_9",
     }
 
-    def get_supported_openai_params(
-        self, model: str
-    ) -> List[OpenAIImageGenerationOptionalParams]:
+    def get_supported_openai_params(self, model: str) -> List[OpenAIImageGenerationOptionalParams]:
         """
         Ideogram v3 accepts the core OpenAI image parameters.
         """
@@ -189,5 +186,3 @@ class FalAIIdeogramV3Config(FalAIBaseConfig):
             model_response._hidden_params["seed"] = response_data["seed"]
 
         return model_response
-
-

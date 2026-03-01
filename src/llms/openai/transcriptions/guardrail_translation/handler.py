@@ -71,9 +71,7 @@ class OpenAIAudioTranscriptionHandler(BaseTranslation):
             Modified response with guardrails applied to transcribed text
         """
         if not hasattr(response, "text") or response.text is None:
-            verbose_proxy_logger.debug(
-                "OpenAI Audio Transcription: No text in response to process"
-            )
+            verbose_proxy_logger.debug("OpenAI Audio Transcription: No text in response to process")
             return response
 
         if isinstance(response.text, str):
@@ -82,9 +80,7 @@ class OpenAIAudioTranscriptionHandler(BaseTranslation):
             request_data: dict = {"response": response}
 
             # Add user API key metadata with prefixed keys
-            user_metadata = self.transform_user_api_key_dict_to_metadata(
-                user_api_key_dict
-            )
+            user_metadata = self.transform_user_api_key_dict_to_metadata(user_api_key_dict)
             if user_metadata:
                 request_data["litellm_metadata"] = user_metadata
 

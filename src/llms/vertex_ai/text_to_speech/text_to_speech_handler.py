@@ -1,8 +1,6 @@
 from typing import Optional, Union
 
 import httpx
-from typing_extensions import TypedDict
-
 import litellm
 from litellm.llms.custom_httpx.http_handler import (
     _get_httpx_client,
@@ -11,6 +9,7 @@ from litellm.llms.custom_httpx.http_handler import (
 from litellm.llms.openai.openai import HttpxBinaryResponseContent
 from litellm.llms.vertex_ai.gemini.vertex_and_google_ai_studio_gemini import VertexLLM
 from litellm.types.llms.vertex_ai import VERTEX_CREDENTIALS_TYPES
+from typing_extensions import TypedDict
 
 
 class VertexInput(TypedDict, total=False):
@@ -180,9 +179,7 @@ class VertexTextToSpeechAPI(VertexLLM):
     ) -> HttpxBinaryResponseContent:
         import base64
 
-        async_handler = get_async_httpx_client(
-            llm_provider=litellm.LlmProviders.VERTEX_AI
-        )
+        async_handler = get_async_httpx_client(llm_provider=litellm.LlmProviders.VERTEX_AI)
 
         response = await async_handler.post(
             url=url,
@@ -213,9 +210,7 @@ class VertexTextToSpeechAPI(VertexLLM):
         return http_binary_response
 
 
-def validate_vertex_input(
-    input_data: VertexInput, kwargs: dict, optional_params: dict
-) -> None:
+def validate_vertex_input(input_data: VertexInput, kwargs: dict, optional_params: dict) -> None:
     # Remove None values
     if input_data.get("text") is None:
         input_data.pop("text", None)

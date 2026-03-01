@@ -21,7 +21,6 @@ from typing import (
 
 import yaml
 from fastapi import HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import CustomGuardrail
 
@@ -63,9 +62,7 @@ class ContentFilterGuardrail(CustomGuardrail):
         patterns: Optional[List[ContentFilterPattern]] = None,
         blocked_words: Optional[List[BlockedWord]] = None,
         blocked_words_file: Optional[str] = None,
-        event_hook: Optional[
-            Union[GuardrailEventHooks, List[GuardrailEventHooks], Mode]
-        ] = None,
+        event_hook: Optional[Union[GuardrailEventHooks, List[GuardrailEventHooks], Mode]] = None,
         default_on: bool = False,
         pattern_redaction_format: Optional[str] = None,
         keyword_redaction_tag: Optional[str] = None,
@@ -97,9 +94,7 @@ class ContentFilterGuardrail(CustomGuardrail):
         )
 
         self.guardrail_provider = "litellm_content_filter"
-        self.pattern_redaction_format = (
-            pattern_redaction_format or self.PATTERN_REDACTION_FORMAT
-        )
+        self.pattern_redaction_format = pattern_redaction_format or self.PATTERN_REDACTION_FORMAT
         self.keyword_redaction_tag = keyword_redaction_tag or self.KEYWORD_REDACTION_STR
 
         # Normalize inputs: convert dicts to Pydantic models for consistent handling
@@ -166,9 +161,7 @@ class ContentFilterGuardrail(CustomGuardrail):
             else:
                 raise ValueError(f"Unknown pattern_type: {pattern_config.pattern_type}")
 
-            self.compiled_patterns.append(
-                (compiled, pattern_name, pattern_config.action)
-            )
+            self.compiled_patterns.append((compiled, pattern_name, pattern_config.action))
             verbose_proxy_logger.debug(
                 f"Added pattern: {pattern_name} with action {pattern_config.action}"
             )
@@ -206,9 +199,7 @@ class ContentFilterGuardrail(CustomGuardrail):
                     or "keyword" not in word_data
                     or "action" not in word_data
                 ):
-                    verbose_proxy_logger.warning(
-                        f"Skipping invalid word entry: {word_data}"
-                    )
+                    verbose_proxy_logger.warning(f"Skipping invalid word entry: {word_data}")
                     continue
 
                 keyword = word_data["keyword"].lower()
@@ -225,9 +216,7 @@ class ContentFilterGuardrail(CustomGuardrail):
         except Exception as e:
             raise Exception(f"Error loading blocked words file {file_path}: {str(e)}")
 
-    def _check_patterns(
-        self, text: str
-    ) -> Optional[Tuple[str, str, ContentFilterAction]]:
+    def _check_patterns(self, text: str) -> Optional[Tuple[str, str, ContentFilterAction]]:
         """
         Check text against all compiled regex patterns.
 
@@ -281,9 +270,7 @@ class ContentFilterGuardrail(CustomGuardrail):
         text_lower = text.lower()
         for keyword, (action, description) in self.blocked_words.items():
             if keyword in text_lower:
-                verbose_proxy_logger.debug(
-                    f"Blocked word '{keyword}' found with action {action}"
-                )
+                verbose_proxy_logger.debug(f"Blocked word '{keyword}' found with action {action}")
                 return (keyword, action, description)
         return None
 
@@ -298,9 +285,7 @@ class ContentFilterGuardrail(CustomGuardrail):
         Returns:
             Text with sensitive content masked
         """
-        redaction_tag = self.pattern_redaction_format.format(
-            pattern_name=pattern_name.upper()
-        )
+        redaction_tag = self.pattern_redaction_format.format(pattern_name=pattern_name.upper())
         return redaction_tag
 
     async def apply_guardrail(
@@ -365,9 +350,7 @@ class ContentFilterGuardrail(CustomGuardrail):
                 if keyword not in text_lower:
                     continue
 
-                verbose_proxy_logger.debug(
-                    f"Blocked word '{keyword}' found with action {action}"
-                )
+                verbose_proxy_logger.debug(f"Blocked word '{keyword}' found with action {action}")
 
                 if action == ContentFilterAction.BLOCK:
                     error_msg = f"Content blocked: keyword '{keyword}' detected"
@@ -396,9 +379,7 @@ class ContentFilterGuardrail(CustomGuardrail):
 
             processed_texts.append(text)
 
-        verbose_proxy_logger.debug(
-            "ContentFilterGuardrail: Guardrail applied successfully"
-        )
+        verbose_proxy_logger.debug("ContentFilterGuardrail: Guardrail applied successfully")
         inputs["texts"] = processed_texts
         return inputs
 
@@ -444,9 +425,7 @@ class ContentFilterGuardrail(CustomGuardrail):
                                 )
                                 processed_texts = guardrailed_inputs.get("texts", [])
                                 processed_content = (
-                                    processed_texts[0]
-                                    if processed_texts
-                                    else choice.delta.content
+                                    processed_texts[0] if processed_texts else choice.delta.content
                                 )
                                 if processed_content != choice.delta.content:
                                     choice.delta.content = processed_content

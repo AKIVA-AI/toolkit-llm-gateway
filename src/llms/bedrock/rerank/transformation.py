@@ -4,9 +4,9 @@ Translates from Cohere's `/v1/rerank` input format to Bedrock's `/rerank` input 
 Why separate file? Make it easy to see how transformation works
 """
 
-from litellm._uuid import uuid
 from typing import List, Optional, Union
 
+from litellm._uuid import uuid
 from litellm.types.llms.bedrock import (
     BedrockRerankBedrockRerankingConfiguration,
     BedrockRerankConfiguration,
@@ -29,9 +29,7 @@ from litellm.types.rerank import (
 
 
 class BedrockRerankConfig:
-    def _transform_sources(
-        self, documents: List[Union[str, dict]]
-    ) -> List[BedrockRerankSource]:
+    def _transform_sources(self, documents: List[Union[str, dict]]) -> List[BedrockRerankSource]:
         """
         Transform the sources from RerankRequest format to Bedrock format.
         """
@@ -73,9 +71,7 @@ class BedrockRerankConfig:
             ],
             rerankingConfiguration=BedrockRerankConfiguration(
                 bedrockRerankingConfiguration=BedrockRerankBedrockRerankingConfiguration(
-                    modelConfiguration=BedrockRerankModelConfiguration(
-                        modelArn=request_data.model
-                    ),
+                    modelConfiguration=BedrockRerankModelConfiguration(modelArn=request_data.model),
                     numberOfResults=request_data.top_n or len(request_data.documents),
                 ),
                 type="BEDROCK_RERANKING_MODEL",

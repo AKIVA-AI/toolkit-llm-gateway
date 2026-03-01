@@ -15,11 +15,10 @@ from typing import (
 )
 
 import httpx
+import litellm
 import orjson
 from fastapi import HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
-
-import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm._uuid import uuid
 from litellm.constants import (
@@ -52,20 +51,14 @@ from litellm.types.utils import ModelResponse, ModelResponseStream, Usage
 
 async def _parse_event_data_for_error(event_line: Union[str, bytes]) -> Optional[int]:
     """Parses an event line and returns an error code if present, else None."""
-    event_line = (
-        event_line.decode("utf-8") if isinstance(event_line, bytes) else event_line
-    )
+    event_line = event_line.decode("utf-8") if isinstance(event_line, bytes) else event_line
     if event_line.startswith("data: "):
         json_str = event_line[len("data: ") :].strip()
         if not json_str or json_str == "[DONE]":  # handle empty data or [DONE] message
             return None
         try:
             data = orjson.loads(json_str)
-            if (
-                isinstance(data, dict)
-                and "error" in data
-                and isinstance(data["error"], dict)
-            ):
+            if isinstance(data, dict) and "error" in data and isinstance(data["error"], dict):
                 error_code_raw = data["error"].get("code")
                 error_code: Optional[int] = None
 
@@ -84,9 +77,7 @@ async def _parse_event_data_for_error(event_line: Union[str, bytes]) -> Optional
                 # Ensure error_code is a valid HTTP status code
                 if error_code is not None and 100 <= error_code <= 599:
                     return error_code
-                elif (
-                    error_code_raw is not None
-                ):  # Log if original code was present but not valid
+                elif error_code_raw is not None:  # Log if original code was present but not valid
                     verbose_proxy_logger.warning(
                         f"Error has invalid or non-convertible code: {error_code_raw}"
                     )
@@ -120,9 +111,7 @@ async def create_streaming_response(
 
         if first_chunk_value is not None:
             try:
-                error_code_from_chunk = await _parse_event_data_for_error(
-                    first_chunk_value
-                )
+                error_code_from_chunk = await _parse_event_data_for_error(first_chunk_value)
                 if error_code_from_chunk is not None:
                     final_status_code = error_code_from_chunk
                     verbose_proxy_logger.debug(
@@ -145,9 +134,7 @@ async def create_streaming_response(
         )
     except Exception as e:
         # Unexpected error consuming first chunk.
-        verbose_proxy_logger.exception(
-            f"Error consuming first chunk from generator: {e}"
-        )
+        verbose_proxy_logger.exception(f"Error consuming first chunk from generator: {e}")
 
         # Fallback to a generic error stream
         async def error_gen_message() -> AsyncGenerator[str, None]:
@@ -235,7 +222,9 @@ class ProxyBaseLLMRequestProcessing:
         if response_cost is not None:
             try:
                 # Convert response_cost to float if it's a string
-                cost_value = float(response_cost) if isinstance(response_cost, str) else response_cost
+                cost_value = (
+                    float(response_cost) if isinstance(response_cost, str) else response_cost
+                )
                 if cost_value > 0:
                     updated_spend = current_spend + cost_value
             except (ValueError, TypeError):
@@ -262,9 +251,7 @@ class ProxyBaseLLMRequestProcessing:
             "x-litellm-key-rpm-limit": str(user_api_key_dict.rpm_limit),
             "x-litellm-key-max-budget": str(user_api_key_dict.max_budget),
             "x-litellm-key-spend": str(updated_spend),
-            "x-litellm-response-duration-ms": str(
-                hidden_params.get("_response_ms", None)
-            ),
+            "x-litellm-response-duration-ms": str(hidden_params.get("_response_ms", None)),
             "x-litellm-overhead-duration-ms": str(
                 hidden_params.get("litellm_overhead_time_ms", None)
             ),
@@ -277,8 +264,8 @@ class ProxyBaseLLMRequestProcessing:
             **{k: str(v) for k, v in kwargs.items()},
         }
         if request_data:
-            remaining_tokens_header = (
-                get_remaining_tokens_and_requests_from_request_data(request_data)
+            remaining_tokens_header = get_remaining_tokens_and_requests_from_request_data(
+                request_data
             )
             headers.update(remaining_tokens_header)
 
@@ -288,9 +275,7 @@ class ProxyBaseLLMRequestProcessing:
 
         try:
             return {
-                key: str(value)
-                for key, value in headers.items()
-                if value not in exclude_values
+                key: str(value) for key, value in headers.items() if value not in exclude_values
             }
         except Exception as e:
             verbose_proxy_logger.error(f"Error setting custom headers: {e}")
@@ -392,10 +377,7 @@ class ProxyBaseLLMRequestProcessing:
         ### MODEL ALIAS MAPPING ###
         # check if model name in model alias map
         # get the actual model name
-        if (
-            isinstance(self.data["model"], str)
-            and self.data["model"] in litellm.model_alias_map
-        ):
+        if isinstance(self.data["model"], str) and self.data["model"] in litellm.model_alias_map:
             self.data["model"] = litellm.model_alias_map[self.data["model"]]
 
         # Check key-specific aliases
@@ -407,9 +389,7 @@ class ProxyBaseLLMRequestProcessing:
         ):
             self.data["model"] = user_api_key_dict.aliases[self.data["model"]]
 
-        self.data["litellm_call_id"] = request.headers.get(
-            "x-litellm-call-id", str(uuid.uuid4())
-        )
+        self.data["litellm_call_id"] = request.headers.get("x-litellm-call-id", str(uuid.uuid4()))
         ### CALL HOOKS ### - modify/reject incoming data before calling the model
 
         ## LOGGING OBJECT ## - initialize logging object for logging success/failure events for call
@@ -621,13 +601,11 @@ class ProxyBaseLLMRequestProcessing:
                         headers=custom_headers,
                     )
             elif route_type == "anthropic_messages":
-                selected_data_generator = (
-                    ProxyBaseLLMRequestProcessing.async_sse_data_generator(
-                        response=response,
-                        user_api_key_dict=user_api_key_dict,
-                        request_data=self.data,
-                        proxy_logging_obj=proxy_logging_obj,
-                    )
+                selected_data_generator = ProxyBaseLLMRequestProcessing.async_sse_data_generator(
+                    response=response,
+                    user_api_key_dict=user_api_key_dict,
+                    request_data=self.data,
+                    proxy_logging_obj=proxy_logging_obj,
                 )
                 return await create_streaming_response(
                     generator=selected_data_generator,
@@ -805,9 +783,7 @@ class ProxyBaseLLMRequestProcessing:
 
         custom_headers = ProxyBaseLLMRequestProcessing.get_custom_headers(
             user_api_key_dict=user_api_key_dict,
-            call_id=(
-                _litellm_logging_obj.litellm_call_id if _litellm_logging_obj else None
-            ),
+            call_id=(_litellm_logging_obj.litellm_call_id if _litellm_logging_obj else None),
             model_id=model_id,
             version=version,
             response_cost=0,
@@ -843,10 +819,7 @@ class ProxyBaseLLMRequestProcessing:
         # 1. Direct AttributeError (already handled above)
         # 2. In underlying exception (__cause__, __context__, original_exception)
         has_attribute_error = (
-            (
-                isinstance(e, Exception)
-                and isinstance(getattr(e, "__cause__", None), AttributeError)
-            )
+            (isinstance(e, Exception) and isinstance(getattr(e, "__cause__", None), AttributeError))
             or (
                 isinstance(e, Exception)
                 and isinstance(getattr(e, "__context__", None), AttributeError)
@@ -922,9 +895,7 @@ class ProxyBaseLLMRequestProcessing:
         verbose_proxy_logger.debug("inside generator")
         try:
             str_so_far = ""
-            async for (
-                chunk
-            ) in proxy_logging_obj.async_post_call_streaming_iterator_hook(
+            async for chunk in proxy_logging_obj.async_post_call_streaming_iterator_hook(
                 user_api_key_dict=user_api_key_dict,
                 response=response,
                 request_data=request_data,
@@ -946,10 +917,8 @@ class ProxyBaseLLMRequestProcessing:
 
                 # Inject cost into Anthropic-style SSE usage for /v1/messages for any provider
                 model_name = request_data.get("model", "")
-                chunk = (
-                    ProxyBaseLLMRequestProcessing._process_chunk_with_cost_injection(
-                        chunk, model_name
-                    )
+                chunk = ProxyBaseLLMRequestProcessing._process_chunk_with_cost_injection(
+                    chunk, model_name
                 )
 
                 # Format chunk using helper function
@@ -1001,10 +970,8 @@ class ProxyBaseLLMRequestProcessing:
 
         try:
             if isinstance(chunk, dict):
-                maybe_modified = (
-                    ProxyBaseLLMRequestProcessing._inject_cost_into_usage_dict(
-                        chunk, model_name
-                    )
+                maybe_modified = ProxyBaseLLMRequestProcessing._inject_cost_into_usage_dict(
+                    chunk, model_name
                 )
                 if maybe_modified is not None:
                     return maybe_modified
@@ -1012,31 +979,23 @@ class ProxyBaseLLMRequestProcessing:
                 # Decode to str, inject, and rebuild as bytes
                 try:
                     s = chunk.decode("utf-8", errors="ignore")
-                    maybe_mod = (
-                        ProxyBaseLLMRequestProcessing._inject_cost_into_sse_frame_str(
-                            s, model_name
-                        )
+                    maybe_mod = ProxyBaseLLMRequestProcessing._inject_cost_into_sse_frame_str(
+                        s, model_name
                     )
                     if maybe_mod is not None:
-                        return (
-                            maybe_mod + ("" if maybe_mod.endswith("\n\n") else "\n\n")
-                        ).encode("utf-8")
+                        return (maybe_mod + ("" if maybe_mod.endswith("\n\n") else "\n\n")).encode(
+                            "utf-8"
+                        )
                 except Exception:
                     pass
             elif isinstance(chunk, str):
                 # Try to parse SSE frame and inject cost into the data line
-                maybe_mod = (
-                    ProxyBaseLLMRequestProcessing._inject_cost_into_sse_frame_str(
-                        chunk, model_name
-                    )
+                maybe_mod = ProxyBaseLLMRequestProcessing._inject_cost_into_sse_frame_str(
+                    chunk, model_name
                 )
                 if maybe_mod is not None:
                     # Ensure trailing frame separator
-                    return (
-                        maybe_mod
-                        if maybe_mod.endswith("\n\n")
-                        else (maybe_mod + "\n\n")
-                    )
+                    return maybe_mod if maybe_mod.endswith("\n\n") else (maybe_mod + "\n\n")
         except Exception:
             # Never break streaming on optional cost injection
             pass
@@ -1044,9 +1003,7 @@ class ProxyBaseLLMRequestProcessing:
         return chunk
 
     @staticmethod
-    def _inject_cost_into_sse_frame_str(
-        frame_str: str, model_name: str
-    ) -> Optional[str]:
+    def _inject_cost_into_sse_frame_str(frame_str: str, model_name: str) -> Optional[str]:
         """
         Inject cost information into an SSE frame string by modifying the JSON in the 'data:' line.
 
@@ -1066,10 +1023,8 @@ class ProxyBaseLLMRequestProcessing:
                     json_part = stripped_ln.split("data:", 1)[1].strip()
                     if json_part and json_part != "[DONE]":
                         obj = json.loads(json_part)
-                        maybe_modified = (
-                            ProxyBaseLLMRequestProcessing._inject_cost_into_usage_dict(
-                                obj, model_name
-                            )
+                        maybe_modified = ProxyBaseLLMRequestProcessing._inject_cost_into_usage_dict(
+                            obj, model_name
                         )
                         if maybe_modified is not None:
                             # Replace just this line with updated JSON using safe_dumps
@@ -1127,9 +1082,7 @@ class ProxyBaseLLMRequestProcessing:
 
             # Add cache-related fields to **params (handled by Usage.__init__)
             if cache_creation_input_tokens is not None:
-                usage_kwargs["cache_creation_input_tokens"] = (
-                    cache_creation_input_tokens
-                )
+                usage_kwargs["cache_creation_input_tokens"] = cache_creation_input_tokens
             if cache_read_input_tokens is not None:
                 usage_kwargs["cache_read_input_tokens"] = cache_read_input_tokens
 
@@ -1148,9 +1101,7 @@ class ProxyBaseLLMRequestProcessing:
                 return obj
         return None
 
-    def maybe_get_model_id(
-        self, _logging_obj: Optional[LiteLLMLoggingObj]
-    ) -> Optional[str]:
+    def maybe_get_model_id(self, _logging_obj: Optional[LiteLLMLoggingObj]) -> Optional[str]:
         """
         Get model_id from logging object or request metadata.
 

@@ -39,9 +39,7 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
         for callback in value:  # ["presidio", <my-custom-callback>]
             # check if callback is a custom logger compatible callback
             if isinstance(callback, str):
-                callback = LoggingCallbackManager._add_custom_callback_generic_api_str(
-                    callback
-                )
+                callback = LoggingCallbackManager._add_custom_callback_generic_api_str(callback)
             if (
                 isinstance(callback, str)
                 and callback in litellm._known_custom_logger_compatible_callbacks
@@ -56,9 +54,7 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
                     "presidio_logging_only", None
                 )
                 if presidio_logging_only is not None:
-                    presidio_logging_only = bool(
-                        presidio_logging_only
-                    )  # validate boolean given
+                    presidio_logging_only = bool(presidio_logging_only)  # validate boolean given
 
                 _presidio_params = {}
                 if "presidio" in callback_specific_params and isinstance(
@@ -85,8 +81,7 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
 
                 if premium_user is not True:
                     raise Exception(
-                        "Trying to use Llama Guard"
-                        + CommonProxyErrors.not_premium_user.value
+                        "Trying to use Llama Guard" + CommonProxyErrors.not_premium_user.value
                     )
 
                 llama_guard_object = _ENTERPRISE_LlamaGuard()
@@ -104,8 +99,7 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
 
                 if premium_user is not True:
                     raise Exception(
-                        "Trying to use secret hiding"
-                        + CommonProxyErrors.not_premium_user.value
+                        "Trying to use secret hiding" + CommonProxyErrors.not_premium_user.value
                     )
 
                 _secret_detection_object = _ENTERPRISE_SecretDetection()
@@ -178,8 +172,7 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
 
                 if premium_user is not True:
                     raise Exception(
-                        "Trying to use Llm Guard"
-                        + CommonProxyErrors.not_premium_user.value
+                        "Trying to use Llm Guard" + CommonProxyErrors.not_premium_user.value
                     )
 
                 llm_guard_moderation_obj = _ENTERPRISE_LLMGuard()
@@ -201,9 +194,7 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
                         + CommonProxyErrors.not_premium_user.value
                     )
 
-                blocked_user_list = _ENTERPRISE_BlockedUserList(
-                    prisma_client=prisma_client
-                )
+                blocked_user_list = _ENTERPRISE_BlockedUserList(prisma_client=prisma_client)
                 imported_list.append(blocked_user_list)
             elif isinstance(callback, str) and callback == "banned_keywords":
                 try:
@@ -231,9 +222,7 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
 
                 prompt_injection_params = None
                 if "prompt_injection_params" in litellm_settings:
-                    prompt_injection_params_in_config = litellm_settings[
-                        "prompt_injection_params"
-                    ]
+                    prompt_injection_params_in_config = litellm_settings["prompt_injection_params"]
                     prompt_injection_params = LiteLLMPromptInjectionParams(
                         **prompt_injection_params_in_config
                     )
@@ -254,15 +243,9 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
                     _PROXY_AzureContentSafety,
                 )
 
-                azure_content_safety_params = litellm_settings[
-                    "azure_content_safety_params"
-                ]
+                azure_content_safety_params = litellm_settings["azure_content_safety_params"]
                 for k, v in azure_content_safety_params.items():
-                    if (
-                        v is not None
-                        and isinstance(v, str)
-                        and v.startswith("os.environ/")
-                    ):
+                    if v is not None and isinstance(v, str) and v.startswith("os.environ/"):
                         azure_content_safety_params[k] = get_secret(v)
 
                 azure_content_safety_obj = _PROXY_AzureContentSafety(
@@ -304,9 +287,7 @@ def initialize_callbacks_on_proxy(  # noqa: PLR0915
 
 def get_model_group_from_litellm_kwargs(kwargs: dict) -> Optional[str]:
     _litellm_params = kwargs.get("litellm_params", None) or {}
-    _metadata = (
-        _litellm_params.get(get_metadata_variable_name_from_kwargs(kwargs)) or {}
-    )
+    _metadata = _litellm_params.get(get_metadata_variable_name_from_kwargs(kwargs)) or {}
     _model_group = _metadata.get("model_group", None)
     if _model_group is not None:
         return _model_group
@@ -335,25 +316,19 @@ def get_remaining_tokens_and_requests_from_request_data(data: Dict) -> Dict[str,
     model_group = get_model_group_from_request_data(data)
 
     # The h11 package considers "/" or ":" invalid and raise a LocalProtocolError
-    h11_model_group_name = (
-        model_group.replace("/", "-").replace(":", "-") if model_group else None
-    )
+    h11_model_group_name = model_group.replace("/", "-").replace(":", "-") if model_group else None
 
     # Remaining Requests
     remaining_requests_variable_name = f"litellm-key-remaining-requests-{model_group}"
     remaining_requests = _metadata.get(remaining_requests_variable_name, None)
     if remaining_requests:
-        headers[f"x-litellm-key-remaining-requests-{h11_model_group_name}"] = (
-            remaining_requests
-        )
+        headers[f"x-litellm-key-remaining-requests-{h11_model_group_name}"] = remaining_requests
 
     # Remaining Tokens
     remaining_tokens_variable_name = f"litellm-key-remaining-tokens-{model_group}"
     remaining_tokens = _metadata.get(remaining_tokens_variable_name, None)
     if remaining_tokens:
-        headers[f"x-litellm-key-remaining-tokens-{h11_model_group_name}"] = (
-            remaining_tokens
-        )
+        headers[f"x-litellm-key-remaining-tokens-{h11_model_group_name}"] = remaining_tokens
 
     return headers
 
@@ -366,9 +341,7 @@ def get_logging_caching_headers(request_data: Dict) -> Optional[Dict]:
         _metadata = {}
     headers = {}
     if "applied_guardrails" in _metadata:
-        headers["x-litellm-applied-guardrails"] = ",".join(
-            _metadata["applied_guardrails"]
-        )
+        headers["x-litellm-applied-guardrails"] = ",".join(_metadata["applied_guardrails"])
 
     if "semantic-similarity" in _metadata:
         headers["x-litellm-semantic-similarity"] = str(_metadata["semantic-similarity"])
@@ -382,9 +355,7 @@ def get_logging_caching_headers(request_data: Dict) -> Optional[Dict]:
     return headers
 
 
-def add_guardrail_to_applied_guardrails_header(
-    request_data: Dict, guardrail_name: Optional[str]
-):
+def add_guardrail_to_applied_guardrails_header(request_data: Dict, guardrail_name: Optional[str]):
     if guardrail_name is None:
         return
     _metadata = request_data.get("metadata", None) or {}
@@ -445,11 +416,9 @@ def process_callback(_callback: str, callback_type: str, environment_variables: 
         else:
             env_vars_dict[_var] = env_variable
 
-    return {
-        "name": _callback,
-        "variables": env_vars_dict,
-        "type": callback_type
-    }
+    return {"name": _callback, "variables": env_vars_dict, "type": callback_type}
+
+
 def normalize_callback_names(callbacks: Iterable[Any]) -> List[Any]:
     if callbacks is None:
         return []

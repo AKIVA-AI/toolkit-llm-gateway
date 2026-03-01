@@ -49,10 +49,7 @@ class DeepSeekChatConfig(OpenAIGPTConfig):
 
         # Handle thinking parameter - only accept {"type": "enabled"}
         if thinking_value is not None:
-            if (
-                isinstance(thinking_value, dict)
-                and thinking_value.get("type") == "enabled"
-            ):
+            if isinstance(thinking_value, dict) and thinking_value.get("type") == "enabled":
                 # DeepSeek only accepts {"type": "enabled"}, ignore budget_tokens
                 optional_params["thinking"] = {"type": "enabled"}
 
@@ -65,8 +62,7 @@ class DeepSeekChatConfig(OpenAIGPTConfig):
     @overload
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: Literal[True]
-    ) -> Coroutine[Any, Any, List[AllMessageValues]]:
-        ...
+    ) -> Coroutine[Any, Any, List[AllMessageValues]]: ...
 
     @overload
     def _transform_messages(
@@ -74,8 +70,7 @@ class DeepSeekChatConfig(OpenAIGPTConfig):
         messages: List[AllMessageValues],
         model: str,
         is_async: Literal[False] = False,
-    ) -> List[AllMessageValues]:
-        ...
+    ) -> List[AllMessageValues]: ...
 
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: bool = False
@@ -85,21 +80,15 @@ class DeepSeekChatConfig(OpenAIGPTConfig):
         """
         messages = handle_messages_with_content_list_to_str_conversion(messages)
         if is_async:
-            return super()._transform_messages(
-                messages=messages, model=model, is_async=True
-            )
+            return super()._transform_messages(messages=messages, model=model, is_async=True)
         else:
-            return super()._transform_messages(
-                messages=messages, model=model, is_async=False
-            )
+            return super()._transform_messages(messages=messages, model=model, is_async=False)
 
     def _get_openai_compatible_provider_info(
         self, api_base: Optional[str], api_key: Optional[str]
     ) -> Tuple[Optional[str], Optional[str]]:
         api_base = (
-            api_base
-            or get_secret_str("DEEPSEEK_API_BASE")
-            or "https://api.deepseek.com/beta"
+            api_base or get_secret_str("DEEPSEEK_API_BASE") or "https://api.deepseek.com/beta"
         )  # type: ignore
         dynamic_api_key = api_key or get_secret_str("DEEPSEEK_API_KEY")
         return api_base, dynamic_api_key

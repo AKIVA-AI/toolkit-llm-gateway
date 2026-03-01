@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional, Union
 from urllib.parse import quote
 
 import httpx
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.caching import InMemoryCache
@@ -39,9 +38,7 @@ class CyberArkSecretManager(BaseSecretManager):
         self.ssl_verify: bool = ssl_verify_env if ssl_verify_env is not None else True
 
         # Validate environment
-        if not self.conjur_api_key and not (
-            self.tls_cert_path and self.tls_key_path
-        ):
+        if not self.conjur_api_key and not (self.tls_cert_path and self.tls_key_path):
             raise ValueError(
                 "Missing CyberArk credentials. Please set CYBERARK_API_KEY or both CYBERARK_CLIENT_CERT and CYBERARK_CLIENT_KEY in your environment."
             )
@@ -78,7 +75,9 @@ class CyberArkSecretManager(BaseSecretManager):
             return cached_token
 
         verbose_logger.debug("Authenticating with CyberArk Conjur...")
-        auth_url = f"{self.conjur_addr}/authn/{self.conjur_account}/{self.conjur_username}/authenticate"
+        auth_url = (
+            f"{self.conjur_addr}/authn/{self.conjur_account}/{self.conjur_username}/authenticate"
+        )
 
         try:
             if self.tls_cert_path and self.tls_key_path:
@@ -167,9 +166,7 @@ class CyberArkSecretManager(BaseSecretManager):
         """
         # URL-encode the secret name to handle slashes and special characters
         encoded_name = quote(secret_name, safe="")
-        return (
-            f"{self.conjur_addr}/secrets/{self.conjur_account}/variable/{encoded_name}"
-        )
+        return f"{self.conjur_addr}/secrets/{self.conjur_account}/variable/{encoded_name}"
 
     async def async_read_secret(
         self,
@@ -209,13 +206,9 @@ class CyberArkSecretManager(BaseSecretManager):
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
-                verbose_logger.debug(
-                    f"Secret {secret_name} not found in CyberArk Conjur"
-                )
+                verbose_logger.debug(f"Secret {secret_name} not found in CyberArk Conjur")
             else:
-                verbose_logger.exception(
-                    f"Error reading secret from CyberArk Conjur: {e}"
-                )
+                verbose_logger.exception(f"Error reading secret from CyberArk Conjur: {e}")
             return None
         except Exception as e:
             verbose_logger.exception(f"Error reading secret from CyberArk Conjur: {e}")
@@ -256,13 +249,9 @@ class CyberArkSecretManager(BaseSecretManager):
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
-                verbose_logger.debug(
-                    f"Secret {secret_name} not found in CyberArk Conjur"
-                )
+                verbose_logger.debug(f"Secret {secret_name} not found in CyberArk Conjur")
             else:
-                verbose_logger.exception(
-                    f"Error reading secret from CyberArk Conjur: {e}"
-                )
+                verbose_logger.exception(f"Error reading secret from CyberArk Conjur: {e}")
             return None
         except Exception as e:
             verbose_logger.exception(f"Error reading secret from CyberArk Conjur: {e}")
@@ -318,7 +307,6 @@ class CyberArkSecretManager(BaseSecretManager):
             verbose_logger.exception(f"Error writing secret to CyberArk Conjur: {e}")
             return {"status": "error", "message": str(e)}
 
-
     async def async_delete_secret(
         self,
         secret_name: str,
@@ -351,4 +339,3 @@ class CyberArkSecretManager(BaseSecretManager):
             "status": "not_supported",
             "message": "CyberArk Conjur does not support direct secret deletion. Use policy updates to remove variables.",
         }
-

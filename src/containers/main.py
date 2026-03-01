@@ -35,6 +35,7 @@ __all__ = [
     "retrieve_container",
 ]
 
+
 ##### Container Create #######################
 @client
 async def acreate_container(
@@ -171,7 +172,7 @@ def create_container(
     Example:
     ```python
     import litellm
-    
+
     response = litellm.create_container(
         name="My Container",
         custom_llm_provider="openai",
@@ -411,7 +412,9 @@ def list_containers(
         )
 
         if container_provider_config is None:
-            raise ValueError(f"Container provider config not found for provider: {custom_llm_provider}")
+            raise ValueError(
+                f"Container provider config not found for provider: {custom_llm_provider}"
+            )
 
         # Get container list request parameters
         container_list_optional_params: ContainerListOptionalRequestParams = (
@@ -599,7 +602,9 @@ def retrieve_container(
         )
 
         if container_provider_config is None:
-            raise ValueError(f"Container provider config not found for provider: {custom_llm_provider}")
+            raise ValueError(
+                f"Container provider config not found for provider: {custom_llm_provider}"
+            )
 
         # Pre Call logging
         litellm_logging_obj.update_environment_variables(
@@ -779,7 +784,9 @@ def delete_container(
         )
 
         if container_provider_config is None:
-            raise ValueError(f"Container provider config not found for provider: {custom_llm_provider}")
+            raise ValueError(
+                f"Container provider config not found for provider: {custom_llm_provider}"
+            )
 
         # Pre Call logging
         litellm_logging_obj.update_environment_variables(
@@ -973,12 +980,19 @@ def list_container_files(
         )
 
         if container_provider_config is None:
-            raise ValueError(f"Container provider config not found for provider: {custom_llm_provider}")
+            raise ValueError(
+                f"Container provider config not found for provider: {custom_llm_provider}"
+            )
 
         # Pre Call logging
         litellm_logging_obj.update_environment_variables(
             model="",
-            optional_params={"container_id": container_id, "after": after, "limit": limit, "order": order},
+            optional_params={
+                "container_id": container_id,
+                "after": after,
+                "limit": limit,
+                "order": order,
+            },
             litellm_params={
                 "litellm_call_id": litellm_call_id,
             },
@@ -1010,4 +1024,3 @@ def list_container_files(
             completion_kwargs=local_vars,
             extra_kwargs=kwargs,
         )
-

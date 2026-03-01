@@ -2,11 +2,10 @@ import enum
 import heapq
 from typing import Optional
 
-from pydantic import BaseModel
-
 from litellm import print_verbose
 from litellm.caching.caching import DualCache, RedisCache
 from litellm.constants import DEFAULT_IN_MEMORY_TTL, DEFAULT_POLLING_INTERVAL
+from pydantic import BaseModel
 
 
 class SchedulerCacheKeys(enum.Enum):
@@ -38,12 +37,8 @@ class Scheduler:
         if redis_cache is not None:
             # if redis-cache available frequently poll that instead of using in-memory.
             default_in_memory_ttl = SchedulerCacheKeys.default_in_memory_ttl.value
-        self.cache = DualCache(
-            redis_cache=redis_cache, default_in_memory_ttl=default_in_memory_ttl
-        )
-        self.polling_interval = (
-            polling_interval or DEFAULT_POLLING_INTERVAL
-        )  # default to 3ms
+        self.cache = DualCache(redis_cache=redis_cache, default_in_memory_ttl=default_in_memory_ttl)
+        self.polling_interval = polling_interval or DEFAULT_POLLING_INTERVAL  # default to 3ms
 
     async def add_request(self, request: FlowItem):
         # We use the priority directly, as lower values indicate higher priority
@@ -69,9 +64,7 @@ class Scheduler:
         """
         queue = await self.get_queue(model_name=model_name)
         if not queue:
-            raise Exception(
-                "Incorrectly setup. Queue is invalid. Queue={}".format(queue)
-            )
+            raise Exception("Incorrectly setup. Queue is invalid. Queue={}".format(queue))
 
         # ------------
         # Setup values
@@ -95,9 +88,7 @@ class Scheduler:
         """Return if the id is at the top of the queue. Don't pop the value from heap."""
         queue = await self.get_queue(model_name=model_name)
         if not queue:
-            raise Exception(
-                "Incorrectly setup. Queue is invalid. Queue={}".format(queue)
-            )
+            raise Exception("Incorrectly setup. Queue is invalid. Queue={}".format(queue))
 
         # ------------
         # Setup values

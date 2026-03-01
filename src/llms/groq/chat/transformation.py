@@ -1,9 +1,12 @@
 """
 Translate from OpenAI's `/v1/chat/completions` to Groq's `/v1/chat/completions`
 """
+
 from typing import (
     Any,
+    AsyncIterator,
     Coroutine,
+    Iterator,
     List,
     Literal,
     Optional,
@@ -11,22 +14,16 @@ from typing import (
     Union,
     cast,
     overload,
-    Iterator,
-    AsyncIterator,
 )
 
 import httpx
-
+import litellm
+from litellm._logging import verbose_logger
+from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.openai.chat.gpt_transformation import (
     OpenAIChatCompletionStreamingHandler,
 )
 from litellm.llms.openai.common_utils import OpenAIError
-
-from pydantic import BaseModel
-
-import litellm
-from litellm._logging import verbose_logger
-from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.secret_managers.main import get_secret_str
 from litellm.types.llms.openai import (
     AllMessageValues,
@@ -35,6 +32,7 @@ from litellm.types.llms.openai import (
     ChatCompletionToolParamFunctionChunk,
 )
 from litellm.types.utils import ModelResponse, ModelResponseStream
+from pydantic import BaseModel
 
 from ...openai_like.chat.transformation import OpenAILikeChatConfig
 
@@ -115,8 +113,7 @@ class GroqChatConfig(OpenAILikeChatConfig):
     @overload
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: Literal[True]
-    ) -> Coroutine[Any, Any, List[AllMessageValues]]:
-        ...
+    ) -> Coroutine[Any, Any, List[AllMessageValues]]: ...
 
     @overload
     def _transform_messages(
@@ -124,8 +121,7 @@ class GroqChatConfig(OpenAILikeChatConfig):
         messages: List[AllMessageValues],
         model: str,
         is_async: Literal[False] = False,
-    ) -> List[AllMessageValues]:
-        ...
+    ) -> List[AllMessageValues]: ...
 
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: bool = False
@@ -147,22 +143,16 @@ class GroqChatConfig(OpenAILikeChatConfig):
                 messages[idx] = new_message
 
         if is_async:
-            return super()._transform_messages(
-                messages=messages, model=model, is_async=True
-            )
+            return super()._transform_messages(messages=messages, model=model, is_async=True)
         else:
-            return super()._transform_messages(
-                messages=messages, model=model, is_async=False
-            )
+            return super()._transform_messages(messages=messages, model=model, is_async=False)
 
     def _get_openai_compatible_provider_info(
         self, api_base: Optional[str], api_key: Optional[str]
     ) -> Tuple[Optional[str], Optional[str]]:
         # groq is openai compatible, we just need to set this to custom_openai and have the api_base be https://api.groq.com/openai/v1
         api_base = (
-            api_base
-            or get_secret_str("GROQ_API_BASE")
-            or "https://api.groq.com/openai/v1"
+            api_base or get_secret_str("GROQ_API_BASE") or "https://api.groq.com/openai/v1"
         )  # type: ignore
         dynamic_api_key = api_key or get_secret_str("GROQ_API_KEY")
         return api_base, dynamic_api_key
@@ -227,9 +217,7 @@ class GroqChatConfig(OpenAILikeChatConfig):
             """
             if json_schema is not None:
                 # Check if model supports native response_schema
-                if not litellm.supports_response_schema(
-                    model=model, custom_llm_provider="groq"
-                ):
+                if not litellm.supports_response_schema(model=model, custom_llm_provider="groq"):
                     # Check if user is also passing tools - this combination won't work
                     # See: https://console.groq.com/docs/structured-outputs
                     # "Streaming and tool use are not currently supported with Structured Outputs"
@@ -293,9 +281,7 @@ class GroqChatConfig(OpenAILikeChatConfig):
             json_mode=json_mode,
         )
 
-        mapped_service_tier: Literal[
-            "auto", "default", "flex"
-        ] = self._map_groq_service_tier(
+        mapped_service_tier: Literal["auto", "default", "flex"] = self._map_groq_service_tier(
             original_service_tier=getattr(model_response, "service_tier")
         )
         setattr(model_response, "service_tier", mapped_service_tier)

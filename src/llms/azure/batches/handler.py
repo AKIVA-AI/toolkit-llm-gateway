@@ -5,7 +5,6 @@ Azure Batches API Handler
 from typing import Any, Coroutine, Optional, Union, cast
 
 import httpx
-
 from litellm.llms.azure.azure import AsyncAzureOpenAI, AzureOpenAI
 from litellm.types.llms.openai import (
     Batch,
@@ -50,9 +49,7 @@ class AzureBatchesAPI(BaseAzureLLM):
         client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = None,
         litellm_params: Optional[dict] = None,
     ) -> Union[LiteLLMBatch, Coroutine[Any, Any, LiteLLMBatch]]:
-        azure_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
+        azure_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = self.get_azure_openai_client(
             api_key=api_key,
             api_base=api_base,
             api_version=api_version,
@@ -96,9 +93,7 @@ class AzureBatchesAPI(BaseAzureLLM):
         client: Optional[AzureOpenAI] = None,
         litellm_params: Optional[dict] = None,
     ):
-        azure_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
+        azure_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = self.get_azure_openai_client(
             api_key=api_key,
             api_base=api_base,
             api_version=api_version,
@@ -119,9 +114,7 @@ class AzureBatchesAPI(BaseAzureLLM):
             return self.aretrieve_batch(  # type: ignore
                 retrieve_batch_data=retrieve_batch_data, client=azure_client
             )
-        response = cast(AzureOpenAI, azure_client).batches.retrieve(
-            **retrieve_batch_data
-        )
+        response = cast(AzureOpenAI, azure_client).batches.retrieve(**retrieve_batch_data)
         return LiteLLMBatch(**response.model_dump())
 
     async def acancel_batch(
@@ -144,9 +137,7 @@ class AzureBatchesAPI(BaseAzureLLM):
         client: Optional[AzureOpenAI] = None,
         litellm_params: Optional[dict] = None,
     ):
-        azure_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
+        azure_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = self.get_azure_openai_client(
             api_key=api_key,
             api_base=api_base,
             api_version=api_version,
@@ -183,9 +174,7 @@ class AzureBatchesAPI(BaseAzureLLM):
         client: Optional[AzureOpenAI] = None,
         litellm_params: Optional[dict] = None,
     ):
-        azure_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
+        azure_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = self.get_azure_openai_client(
             api_key=api_key,
             api_base=api_base,
             api_version=api_version,
@@ -203,8 +192,6 @@ class AzureBatchesAPI(BaseAzureLLM):
                 raise ValueError(
                     "OpenAI client is not an instance of AsyncOpenAI. Make sure you passed an AsyncOpenAI client."
                 )
-            return self.alist_batches(  # type: ignore
-                client=azure_client, after=after, limit=limit
-            )
+            return self.alist_batches(client=azure_client, after=after, limit=limit)  # type: ignore
         response = azure_client.batches.list(after=after, limit=limit)  # type: ignore
         return response

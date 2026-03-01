@@ -1,7 +1,6 @@
 from typing import Any, Dict, Literal, Optional
 
 from fastapi import HTTPException, Request
-
 from litellm.proxy._types import LitellmUserRoles, UserAPIKeyAuth
 from litellm.types.utils import LlmProviders
 from litellm.utils import ProviderConfigManager
@@ -61,10 +60,7 @@ def check_vector_store_permission(
 
             if index_config.get("index_name") == index_name:
                 index_permissions = index_config.get("index_permissions", [])
-                if (
-                    isinstance(index_permissions, list)
-                    and permission in index_permissions
-                ):
+                if isinstance(index_permissions, list) and permission in index_permissions:
                     return True
 
     return False
@@ -92,22 +88,16 @@ def is_allowed_to_call_vector_store_endpoint(
     key_metadata = user_api_key_dict.metadata
     team_metadata = user_api_key_dict.team_metadata
 
-    provider_config = ProviderConfigManager.get_provider_vector_stores_config(
-        provider=provider
-    )
+    provider_config = ProviderConfigManager.get_provider_vector_stores_config(provider=provider)
     if provider_config is None:
         return None
 
-    provider_vector_store_endpoints = (
-        provider_config.get_vector_store_endpoints_by_type()
-    )
+    provider_vector_store_endpoints = provider_config.get_vector_store_endpoints_by_type()
 
     # Determine the permission type based on the request
     permission_type = None
     for endpoint in provider_vector_store_endpoints["read"]:
-        if request.method == endpoint[0] and _does_endpoint_match(
-            endpoint[1], request.url.path
-        ):
+        if request.method == endpoint[0] and _does_endpoint_match(endpoint[1], request.url.path):
             permission_type = "read"
             break
 
@@ -160,15 +150,11 @@ def is_allowed_to_call_vector_store_files_endpoint(
     if provider_config is None:
         return None
 
-    provider_vector_store_endpoints = (
-        provider_config.get_vector_store_file_endpoints_by_type()
-    )
+    provider_vector_store_endpoints = provider_config.get_vector_store_file_endpoints_by_type()
 
     permission_type: Optional[str] = None
     for endpoint in provider_vector_store_endpoints.get("read", ()):
-        if request.method == endpoint[0] and _does_endpoint_match(
-            endpoint[1], request.url.path
-        ):
+        if request.method == endpoint[0] and _does_endpoint_match(endpoint[1], request.url.path):
             permission_type = "read"
             break
 

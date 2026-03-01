@@ -1,8 +1,7 @@
 from typing import Literal, Optional, Union
 
-from typing_extensions import TypedDict
-
 from litellm.types.llms.openai import ChatCompletionCachedContent
+from typing_extensions import TypedDict
 
 
 class CacheControlMessageInjectionPoint(TypedDict):

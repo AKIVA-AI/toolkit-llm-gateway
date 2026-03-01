@@ -1,9 +1,8 @@
 import traceback
 from typing import Optional
 
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import DualCache
 from litellm.integrations.custom_logger import CustomLogger
@@ -38,9 +37,7 @@ class _PROXY_AzureContentSafety(
 
         self.thresholds = self._configure_thresholds(thresholds)
 
-        self.client = ContentSafetyClient(
-            self.endpoint, AzureKeyCredential(self.api_key)
-        )
+        self.client = ContentSafetyClient(self.endpoint, AzureKeyCredential(self.api_key))
 
     def _configure_thresholds(self, thresholds=None):
         default_thresholds = {
@@ -62,9 +59,7 @@ class _PROXY_AzureContentSafety(
     def _compute_result(self, response):
         result = {}
 
-        category_severity = {
-            item.category: item.severity for item in response.categories_analysis
-        }
+        category_severity = {item.category: item.severity for item in response.categories_analysis}
         for category in self.text_category:
             severity = category_severity.get(category)
             if severity is not None:
@@ -88,9 +83,7 @@ class _PROXY_AzureContentSafety(
         try:
             response = await self.client.analyze_text(request)
         except self.azure_http_error:
-            verbose_proxy_logger.debug(
-                "Error in Azure Content-Safety: %s", traceback.format_exc()
-            )
+            verbose_proxy_logger.debug("Error in Azure Content-Safety: %s", traceback.format_exc())
             verbose_proxy_logger.debug(traceback.format_exc())
             raise
 

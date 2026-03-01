@@ -7,7 +7,6 @@ Might include fastapi/proxy requirements.txt related imports
 from typing import List, Optional, cast
 
 from fastapi_sso.sso.base import OpenID
-
 from litellm.proxy._types import LitellmUserRoles
 
 

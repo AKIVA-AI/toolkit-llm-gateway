@@ -70,9 +70,7 @@ class PrismaWrapper:
             db_name = os.getenv("DATABASE_NAME")
             db_schema = os.getenv("DATABASE_SCHEMA")
 
-            token = generate_iam_auth_token(
-                db_host=db_host, db_port=db_port, db_user=db_user
-            )
+            token = generate_iam_auth_token(db_host=db_host, db_port=db_port, db_user=db_user)
 
             # print(f"token: {token}")
             _db_url = f"postgresql://{db_user}:{token}@{db_host}:{db_port}/{db_name}"
@@ -83,9 +81,7 @@ class PrismaWrapper:
             return _db_url
         return None
 
-    async def recreate_prisma_client(
-        self, new_db_url: str, http_client: Optional[Any] = None
-    ):
+    async def recreate_prisma_client(self, new_db_url: str, http_client: Optional[Any] = None):
         from prisma import Prisma  # type: ignore
 
         try:
@@ -110,9 +106,7 @@ class PrismaWrapper:
 
                 if db_url:
                     if loop.is_running():
-                        asyncio.run_coroutine_threadsafe(
-                            self.recreate_prisma_client(db_url), loop
-                        )
+                        asyncio.run_coroutine_threadsafe(self.recreate_prisma_client(db_url), loop)
                     else:
                         asyncio.run(self.recreate_prisma_client(db_url))
                 else:
@@ -169,9 +163,7 @@ class PrismaManager:
             except subprocess.CalledProcessError as e:
                 attempts_left = 3 - attempt
                 retry_msg = (
-                    f" Retrying... ({attempts_left} attempts left)"
-                    if attempts_left > 0
-                    else ""
+                    f" Retrying... ({attempts_left} attempts left)" if attempts_left > 0 else ""
                 )
                 verbose_proxy_logger.warning(
                     f"The process failed to execute. Details: {e}.{retry_msg}"

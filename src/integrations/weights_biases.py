@@ -21,8 +21,7 @@ try:
         # contains a (known) object attribute
         object: Literal["chat.completion", "edit", "text_completion"]
 
-        def __getitem__(self, key: K) -> V:
-            ...  # noqa
+        def __getitem__(self, key: K) -> V: ...  # noqa
 
         def get(self, key: K, default: Optional[V] = None) -> Optional[V]:  # noqa
             ...  # pragma: no cover
@@ -40,9 +39,7 @@ try:
                 elif response["object"] == "text_completion":
                     return self._resolve_completion(request, response, time_elapsed)
                 elif response["object"] == "chat.completion":
-                    return self._resolve_chat_completion(
-                        request, response, time_elapsed
-                    )
+                    return self._resolve_chat_completion(request, response, time_elapsed)
                 else:
                     logger.debug(f"Unknown OpenAI response object: {response['object']}")
             except Exception as e:
@@ -90,9 +87,7 @@ try:
                 f"\n\n**Instruction**: {request['instruction']}\n\n"
                 f"**Input**: {request['input']}\n"
             )
-            choices = [
-                f"\n\n**Edited**: {choice['text']}\n" for choice in response["choices"]
-            ]
+            choices = [f"\n\n**Edited**: {choice['text']}\n" for choice in response["choices"]]
 
             return self._request_response_result_to_trace(
                 request=request,
@@ -110,10 +105,7 @@ try:
         ) -> trace_tree.WBTraceTree:
             """Resolves the request and response objects for `openai.Completion`."""
             request_str = f"\n\n**Prompt**: {request['prompt']}\n"
-            choices = [
-                f"\n\n**Completion**: {choice['text']}\n"
-                for choice in response["choices"]
-            ]
+            choices = [f"\n\n**Completion**: {choice['text']}\n" for choice in response["choices"]]
 
             return self._request_response_result_to_trace(
                 request=request,
@@ -200,18 +192,14 @@ class WeightsBiasesLogger:
             run = wandb.init()
             print_verbose(response_obj)
 
-            trace = self.resolver(
-                kwargs, response_obj, (end_time - start_time).total_seconds()
-            )
+            trace = self.resolver(kwargs, response_obj, (end_time - start_time).total_seconds())
 
             if trace is not None and run is not None:
                 run.log({"trace": trace})
 
             if run is not None:
                 run.finish()
-                print_verbose(
-                    f"W&B Logging Logging - final response object: {response_obj}"
-                )
+                print_verbose(f"W&B Logging Logging - final response object: {response_obj}")
         except Exception:
             print_verbose(f"W&B Logging Layer Error - {traceback.format_exc()}")
             pass

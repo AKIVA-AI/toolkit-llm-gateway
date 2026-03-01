@@ -8,7 +8,6 @@ from functools import partial
 from typing import Any, Coroutine, Dict, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.constants import request_timeout
 from litellm.litellm_core_utils.get_llm_provider_logic import get_llm_provider
@@ -189,9 +188,7 @@ def create(
         litellm_params = GenericLiteLLMParams(**kwargs)
 
         ## MOCK RESPONSE LOGIC
-        if litellm_params.mock_response and isinstance(
-            litellm_params.mock_response, dict
-        ):
+        if litellm_params.mock_response and isinstance(litellm_params.mock_response, dict):
             return mock_vector_store_create_response(
                 mock_response=VectorStoreCreateResponse(**litellm_params.mock_response)
             )
@@ -211,25 +208,19 @@ def create(
             custom_llm_provider = custom_llm_provider
 
         # get provider config - using vector store custom logger for now
-        vector_store_provider_config = (
-            ProviderConfigManager.get_provider_vector_stores_config(
-                provider=litellm.LlmProviders(custom_llm_provider),
-                api_type=api_type,
-            )
+        vector_store_provider_config = ProviderConfigManager.get_provider_vector_stores_config(
+            provider=litellm.LlmProviders(custom_llm_provider),
+            api_type=api_type,
         )
 
         if vector_store_provider_config is None:
-            raise ValueError(
-                f"Vector store create is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"Vector store create is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
 
         # Get VectorStoreCreateOptionalRequestParams with only valid parameters
         vector_store_create_optional_params: VectorStoreCreateOptionalRequestParams = (
-            VectorStoreRequestUtils.get_requested_vector_store_create_optional_param(
-                local_vars
-            )
+            VectorStoreRequestUtils.get_requested_vector_store_create_optional_param(local_vars)
         )
 
         # Pre Call logging
@@ -394,9 +385,7 @@ def search(
         litellm_params = GenericLiteLLMParams(vector_store_id=vector_store_id, **kwargs)
 
         ## MOCK RESPONSE LOGIC
-        if litellm_params.mock_response and isinstance(
-            litellm_params.mock_response, (str, list)
-        ):
+        if litellm_params.mock_response and isinstance(litellm_params.mock_response, (str, list)):
             mock_results = None
             if isinstance(litellm_params.mock_response, list):
                 mock_results = litellm_params.mock_response
@@ -417,17 +406,13 @@ def search(
             custom_llm_provider = custom_llm_provider
 
         # get provider config - using vector store custom logger for now
-        vector_store_provider_config = (
-            ProviderConfigManager.get_provider_vector_stores_config(
-                provider=litellm.LlmProviders(custom_llm_provider),
-                api_type=api_type,
-            )
+        vector_store_provider_config = ProviderConfigManager.get_provider_vector_stores_config(
+            provider=litellm.LlmProviders(custom_llm_provider),
+            api_type=api_type,
         )
 
         if vector_store_provider_config is None:
-            raise ValueError(
-                f"Vector store search is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"Vector store search is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
 

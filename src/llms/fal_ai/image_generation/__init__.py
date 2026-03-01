@@ -3,18 +3,18 @@ from litellm.llms.base_llm.image_generation.transformation import (
 )
 
 from .bria_transformation import FalAIBriaConfig
+from .bytedance_transformation import (
+    FalAIBytedanceDreaminaV31Config,
+    FalAIBytedanceSeedreamV3Config,
+)
 from .flux_pro_v11_transformation import FalAIFluxProV11Config
 from .flux_pro_v11_ultra_transformation import FalAIFluxProV11UltraConfig
 from .flux_schnell_transformation import FalAIFluxSchnellConfig
+from .ideogram_v3_transformation import FalAIIdeogramV3Config
 from .imagen4_transformation import FalAIImagen4Config
 from .recraft_v3_transformation import FalAIRecraftV3Config
-from .ideogram_v3_transformation import FalAIIdeogramV3Config
 from .stable_diffusion_transformation import FalAIStableDiffusionConfig
 from .transformation import FalAIBaseConfig, FalAIImageGenerationConfig
-from .bytedance_transformation import (
-    FalAIBytedanceSeedreamV3Config,
-    FalAIBytedanceDreaminaV31Config,
-)
 
 __all__ = [
     "FalAIBaseConfig",
@@ -35,15 +35,15 @@ __all__ = [
 def get_fal_ai_image_generation_config(model: str) -> BaseImageGenerationConfig:
     """
     Get the appropriate Fal AI image generation configuration based on the model.
-    
+
     Args:
         model: The Fal AI model name (e.g., "fal-ai/imagen4/preview", "fal-ai/recraft/v3/text-to-image")
-        
+
     Returns:
         The appropriate configuration class for the specified model
     """
     model_lower = model.lower()
-    
+
     # Map model names to their corresponding configuration classes
     if "imagen4" in model_lower or "imagen-4" in model_lower:
         return FalAIImagen4Config()
@@ -65,7 +65,6 @@ def get_fal_ai_image_generation_config(model: str) -> BaseImageGenerationConfig:
         return FalAIIdeogramV3Config()
     elif "stable-diffusion" in model_lower:
         return FalAIStableDiffusionConfig()
-    
+
     # Default to generic Fal AI configuration
     return FalAIImageGenerationConfig()
-

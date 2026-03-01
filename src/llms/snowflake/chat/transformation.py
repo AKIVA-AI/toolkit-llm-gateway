@@ -6,14 +6,11 @@ import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import httpx
-
 from litellm.types.llms.openai import AllMessageValues
 from litellm.types.utils import ChatCompletionMessageToolCall, Function, ModelResponse
 
 from ...openai_like.chat.transformation import OpenAIGPTConfig
-
 from ..utils import SnowflakeBaseConfig
-
 
 if TYPE_CHECKING:
     from litellm.litellm_core_utils.litellm_logging import Logging as _LiteLLMLoggingObj

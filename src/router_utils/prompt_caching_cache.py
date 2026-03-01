@@ -6,16 +6,14 @@ import hashlib
 import json
 from typing import TYPE_CHECKING, Any, List, Optional, Union, cast
 
-from typing_extensions import TypedDict
-
 from litellm.caching.caching import DualCache
 from litellm.caching.in_memory_cache import InMemoryCache
 from litellm.types.llms.openai import AllMessageValues, ChatCompletionToolParam
+from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
-    from opentelemetry.trace import Span as _Span
-
     from litellm.router import Router
+    from opentelemetry.trace import Span as _Span
 
     litellm_router = Router
     Span = Union[_Span, Any]
@@ -56,29 +54,29 @@ class PromptCachingCache:
     def extract_cacheable_prefix(messages: List[AllMessageValues]) -> List[AllMessageValues]:
         """
         Extract the cacheable prefix from messages.
-        
+
         The cacheable prefix is everything UP TO AND INCLUDING the LAST content block
         (across all messages) that has cache_control. This includes ALL blocks before
         the last cacheable block (even if they don't have cache_control).
-        
+
         Args:
             messages: List of messages to extract cacheable prefix from
-            
+
         Returns:
             List of messages containing only the cacheable prefix
         """
         if not messages:
             return messages
-        
+
         # Find the last content block (across all messages) that has cache_control
         last_cacheable_message_idx = None
         last_cacheable_content_idx = None
-        
+
         for msg_idx, message in enumerate(messages):
             content = message.get("content")
             if not isinstance(content, list):
                 continue
-            
+
             for content_idx, content_block in enumerate(content):
                 if isinstance(content_block, dict):
                     cache_control = content_block.get("cache_control")
@@ -89,14 +87,14 @@ class PromptCachingCache:
                     ):
                         last_cacheable_message_idx = msg_idx
                         last_cacheable_content_idx = content_idx
-        
+
         # If no cacheable block found, return empty list (no cacheable prefix)
         if last_cacheable_message_idx is None:
             return []
-        
+
         # Build the cacheable prefix: all messages up to and including the last cacheable message
         cacheable_prefix = []
-        
+
         for msg_idx, message in enumerate(messages):
             if msg_idx < last_cacheable_message_idx:
                 # Include entire message (comes before last cacheable block)
@@ -117,7 +115,7 @@ class PromptCachingCache:
             else:
                 # Message comes after last cacheable block, don't include
                 break
-        
+
         return cacheable_prefix
 
     @staticmethod
@@ -127,7 +125,7 @@ class PromptCachingCache:
     ) -> Optional[str]:
         if messages is None and tools is None:
             return None
-        
+
         # Extract cacheable prefix from messages (only include up to last cache_control block)
         cacheable_messages = None
         if messages is not None:
@@ -135,7 +133,7 @@ class PromptCachingCache:
             # If no cacheable prefix found, return None (can't cache)
             if not cacheable_messages:
                 return None
-        
+
         # Use serialize_object for consistent and stable serialization
         data_to_hash = {}
         if cacheable_messages is not None:
@@ -170,9 +168,7 @@ class PromptCachingCache:
         if cache_key is None:
             return None
 
-        self.cache.set_cache(
-            cache_key, PromptCachingCacheValue(model_id=model_id), ttl=300
-        )
+        self.cache.set_cache(cache_key, PromptCachingCacheValue(model_id=model_id), ttl=300)
         return None
 
     async def async_add_model_id(
@@ -203,7 +199,7 @@ class PromptCachingCache:
     ) -> Optional[PromptCachingCacheValue]:
         """
         Get model ID from cache using the cacheable prefix.
-        
+
         The cache key is based on the cacheable prefix (everything up to and including
         the last cache_control block), so requests with the same cacheable prefix but
         different user messages will have the same cache key.

@@ -1,6 +1,6 @@
-from litellm._uuid import uuid
 from typing import Any, Dict
 
+from litellm._uuid import uuid
 from litellm.llms.vertex_ai.common_utils import (
     _convert_vertex_datetime_to_openai_datetime,
 )
@@ -56,15 +56,11 @@ class VertexAIBatchTransformation:
                 vertex_datetime=response.get("createTime", "")
             ),
             endpoint="",
-            input_file_id=cls._get_input_file_id_from_vertex_ai_batch_response(
-                response
-            ),
+            input_file_id=cls._get_input_file_id_from_vertex_ai_batch_response(response),
             object="batch",
             status=cls._get_batch_job_status_from_vertex_ai_batch_response(response),
             error_file_id=None,  # Vertex AI doesn't seem to have a direct equivalent
-            output_file_id=cls._get_output_file_id_from_vertex_ai_batch_response(
-                response
-            ),
+            output_file_id=cls._get_output_file_id_from_vertex_ai_batch_response(response),
         )
 
     @classmethod

@@ -2,7 +2,6 @@ import os
 from typing import Any, Dict, Optional, Union
 
 import httpx
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.caching import InMemoryCache
@@ -50,13 +49,9 @@ class HashicorpSecretManager(BaseSecretManager):
             "HCP_VAULT_REFRESH_INTERVAL", SECRET_MANAGER_REFRESH_INTERVAL
         )
         _refresh_interval = (
-            int(_refresh_interval)
-            if _refresh_interval
-            else SECRET_MANAGER_REFRESH_INTERVAL
+            int(_refresh_interval) if _refresh_interval else SECRET_MANAGER_REFRESH_INTERVAL
         )
-        self.cache = InMemoryCache(
-            default_ttl=_refresh_interval
-        )  # store in memory for 1 day
+        self.cache = InMemoryCache(default_ttl=_refresh_interval)  # store in memory for 1 day
 
         if premium_user is not True:
             raise ValueError(
@@ -66,7 +61,7 @@ class HashicorpSecretManager(BaseSecretManager):
     def _verify_required_credentials_exist(self) -> None:
         """
         Validate that at least one authentication method is configured.
-        
+
         Raises:
             ValueError: If no valid authentication credentials are provided
         """
@@ -107,20 +102,20 @@ class HashicorpSecretManager(BaseSecretManager):
         ```
         """
         verbose_logger.debug("Using AppRole auth for Hashicorp Vault")
-        
+
         # Check cache first
         cached_token = self.cache.get_cache(key="hcp_vault_approle_token")
         if cached_token:
             verbose_logger.debug("Using cached Vault token from AppRole auth")
             return cached_token
-        
+
         # Vault endpoint for AppRole login
         login_url = f"{self.vault_addr}/v1/auth/{self.approle_mount_path}/login"
 
         headers = {}
         if hasattr(self, "vault_namespace") and self.vault_namespace:
             headers["X-Vault-Namespace"] = self.vault_namespace
-        
+
         try:
             client = _get_httpx_client()
             resp = client.post(
@@ -132,19 +127,17 @@ class HashicorpSecretManager(BaseSecretManager):
                 },
             )
             resp.raise_for_status()
-            
+
             auth_data = resp.json()["auth"]
             token = auth_data["client_token"]
             _lease_duration = auth_data["lease_duration"]
-            
+
             verbose_logger.debug(
                 f"Successfully obtained Vault token via AppRole auth. Lease duration: {_lease_duration}s"
             )
-            
+
             # Cache the token with its lease duration
-            self.cache.set_cache(
-                key="hcp_vault_approle_token", value=token, ttl=_lease_duration
-            )
+            self.cache.set_cache(key="hcp_vault_approle_token", value=token, ttl=_lease_duration)
             return token
         except Exception as e:
             raise RuntimeError(f"Could not authenticate to Vault via AppRole: {e}")
@@ -199,9 +192,7 @@ class HashicorpSecretManager(BaseSecretManager):
             token = resp.json()["auth"]["client_token"]
             _lease_duration = resp.json()["auth"]["lease_duration"]
             verbose_logger.debug("Successfully obtained Vault token via TLS cert auth.")
-            self.cache.set_cache(
-                key="hcp_vault_token", value=token, ttl=_lease_duration
-            )
+            self.cache.set_cache(key="hcp_vault_token", value=token, ttl=_lease_duration)
             return token
         except Exception as e:
             raise RuntimeError(f"Could not authenticate to Vault via TLS cert: {e}")
@@ -212,9 +203,9 @@ class HashicorpSecretManager(BaseSecretManager):
     def get_url(self, secret_name: str) -> str:
         """
         Constructs the Vault URL for KV v2 secrets.
-        
+
         Format: {VAULT_ADDR}/v1/{NAMESPACE}/{MOUNT_NAME}/data/{PATH_PREFIX}/{SECRET_NAME}
-        
+
         Examples:
         - Default: http://127.0.0.1:8200/v1/secret/data/mykey
         - With namespace: http://127.0.0.1:8200/v1/mynamespace/secret/data/mykey
@@ -233,7 +224,7 @@ class HashicorpSecretManager(BaseSecretManager):
     def _get_request_headers(self) -> dict:
         """
         Get the headers for Vault API requests.
-        
+
         Authentication priority:
         1. AppRole (if role_id and secret_id are configured)
         2. TLS Certificate (if cert paths are configured)
@@ -242,11 +233,11 @@ class HashicorpSecretManager(BaseSecretManager):
         # Priority 1: AppRole auth
         if self.approle_role_id and self.approle_secret_id:
             return {"X-Vault-Token": self._auth_via_approle()}
-        
+
         # Priority 2: TLS cert auth
         if self.tls_cert_path and self.tls_key_path:
             return {"X-Vault-Token": self._auth_via_tls_cert()}
-        
+
         # Priority 3: Direct token
         return {"X-Vault-Token": self.vault_token}
 
@@ -323,7 +314,7 @@ class HashicorpSecretManager(BaseSecretManager):
         description: Optional[str] = None,
         optional_params: Optional[dict] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
-        tags: Optional[Union[dict, list]] = None
+        tags: Optional[Union[dict, list]] = None,
     ) -> Dict[str, Any]:
         """
         Writes a secret to Vault KV v2 using an async HTTPX client.
@@ -400,9 +391,7 @@ class HashicorpSecretManager(BaseSecretManager):
             # For KV v2 delete: /v1/<mount>/data/<path>
             url = self.get_url(secret_name)
 
-            response = await async_client.delete(
-                url=url, headers=self._get_request_headers()
-            )
+            response = await async_client.delete(url=url, headers=self._get_request_headers())
             response.raise_for_status()
 
             # Clear the cache for this secret
@@ -416,9 +405,7 @@ class HashicorpSecretManager(BaseSecretManager):
             verbose_logger.exception(f"Error deleting secret from Hashicorp Vault: {e}")
             return {"status": "error", "message": str(e)}
 
-    def _get_secret_value_from_json_response(
-        self, json_resp: Optional[dict]
-    ) -> Optional[str]:
+    def _get_secret_value_from_json_response(self, json_resp: Optional[dict]) -> Optional[str]:
         """
         Get the secret value from the JSON response
 

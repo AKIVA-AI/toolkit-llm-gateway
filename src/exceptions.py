@@ -13,7 +13,6 @@ from typing import Optional
 
 import httpx
 import openai
-
 from litellm.types.utils import LiteLLMCommonStrings
 
 
@@ -37,9 +36,7 @@ class AuthenticationError(openai.AuthenticationError):  # type: ignore
         self.num_retries = num_retries
         self.response = response or httpx.Response(
             status_code=self.status_code,
-            request=httpx.Request(
-                method="GET", url="https://litellm.ai"
-            ),  # mock request object
+            request=httpx.Request(method="GET", url="https://litellm.ai"),  # mock request object
         )
         super().__init__(
             self.message, response=self.response, body=None
@@ -83,9 +80,7 @@ class NotFoundError(openai.NotFoundError):  # type: ignore
         self.num_retries = num_retries
         self.response = response or httpx.Response(
             status_code=self.status_code,
-            request=httpx.Request(
-                method="GET", url="https://litellm.ai"
-            ),  # mock request object
+            request=httpx.Request(method="GET", url="https://litellm.ai"),  # mock request object
         )
         super().__init__(
             self.message, response=self.response, body=None
@@ -127,9 +122,7 @@ class BadRequestError(openai.BadRequestError):  # type: ignore
         self.litellm_debug_info = litellm_debug_info
         response = httpx.Response(
             status_code=self.status_code,
-            request=httpx.Request(
-                method="GET", url="https://litellm.ai"
-            ),  # mock request object
+            request=httpx.Request(method="GET", url="https://litellm.ai"),  # mock request object
         )
         self.max_retries = max_retries
         self.num_retries = num_retries
@@ -320,9 +313,7 @@ class RateLimitError(openai.RateLimitError):  # type: ignore
         self.litellm_debug_info = litellm_debug_info
         self.max_retries = max_retries
         self.num_retries = num_retries
-        _response_headers = (
-            getattr(response, "headers", None) if response is not None else None
-        )
+        _response_headers = getattr(response, "headers", None) if response is not None else None
         self.response = httpx.Response(
             status_code=429,
             headers=_response_headers,
@@ -460,7 +451,7 @@ class ContentPolicyViolationError(BadRequestError):  # type: ignore
         request = httpx.Request(method="POST", url="https://api.openai.com/v1")
         self.response = httpx.Response(status_code=400, request=request)
         self.provider_specific_fields = provider_specific_fields
-        
+
         super().__init__(
             message=self.message,
             model=self.model,  # type: ignore
@@ -468,7 +459,6 @@ class ContentPolicyViolationError(BadRequestError):  # type: ignore
             response=self.response,
             litellm_debug_info=self.litellm_debug_info,
         )  # Call the base class constructor with the parameters it needs
-    
 
     def __str__(self):
         return self._transform_error_to_string()
@@ -506,9 +496,7 @@ class ServiceUnavailableError(openai.APIStatusError):  # type: ignore
         self.litellm_debug_info = litellm_debug_info
         self.max_retries = max_retries
         self.num_retries = num_retries
-        _response_headers = (
-            getattr(response, "headers", None) if response is not None else None
-        )
+        _response_headers = getattr(response, "headers", None) if response is not None else None
         self.response = httpx.Response(
             status_code=self.status_code,
             headers=_response_headers,
@@ -556,9 +544,7 @@ class BadGatewayError(openai.APIStatusError):  # type: ignore
         self.litellm_debug_info = litellm_debug_info
         self.max_retries = max_retries
         self.num_retries = num_retries
-        _response_headers = (
-            getattr(response, "headers", None) if response is not None else None
-        )
+        _response_headers = getattr(response, "headers", None) if response is not None else None
         self.response = httpx.Response(
             status_code=self.status_code,
             headers=_response_headers,
@@ -606,9 +592,7 @@ class InternalServerError(openai.InternalServerError):  # type: ignore
         self.litellm_debug_info = litellm_debug_info
         self.max_retries = max_retries
         self.num_retries = num_retries
-        _response_headers = (
-            getattr(response, "headers", None) if response is not None else None
-        )
+        _response_headers = getattr(response, "headers", None) if response is not None else None
         self.response = httpx.Response(
             status_code=self.status_code,
             headers=_response_headers,
@@ -757,9 +741,7 @@ class APIResponseValidationError(openai.APIResponseValidationError):  # type: ig
 
 
 class JSONSchemaValidationError(APIResponseValidationError):
-    def __init__(
-        self, model: str, llm_provider: str, raw_response: str, schema: str
-    ) -> None:
+    def __init__(self, model: str, llm_provider: str, raw_response: str, schema: str) -> None:
         self.raw_response = raw_response
         self.schema = schema
         self.model = model
@@ -795,9 +777,7 @@ class UnsupportedParamsError(BadRequestError):
         self.litellm_debug_info = litellm_debug_info
         response = response or httpx.Response(
             status_code=self.status_code,
-            request=httpx.Request(
-                method="GET", url="https://litellm.ai"
-            ),  # mock request object
+            request=httpx.Request(method="GET", url="https://litellm.ai"),  # mock request object
         )
         self.max_retries = max_retries
         self.num_retries = num_retries
@@ -828,9 +808,7 @@ LITELLM_EXCEPTION_TYPES = [
 
 
 class BudgetExceededError(Exception):
-    def __init__(
-        self, current_cost: float, max_budget: float, message: Optional[str] = None
-    ):
+    def __init__(self, current_cost: float, max_budget: float, message: Optional[str] = None):
         self.current_cost = current_cost
         self.max_budget = max_budget
         message = (
@@ -850,9 +828,7 @@ class InvalidRequestError(openai.BadRequestError):  # type: ignore
         self.llm_provider = llm_provider
         self.response = httpx.Response(
             status_code=400,
-            request=httpx.Request(
-                method="GET", url="https://litellm.ai"
-            ),  # mock request object
+            request=httpx.Request(method="GET", url="https://litellm.ai"),  # mock request object
         )
         super().__init__(
             message=self.message, response=self.response, body=None
@@ -889,9 +865,7 @@ class LiteLLMUnknownProvider(BadRequestError):
         self.message = LiteLLMCommonStrings.llm_provider_not_provided.value.format(
             model=model, custom_llm_provider=custom_llm_provider
         )
-        super().__init__(
-            self.message, model=model, llm_provider=custom_llm_provider, response=None
-        )
+        super().__init__(self.message, model=model, llm_provider=custom_llm_provider, response=None)
 
     def __str__(self):
         return self.message
@@ -900,7 +874,9 @@ class LiteLLMUnknownProvider(BadRequestError):
 class GuardrailRaisedException(Exception):
     def __init__(self, guardrail_name: Optional[str] = None, message: str = ""):
         self.guardrail_name = guardrail_name
-        self.message = f"Guardrail raised an exception, Guardrail: {guardrail_name}, Message: {message}"
+        self.message = (
+            f"Guardrail raised an exception, Guardrail: {guardrail_name}, Message: {message}"
+        )
         super().__init__(self.message)
 
 

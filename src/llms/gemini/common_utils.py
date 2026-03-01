@@ -3,7 +3,6 @@ import datetime
 from typing import Any, Dict, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.constants import DEFAULT_MAX_RECURSE_DEPTH
 from litellm.llms.base_llm.base_utils import BaseLLMModelInfo, BaseTokenCounter
@@ -87,14 +86,12 @@ class GeminiModelInfo(BaseLLMModelInfo):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, httpx.Headers]
     ) -> BaseLLMException:
-        return GeminiError(
-            status_code=status_code, message=error_message, headers=headers
-        )
-    
+        return GeminiError(status_code=status_code, message=error_message, headers=headers)
+
     def get_token_counter(self) -> Optional[BaseTokenCounter]:
         """
         Factory method to create a token counter for this provider.
-        
+
         Returns:
             Optional TokenCounterInterface implementation for this provider,
             or None if token counting is not supported.
@@ -102,9 +99,7 @@ class GeminiModelInfo(BaseLLMModelInfo):
         return GoogleAIStudioTokenCounter()
 
 
-def encode_unserializable_types(
-    data: Dict[str, object], depth: int = 0
-) -> Dict[str, object]:
+def encode_unserializable_types(data: Dict[str, object], depth: int = 0) -> Dict[str, object]:
     """Converts unserializable types in dict to json.dumps() compatible types.
 
     This function is called in models.py after calling convert_to_dict(). The
@@ -132,15 +127,11 @@ def encode_unserializable_types(
             processed_data[key] = encode_unserializable_types(value, depth + 1)
         elif isinstance(value, list):
             if all(isinstance(v, bytes) for v in value):
-                processed_data[key] = [
-                    base64.urlsafe_b64encode(v).decode("ascii") for v in value
-                ]
+                processed_data[key] = [base64.urlsafe_b64encode(v).decode("ascii") for v in value]
             if all(isinstance(v, datetime.datetime) for v in value):
                 processed_data[key] = [v.isoformat() for v in value]
             else:
-                processed_data[key] = [
-                    encode_unserializable_types(v, depth + 1) for v in value
-                ]
+                processed_data[key] = [encode_unserializable_types(v, depth + 1) for v in value]
         else:
             processed_data[key] = value
     return processed_data
@@ -152,13 +143,15 @@ def get_api_key_from_env() -> Optional[str]:
 
 class GoogleAIStudioTokenCounter(BaseTokenCounter):
     """Token counter implementation for Google AI Studio provider."""
+
     def should_use_token_counting_api(
-        self, 
+        self,
         custom_llm_provider: Optional[str] = None,
     ) -> bool:
         from litellm.types.utils import LlmProviders
+
         return custom_llm_provider == LlmProviders.GEMINI.value
-    
+
     async def count_tokens(
         self,
         model_to_use: str,
@@ -170,6 +163,7 @@ class GoogleAIStudioTokenCounter(BaseTokenCounter):
         import copy
 
         from litellm.llms.gemini.count_tokens.handler import GoogleAIStudioTokenCounter
+
         deployment = deployment or {}
         count_tokens_params_request = copy.deepcopy(deployment.get("litellm_params", {}))
         count_tokens_params = {
@@ -180,7 +174,7 @@ class GoogleAIStudioTokenCounter(BaseTokenCounter):
         result = await GoogleAIStudioTokenCounter().acount_tokens(
             **count_tokens_params_request,
         )
-        
+
         if result is not None:
             return TokenCountResponse(
                 total_tokens=result.get("totalTokens", 0),
@@ -189,5 +183,5 @@ class GoogleAIStudioTokenCounter(BaseTokenCounter):
                 tokenizer_type=result.get("tokenizer_used", ""),
                 original_response=result,
             )
-        
+
         return None

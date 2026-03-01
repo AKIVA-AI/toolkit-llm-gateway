@@ -153,13 +153,9 @@ def batch_completion_models(*args, **kwargs):
         futures = {}
         with ThreadPoolExecutor(max_workers=len(models)) as executor:
             for model in models:
-                futures[model] = executor.submit(
-                    litellm.completion, *args, model=model, **kwargs
-                )
+                futures[model] = executor.submit(litellm.completion, *args, model=model, **kwargs)
 
-            for model, future in sorted(
-                futures.items(), key=lambda x: models.index(x[0])
-            ):
+            for model, future in sorted(futures.items(), key=lambda x: models.index(x[0])):
                 if future.result() is not None:
                     return future.result()
     elif "deployments" in kwargs:
@@ -176,9 +172,7 @@ def batch_completion_models(*args, **kwargs):
                     ):  # don't override deployment values e.g. model name, api base, etc.
                         deployment[key] = kwargs[key]
                 kwargs = {**deployment, **nested_kwargs}
-                futures[deployment["model"]] = executor.submit(
-                    litellm.completion, **kwargs
-                )
+                futures[deployment["model"]] = executor.submit(litellm.completion, **kwargs)
 
             while futures:
                 # wait for the first returned future
@@ -191,9 +185,7 @@ def batch_completion_models(*args, **kwargs):
                         return result
                     except Exception:
                         # if model 1 fails, continue with response from model 2, model3
-                        print_verbose(
-                            "\n\ngot an exception, ignoring, removing from futures"
-                        )
+                        print_verbose("\n\ngot an exception, ignoring, removing from futures")
                         print_verbose(futures)
                         new_futures = {}
                         for key, value in futures.items():

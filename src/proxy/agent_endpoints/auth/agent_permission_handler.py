@@ -21,7 +21,7 @@ class AgentRequestHandler:
     1. Key-level agent permissions
     2. Team-level agent permissions
     3. Agent access group resolution
-    
+
     Follows the same inheritance logic as MCP:
     - If team has restrictions and key has restrictions: use intersection
     - If team has restrictions and key has none: inherit from team
@@ -35,17 +35,17 @@ class AgentRequestHandler:
     ) -> List[str]:
         """
         Get list of allowed agent IDs for the given user/key based on permissions.
-        
+
         Returns:
             List[str]: List of allowed agent IDs. Empty list means no restrictions (allow all).
         """
         try:
             allowed_agents: List[str] = []
-            allowed_agents_for_key = (
-                await AgentRequestHandler._get_allowed_agents_for_key(user_api_key_auth)
+            allowed_agents_for_key = await AgentRequestHandler._get_allowed_agents_for_key(
+                user_api_key_auth
             )
-            allowed_agents_for_team = (
-                await AgentRequestHandler._get_allowed_agents_for_team(user_api_key_auth)
+            allowed_agents_for_team = await AgentRequestHandler._get_allowed_agents_for_team(
+                user_api_key_auth
             )
 
             # If team has agent restrictions, handle inheritance and intersection logic
@@ -73,20 +73,20 @@ class AgentRequestHandler:
     ) -> bool:
         """
         Check if a specific agent is allowed for the given user/key.
-        
+
         Args:
             agent_id: The agent ID to check
             user_api_key_auth: User authentication info
-            
+
         Returns:
             bool: True if agent is allowed, False otherwise
         """
         allowed_agents = await AgentRequestHandler.get_allowed_agents(user_api_key_auth)
-        
+
         # Empty list means no restrictions - allow all
         if len(allowed_agents) == 0:
             return True
-        
+
         return agent_id in allowed_agents
 
     @staticmethod
@@ -284,9 +284,7 @@ class AgentRequestHandler:
                 for agent in agents:
                     agent_ids.add(agent.agent_id)
             except Exception as e:
-                verbose_logger.debug(
-                    f"Error getting agents from access groups: {e}"
-                )
+                verbose_logger.debug(f"Error getting agents from access groups: {e}")
         return agent_ids
 
     @staticmethod
@@ -313,9 +311,7 @@ class AgentRequestHandler:
 
             return list(agent_ids)
         except Exception as e:
-            verbose_logger.warning(
-                f"Failed to get agents from access groups: {str(e)}"
-            )
+            verbose_logger.warning(f"Failed to get agents from access groups: {str(e)}")
             return []
 
     @staticmethod
@@ -421,8 +417,5 @@ class AgentRequestHandler:
 
             return object_permissions.agent_access_groups or []
         except Exception as e:
-            verbose_logger.warning(
-                f"Failed to get agent access groups for team: {str(e)}"
-            )
+            verbose_logger.warning(f"Failed to get agent access groups for team: {str(e)}")
             return []
-

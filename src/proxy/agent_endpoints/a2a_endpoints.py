@@ -10,7 +10,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
-
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import UserAPIKeyAuth
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
@@ -56,7 +55,6 @@ async def _handle_stream_message(
 ) -> StreamingResponse:
     """Handle message/stream method via SDK functions."""
     from a2a.types import MessageSendParams, SendStreamingMessageRequest
-
     from litellm.a2a_protocol import asend_message_streaming
 
     async def stream_response():
@@ -80,11 +78,13 @@ async def _handle_stream_message(
                     yield json.dumps(chunk) + "\n"
         except Exception as e:
             verbose_proxy_logger.exception(f"Error streaming A2A response: {e}")
-            yield json.dumps({
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "error": {"code": -32603, "message": f"Streaming error: {str(e)}"},
-            }) + "\n"
+            yield json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "error": {"code": -32603, "message": f"Streaming error: {str(e)}"},
+                }
+            ) + "\n"
 
     return StreamingResponse(stream_response(), media_type="application/x-ndjson")
 
@@ -170,7 +170,6 @@ async def invoke_agent_a2a(
     - message/stream: Send a message and stream the response
     """
     from a2a.types import MessageSendParams, SendMessageRequest
-
     from litellm.a2a_protocol import asend_message
     from litellm.proxy.agent_endpoints.auth.agent_permission_handler import (
         AgentRequestHandler,
@@ -213,23 +212,29 @@ async def invoke_agent_a2a(
         # Get backend URL and agent name
         agent_url = agent.agent_card_params.get("url")
         agent_name = agent.agent_card_params.get("name", agent_id)
-        
+
         # Get litellm_params (may include custom_llm_provider for completion bridge)
         litellm_params = agent.litellm_params or {}
         custom_llm_provider = litellm_params.get("custom_llm_provider")
-        
+
         # URL is required unless using completion bridge with a provider that derives endpoint from model
         # (e.g., bedrock/agentcore derives endpoint from ARN in model string)
         if not agent_url and not custom_llm_provider:
-            return _jsonrpc_error(request_id, -32000, f"Agent '{agent_id}' has no URL configured", 500)
+            return _jsonrpc_error(
+                request_id, -32000, f"Agent '{agent_id}' has no URL configured", 500
+            )
 
-        verbose_proxy_logger.info(f"Proxying A2A request to agent '{agent_id}' at {agent_url or 'completion-bridge'}")
+        verbose_proxy_logger.info(
+            f"Proxying A2A request to agent '{agent_id}' at {agent_url or 'completion-bridge'}"
+        )
 
         # Set up data dict for litellm processing
-        body.update({
-            "model": f"a2a_agent/{agent_name}",
-            "custom_llm_provider": "a2a_agent",
-        })
+        body.update(
+            {
+                "model": f"a2a_agent/{agent_name}",
+                "custom_llm_provider": "a2a_agent",
+            }
+        )
 
         # Add litellm data (user_api_key, user_id, team_id, etc.)
         data = await add_litellm_data_to_request(

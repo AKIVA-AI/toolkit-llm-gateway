@@ -19,9 +19,7 @@ class ResponseMetadata:
 
     def __init__(self, result: Any):
         self.result = result
-        self._hidden_params: Union[HiddenParams, dict] = (
-            getattr(result, "_hidden_params", {}) or {}
-        )
+        self._hidden_params: Union[HiddenParams, dict] = getattr(result, "_hidden_params", {}) or {}
 
     @property
     def supports_response_time(self) -> bool:
@@ -114,11 +112,7 @@ class ResponseMetadata:
         if (
             logging_obj.caching_details is not None
             and logging_obj.caching_details.get("cache_hit") is True
-            and (
-                cache_duration_ms := logging_obj.caching_details.get(
-                    "cache_duration_ms"
-                )
-            )
+            and (cache_duration_ms := logging_obj.caching_details.get("cache_duration_ms"))
             is not None
         ):
             overhead_ms = total_response_time_ms - cache_duration_ms

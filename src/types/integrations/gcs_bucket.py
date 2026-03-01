@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from typing_extensions import TypedDict
-
 from litellm.types.utils import StandardLoggingPayload
+from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
     from litellm.llms.vertex_ai.vertex_llm_base import VertexBase

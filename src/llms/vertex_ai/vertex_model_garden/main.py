@@ -19,7 +19,6 @@ Vertex Documentation for using the OpenAI /chat/completions endpoint: https://gi
 from typing import Callable, Optional, Union
 
 import httpx  # type: ignore
-
 from litellm.utils import ModelResponse
 
 from ..common_utils import VertexAIError, get_vertex_base_model_name
@@ -70,7 +69,6 @@ class VertexAIModelGardenModels(VertexBase):
         """
         try:
             import vertexai
-
             from litellm.llms.openai_like.chat.handler import OpenAILikeChatHandler
             from litellm.llms.vertex_ai.gemini.vertex_and_google_ai_studio_gemini import (
                 VertexLLM,
@@ -81,9 +79,7 @@ class VertexAIModelGardenModels(VertexBase):
                 message=f"""vertexai import failed please run `pip install -U "google-cloud-aiplatform>=1.38"`. Got error: {e}""",
             )
 
-        if not (
-            hasattr(vertexai, "preview") or hasattr(vertexai.preview, "language_models")
-        ):
+        if not (hasattr(vertexai, "preview") or hasattr(vertexai.preview, "language_models")):
             raise VertexAIError(
                 status_code=400,
                 message="""Upgrade vertex ai. Run `pip install "google-cloud-aiplatform>=1.38"`""",

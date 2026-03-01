@@ -2,7 +2,6 @@ import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.litellm_logging import Logging as LitellmLogging
 from litellm.llms.custom_httpx.http_handler import (
@@ -34,7 +33,11 @@ class BedrockRerankHandler(BaseAWSLLM):
         if client is None:
             client = get_async_httpx_client(llm_provider=litellm.LlmProviders.BEDROCK)
         try:
-            response = await client.post(url=prepared_request["endpoint_url"], headers=dict(prepared_request["prepped"].headers), data=prepared_request["body"])
+            response = await client.post(
+                url=prepared_request["endpoint_url"],
+                headers=dict(prepared_request["prepped"].headers),
+                data=prepared_request["body"],
+            )
             response.raise_for_status()
         except httpx.HTTPStatusError as err:
             error_code = err.response.status_code
@@ -94,7 +97,11 @@ class BedrockRerankHandler(BaseAWSLLM):
         if client is None or not isinstance(client, HTTPHandler):
             client = _get_httpx_client()
         try:
-            response = client.post(url=prepared_request["endpoint_url"], headers=dict(prepared_request["prepped"].headers), data=prepared_request["body"])
+            response = client.post(
+                url=prepared_request["endpoint_url"],
+                headers=dict(prepared_request["prepped"].headers),
+                data=prepared_request["body"],
+            )
             response.raise_for_status()
         except httpx.HTTPStatusError as err:
             error_code = err.response.status_code
@@ -134,9 +141,7 @@ class BedrockRerankHandler(BaseAWSLLM):
             aws_bedrock_runtime_endpoint=boto3_credentials_info.aws_bedrock_runtime_endpoint,
             aws_region_name=boto3_credentials_info.aws_region_name,
         )
-        proxy_endpoint_url = proxy_endpoint_url.replace(
-            "bedrock-runtime", "bedrock-agent-runtime"
-        )
+        proxy_endpoint_url = proxy_endpoint_url.replace("bedrock-runtime", "bedrock-agent-runtime")
         proxy_endpoint_url = f"{proxy_endpoint_url}/rerank"
         sigv4 = SigV4Auth(
             boto3_credentials_info.credentials,
@@ -149,9 +154,7 @@ class BedrockRerankHandler(BaseAWSLLM):
         headers = {"Content-Type": "application/json"}
         if extra_headers is not None:
             headers = {"Content-Type": "application/json", **extra_headers}
-        request = AWSRequest(
-            method="POST", url=proxy_endpoint_url, data=body, headers=headers
-        )
+        request = AWSRequest(method="POST", url=proxy_endpoint_url, data=body, headers=headers)
         sigv4.add_auth(request)
         if (
             extra_headers is not None and "Authorization" in extra_headers

@@ -64,18 +64,14 @@ class OpenAIOSeriesConfig(OpenAIGPTConfig):
         all_openai_params.extend(o_series_only_param)
 
         try:
-            model, custom_llm_provider, api_base, api_key = get_llm_provider(
-                model=model
-            )
+            model, custom_llm_provider, api_base, api_key = get_llm_provider(model=model)
         except Exception:
             verbose_logger.debug(
                 f"Unable to infer model provider for model={model}, defaulting to openai for o1 supported param check"
             )
             custom_llm_provider = "openai"
 
-        _supports_function_calling = supports_function_calling(
-            model, custom_llm_provider
-        )
+        _supports_function_calling = supports_function_calling(model, custom_llm_provider)
         _supports_response_schema = supports_response_schema(model, custom_llm_provider)
         _supports_parallel_tool_calls = supports_parallel_function_calling(
             model, custom_llm_provider
@@ -93,9 +89,7 @@ class OpenAIOSeriesConfig(OpenAIGPTConfig):
         if not _supports_response_schema:
             non_supported_params.append("response_format")
 
-        return [
-            param for param in all_openai_params if param not in non_supported_params
-        ]
+        return [param for param in all_openai_params if param not in non_supported_params]
 
     def map_openai_params(
         self,
@@ -105,9 +99,7 @@ class OpenAIOSeriesConfig(OpenAIGPTConfig):
         drop_params: bool,
     ):
         if "max_tokens" in non_default_params:
-            optional_params["max_completion_tokens"] = non_default_params.pop(
-                "max_tokens"
-            )
+            optional_params["max_completion_tokens"] = non_default_params.pop("max_tokens")
         if "temperature" in non_default_params:
             temperature_value: Optional[float] = non_default_params.pop("temperature")
             if temperature_value is not None:
@@ -125,9 +117,7 @@ class OpenAIOSeriesConfig(OpenAIGPTConfig):
                             status_code=400,
                         )
 
-        return super()._map_openai_params(
-            non_default_params, optional_params, model, drop_params
-        )
+        return super()._map_openai_params(non_default_params, optional_params, model, drop_params)
 
     def is_model_o_series_model(self, model: str) -> bool:
         model = model.split("/")[-1]  # could be "openai/o3" or "o3"
@@ -138,8 +128,7 @@ class OpenAIOSeriesConfig(OpenAIGPTConfig):
     @overload
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: Literal[True]
-    ) -> Coroutine[Any, Any, List[AllMessageValues]]:
-        ...
+    ) -> Coroutine[Any, Any, List[AllMessageValues]]: ...
 
     @overload
     def _transform_messages(
@@ -147,8 +136,7 @@ class OpenAIOSeriesConfig(OpenAIGPTConfig):
         messages: List[AllMessageValues],
         model: str,
         is_async: Literal[False] = False,
-    ) -> List[AllMessageValues]:
-        ...
+    ) -> List[AllMessageValues]: ...
 
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: bool = False
@@ -161,15 +149,11 @@ class OpenAIOSeriesConfig(OpenAIGPTConfig):
         _supports_system_messages = supports_system_messages(model, "openai")
         for i, message in enumerate(messages):
             if message["role"] == "system" and not _supports_system_messages:
-                new_message = ChatCompletionUserMessage(
-                    content=message["content"], role="user"
-                )
+                new_message = ChatCompletionUserMessage(content=message["content"], role="user")
                 messages[i] = new_message  # Replace the old message with the new one
 
         if is_async:
-            return super()._transform_messages(
-                messages, model, is_async=cast(Literal[True], True)
-            )
+            return super()._transform_messages(messages, model, is_async=cast(Literal[True], True))
         else:
             return super()._transform_messages(
                 messages, model, is_async=cast(Literal[False], False)

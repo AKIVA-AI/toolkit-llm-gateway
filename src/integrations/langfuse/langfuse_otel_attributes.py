@@ -7,9 +7,6 @@ Relevant Issue: https://github.com/BerriAI/litellm/issues/13764
 import json
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from pydantic import BaseModel
-from typing_extensions import override
-
 from litellm.integrations.opentelemetry_utils.base_otel_llm_obs_attributes import (
     BaseLLMObsOTELAttributes,
     safe_set_attribute,
@@ -23,6 +20,8 @@ from litellm.types.utils import (
     TextCompletionResponse,
     TranscriptionResponse,
 )
+from pydantic import BaseModel
+from typing_extensions import override
 
 if TYPE_CHECKING:
     from opentelemetry.trace import Span
@@ -74,9 +73,7 @@ def get_output_content_by_type(
     if isinstance(response_obj, BaseModel):
         return response_obj.model_dump_json()
 
-    if response_obj and (
-        isinstance(response_obj, dict) or isinstance(response_obj, list)
-    ):
+    if response_obj and (isinstance(response_obj, dict) or isinstance(response_obj, list)):
         return json.dumps(response_obj)
     else:
         return ""

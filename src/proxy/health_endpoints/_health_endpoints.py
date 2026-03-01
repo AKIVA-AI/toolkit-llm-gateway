@@ -7,9 +7,8 @@ from datetime import datetime, timedelta
 from typing import Dict, Literal, Optional, Union
 
 import fastapi
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-
 import litellm
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from litellm._logging import verbose_proxy_logger
 from litellm.constants import HEALTH_CHECK_TIMEOUT_SECONDS
 from litellm.llms.custom_httpx.http_handler import AsyncHTTPHandler
@@ -47,7 +46,7 @@ services = Union[
         "datadog",
         "generic_api",
         "arize",
-        "sqs"
+        "sqs",
     ],
     str,
 ]
@@ -100,9 +99,7 @@ async def health_services_endpoint(  # noqa: PLR0915
         )
 
         if service is None:
-            raise HTTPException(
-                status_code=400, detail={"error": "Service must be specified."}
-            )
+            raise HTTPException(status_code=400, detail={"error": "Service must be specified."})
 
         if service not in [
             "slack_budget_alerts",
@@ -119,13 +116,11 @@ async def health_services_endpoint(  # noqa: PLR0915
             "datadog",
             "generic_api",
             "arize",
-            "sqs"
+            "sqs",
         ]:
             raise HTTPException(
                 status_code=400,
-                detail={
-                    "error": f"Service must be in list. Service={service} not in {services}"
-                },
+                detail={"error": f"Service must be in list. Service={service} not in {services}"},
             )
 
         if (
@@ -202,6 +197,7 @@ async def health_services_endpoint(  # noqa: PLR0915
             )
         elif service == "sqs":
             from litellm.integrations.sqs import SQSLogger
+
             sqs_logger = SQSLogger()
             response = await sqs_logger.async_health_check()
             return {
@@ -213,17 +209,13 @@ async def health_services_endpoint(  # noqa: PLR0915
             if "slack" in general_settings.get("alerting", []):
                 # test_message = f"""\n🚨 `ProjectedLimitExceededError` 💸\n\n`Key Alias:` litellm-ui-test-alert \n`Expected Day of Error`: 28th March \n`Current Spend`: $100.00 \n`Projected Spend at end of month`: $1000.00 \n`Soft Limit`: $700"""
                 # check if user has opted into unique_alert_webhooks
-                if (
-                    proxy_logging_obj.slack_alerting_instance.alert_to_webhook_url
-                    is not None
-                ):
+                if proxy_logging_obj.slack_alerting_instance.alert_to_webhook_url is not None:
                     for (
                         alert_type
                     ) in proxy_logging_obj.slack_alerting_instance.alert_to_webhook_url:
                         # only test alert if it's in active alert types
                         if (
-                            proxy_logging_obj.slack_alerting_instance.alert_types
-                            is not None
+                            proxy_logging_obj.slack_alerting_instance.alert_types is not None
                             and alert_type
                             not in proxy_logging_obj.slack_alerting_instance.alert_types
                         ):
@@ -265,9 +257,7 @@ async def health_services_endpoint(  # noqa: PLR0915
                         proxy_logging_obj.slack_alerting_instance.send_weekly_spend_report()
                     )
 
-                alert_types = (
-                    proxy_logging_obj.slack_alerting_instance.alert_types or []
-                )
+                alert_types = proxy_logging_obj.slack_alerting_instance.alert_types or []
                 alert_types = list(alert_types)
                 return {
                     "status": "success",
@@ -400,12 +390,12 @@ async def _save_health_check_to_db(
 def _build_model_param_to_info_mapping(model_list: list) -> dict:
     """
     Build a mapping from model parameter to model info (model_name, model_id).
-    
+
     Multiple models might share the same model parameter, so we use a list.
-    
+
     Args:
         model_list: List of model configurations
-        
+
     Returns:
         Dictionary mapping model parameter to list of model info dicts
     """
@@ -416,14 +406,16 @@ def _build_model_param_to_info_mapping(model_list: list) -> dict:
         model_id = model_info.get("id")
         litellm_params = model.get("litellm_params", {})
         model_param = litellm_params.get("model")
-        
+
         if model_param and model_name:
             if model_param not in model_param_to_info:
                 model_param_to_info[model_param] = []
-            model_param_to_info[model_param].append({
-                "model_name": model_name,
-                "model_id": model_id,
-            })
+            model_param_to_info[model_param].append(
+                {
+                    "model_name": model_name,
+                    "model_id": model_id,
+                }
+            )
     return model_param_to_info
 
 
@@ -434,19 +426,19 @@ def _aggregate_health_check_results(
 ) -> dict:
     """
     Aggregate health check results per unique model.
-    
+
     Uses (model_id, model_name) as key, or (None, model_name) if model_id is None.
-    
+
     Args:
         model_param_to_info: Mapping from model parameter to model info
         healthy_endpoints: List of healthy endpoint results
         unhealthy_endpoints: List of unhealthy endpoint results
-        
+
     Returns:
         Dictionary mapping (model_id, model_name) to aggregated health check results
     """
     model_results = {}
-    
+
     # Process healthy endpoints
     for endpoint in healthy_endpoints:
         model_param = endpoint.get("model")
@@ -462,7 +454,7 @@ def _aggregate_health_check_results(
                         "error_message": None,
                     }
                 model_results[key]["healthy_count"] += 1
-    
+
     # Process unhealthy endpoints
     for endpoint in unhealthy_endpoints:
         model_param = endpoint.get("model")
@@ -482,7 +474,7 @@ def _aggregate_health_check_results(
                 # Use the first error message encountered
                 if not model_results[key]["error_message"] and error_message:
                     model_results[key]["error_message"] = str(error_message)[:500]
-    
+
     return model_results
 
 
@@ -495,14 +487,14 @@ async def _save_health_check_results_if_changed(
 ):
     """
     Save health check results to database, but only if status changed or >1 hour since last save.
-    
+
     OPTIMIZATION: Only saves to database if the status has changed from the last saved check.
     This dramatically reduces database writes when health status remains stable.
-    
+
     - Stable systems: ~1 write/hour per model (instead of 12 writes/hour with 5-min intervals)
     - Status changes: Immediate write (no delay)
     - Result: ~92% reduction in DB writes for stable systems, while maintaining real-time updates on changes
-    
+
     Args:
         prisma_client: Database client
         model_results: Dictionary of aggregated health check results per model
@@ -512,7 +504,7 @@ async def _save_health_check_results_if_changed(
     """
     for result in model_results.values():
         new_status = "healthy" if result["healthy_count"] > 0 else "unhealthy"
-        
+
         # Check if we should save this result
         should_save = True
         lookup_key = result["model_id"] if result["model_id"] else result["model_name"]
@@ -523,6 +515,7 @@ async def _save_health_check_results_if_changed(
                 # Check if last check was recent (within 1 hour)
                 if last_check.checked_at:
                     from datetime import datetime, timezone
+
                     time_since_last_check = (
                         datetime.now(timezone.utc) - last_check.checked_at
                     ).total_seconds()
@@ -530,7 +523,7 @@ async def _save_health_check_results_if_changed(
                     # This ensures we still get periodic updates even if status is stable
                     if time_since_last_check < 3600:  # 1 hour threshold
                         should_save = False
-        
+
         if should_save:
             asyncio.create_task(
                 prisma_client.save_health_check_result(
@@ -557,27 +550,27 @@ async def _save_background_health_checks_to_db(
 ):
     """
     Save background health check results to database for each model.
-    
+
     Maps health check endpoints back to their original models to get model_name and model_id.
     Aggregates results per unique model (by model_id if available, otherwise model_name).
-    
+
     OPTIMIZATION: Only saves to database if the status has changed from the last saved check.
     This dramatically reduces database writes when health status remains stable.
     """
     if prisma_client is None:
         return
-    
+
     try:
         # Step 1: Build mapping from model parameter to model info
         model_param_to_info = _build_model_param_to_info_mapping(model_list)
-        
+
         # Step 2: Aggregate health check results per unique model
         model_results = _aggregate_health_check_results(
             model_param_to_info,
             healthy_endpoints,
             unhealthy_endpoints,
         )
-        
+
         # Step 3: Get latest health checks for all models in one query to compare status
         latest_checks = await prisma_client.get_all_latest_health_checks()
         latest_checks_map = {}
@@ -586,7 +579,7 @@ async def _save_background_health_checks_to_db(
             key = check.model_id if check.model_id else check.model_name
             if key not in latest_checks_map:
                 latest_checks_map[key] = check
-        
+
         # Step 4: Save aggregated results, but only if status changed
         await _save_health_check_results_if_changed(
             prisma_client,
@@ -645,12 +638,8 @@ async def _perform_health_check_and_save(
 @router.get("/health", tags=["health"], dependencies=[Depends(user_api_key_auth)])
 async def health_endpoint(
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
-    model: Optional[str] = fastapi.Query(
-        None, description="Specify the model name (optional)"
-    ),
-    model_id: Optional[str] = fastapi.Query(
-        None, description="Specify the model ID (optional)"
-    ),
+    model: Optional[str] = fastapi.Query(None, description="Specify the model name (optional)"),
+    model_id: Optional[str] = fastapi.Query(None, description="Specify the model ID (optional)"),
 ):
     """
     🚨 USE `/health/liveliness` to health check the proxy 🚨
@@ -697,9 +686,7 @@ async def health_endpoint(
                         detail={"error": f"Model with ID {model_id} not found"},
                     )
             except Exception as e:
-                verbose_proxy_logger.error(
-                    f"Error getting deployment for model_id {model_id}: {e}"
-                )
+                verbose_proxy_logger.error(f"Error getting deployment for model_id {model_id}: {e}")
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail={"error": f"Model with ID {model_id} not found"},
@@ -757,20 +744,14 @@ async def health_endpoint(
         raise e
 
 
-@router.get(
-    "/health/history", tags=["health"], dependencies=[Depends(user_api_key_auth)]
-)
+@router.get("/health/history", tags=["health"], dependencies=[Depends(user_api_key_auth)])
 async def health_check_history_endpoint(
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
-    model: Optional[str] = fastapi.Query(
-        None, description="Filter by specific model name"
-    ),
+    model: Optional[str] = fastapi.Query(None, description="Filter by specific model name"),
     status_filter: Optional[str] = fastapi.Query(
         None, description="Filter by status (healthy/unhealthy)"
     ),
-    limit: int = fastapi.Query(
-        100, description="Number of records to return", ge=1, le=1000
-    ),
+    limit: int = fastapi.Query(100, description="Number of records to return", ge=1, le=1000),
     offset: int = fastapi.Query(0, description="Number of records to skip", ge=0),
 ):
     """
@@ -805,9 +786,7 @@ async def health_check_history_endpoint(
         )
 
 
-@router.get(
-    "/health/latest", tags=["health"], dependencies=[Depends(user_api_key_auth)]
-)
+@router.get("/health/latest", tags=["health"], dependencies=[Depends(user_api_key_auth)])
 async def latest_health_checks_endpoint(
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
 ):
@@ -823,9 +802,9 @@ async def latest_health_checks_endpoint(
 
         # Convert to dict format for JSON response using helper function
         checks_data = {
-            (
-                check.model_id if check.model_id else check.model_name
-            ): _convert_health_check_to_dict(check)
+            (check.model_id if check.model_id else check.model_name): _convert_health_check_to_dict(
+                check
+            )
             for check in latest_checks
         }
 
@@ -841,9 +820,7 @@ async def latest_health_checks_endpoint(
         )
 
 
-@router.get(
-    "/health/shared-status", tags=["health"], dependencies=[Depends(user_api_key_auth)]
-)
+@router.get("/health/shared-status", tags=["health"], dependencies=[Depends(user_api_key_auth)])
 async def shared_health_check_status_endpoint(
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
 ):
@@ -882,9 +859,7 @@ async def shared_health_check_status_endpoint(
         verbose_proxy_logger.error(f"Error getting shared health check status: {e}")
         raise HTTPException(
             status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "error": f"Failed to retrieve shared health check status: {str(e)}"
-            },
+            detail={"error": f"Failed to retrieve shared health check status: {str(e)}"},
         )
 
 
@@ -1025,9 +1000,7 @@ async def health_readiness():
         try:
             # this was returning a JSON of the values in some of the callbacks
             # all we need is the callback name, hence we do str(callback)
-            success_callback_names = [
-                callback_name(x) for x in litellm.success_callback
-            ]
+            success_callback_names = [callback_name(x) for x in litellm.success_callback]
         except AttributeError:
             # don't let this block the /health/readiness response, if we can't convert to str -> return litellm.success_callback
             success_callback_names = litellm.success_callback
@@ -1226,9 +1199,7 @@ async def test_model_connection(
         )
 
         # Clean the result for display
-        cleaned_result = _clean_endpoint_data(
-            {**litellm_params, **result}, details=True
-        )
+        cleaned_result = _clean_endpoint_data({**litellm_params, **result}, details=True)
 
         return {
             "status": "error" if "error" in result else "success",

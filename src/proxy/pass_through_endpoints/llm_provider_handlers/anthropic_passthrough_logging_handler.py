@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, List, Optional, Union, cast
 
 import httpx
-
 import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -19,8 +18,9 @@ from litellm.types.passthrough_endpoints.pass_through_endpoints import (
 from litellm.types.utils import LiteLLMBatch, ModelResponse, TextCompletionResponse
 
 if TYPE_CHECKING:
-    from ..success_handler import PassThroughEndpointLogging
     from litellm.types.passthrough_endpoints.pass_through_endpoints import EndpointType
+
+    from ..success_handler import PassThroughEndpointLogging
 else:
     PassThroughEndpointLogging = Any
     EndpointType = Any
@@ -58,7 +58,7 @@ class AnthropicPassthroughLoggingHandler:
                 request_body=request_body,
                 **kwargs,
             )
-        
+
         model = response_body.get("model", "")
         anthropic_config = get_anthropic_config(url_route)
         litellm_model_response: ModelResponse = anthropic_config().transform_response(
@@ -114,9 +114,7 @@ class AnthropicPassthroughLoggingHandler:
         """
         try:
             # Get custom_llm_provider from logging object if available (e.g., azure_ai for Azure Anthropic)
-            custom_llm_provider = logging_obj.model_call_details.get(
-                "custom_llm_provider"
-            )
+            custom_llm_provider = logging_obj.model_call_details.get("custom_llm_provider")
 
             # Prepend custom_llm_provider to model if not already present
             model_for_cost = model
@@ -242,8 +240,10 @@ class AnthropicPassthroughLoggingHandler:
         all_openai_chunks = []
         for _chunk_str in all_chunks:
             try:
-                transformed_openai_chunk = anthropic_model_response_iterator.convert_str_chunk_to_generic_chunk(
-                    chunk=_chunk_str
+                transformed_openai_chunk = (
+                    anthropic_model_response_iterator.convert_str_chunk_to_generic_chunk(
+                        chunk=_chunk_str
+                    )
                 )
                 if transformed_openai_chunk is not None:
                     all_openai_chunks.append(transformed_openai_chunk)
@@ -282,8 +282,7 @@ class AnthropicPassthroughLoggingHandler:
 
         try:
             _json_response = httpx_response.json()
-            
-            
+
             # Only handle successful batch job creation (POST requests with 201 status)
             if httpx_response.status_code == 200 and "id" in _json_response:
                 # Transform Anthropic response to LiteLLM batch format
@@ -297,10 +296,10 @@ class AnthropicPassthroughLoggingHandler:
                 # Set status to "validating" for newly created batches so polling mechanism picks them up
                 # The polling mechanism only looks for status="validating" jobs
                 litellm_batch_response.status = "validating"
-                
+
                 # Extract batch ID from the response
                 batch_id = _json_response.get("id", "")
-                
+
                 # Get model from request body (batch response doesn't include model)
                 request_body = request_body or {}
                 # Try to extract model from the batch request body, supporting Anthropic's nested structure
@@ -319,20 +318,25 @@ class AnthropicPassthroughLoggingHandler:
                                     extracted_model = params.get("model")
                                     if extracted_model:
                                         model_name = extracted_model
-                
-                
+
                 # Create unified object ID for tracking
                 # Format: base64(litellm_proxy;model_id:{};llm_batch_id:{})
                 # For Anthropic passthrough, prefix model with "anthropic/" so router can determine provider
-                actual_model_id = AnthropicPassthroughLoggingHandler.get_actual_model_id_from_router(model_name)
-                
+                actual_model_id = (
+                    AnthropicPassthroughLoggingHandler.get_actual_model_id_from_router(model_name)
+                )
+
                 # If model not in router, use "anthropic/{model_name}" format so router can determine provider
                 if actual_model_id == model_name and not actual_model_id.startswith("anthropic/"):
                     actual_model_id = f"anthropic/{model_name}"
 
-                unified_id_string = SpecialEnums.LITELLM_MANAGED_BATCH_COMPLETE_STR.value.format(actual_model_id, batch_id)
-                unified_object_id = base64.urlsafe_b64encode(unified_id_string.encode()).decode().rstrip("=")
-                
+                unified_id_string = SpecialEnums.LITELLM_MANAGED_BATCH_COMPLETE_STR.value.format(
+                    actual_model_id, batch_id
+                )
+                unified_object_id = (
+                    base64.urlsafe_b64encode(unified_id_string.encode()).decode().rstrip("=")
+                )
+
                 # Store the managed object for cost tracking
                 # This will be picked up by check_batch_cost polling mechanism
                 AnthropicPassthroughLoggingHandler._store_batch_managed_object(
@@ -342,31 +346,33 @@ class AnthropicPassthroughLoggingHandler:
                     logging_obj=logging_obj,
                     **kwargs,
                 )
-                
+
                 # Create a batch job response for logging
                 litellm_model_response = ModelResponse()
                 litellm_model_response.id = str(uuid.uuid4())
                 litellm_model_response.model = model_name
                 litellm_model_response.object = "batch"
                 litellm_model_response.created = int(start_time.timestamp())
-                
+
                 # Add batch-specific metadata to indicate this is a pending batch job
-                litellm_model_response.choices = [Choices(
-                    finish_reason="batch_pending",
-                    index=0,
-                    message={
-                        "role": "assistant",
-                        "content": f"Batch job {batch_id} created and is pending. Status will be updated when the batch completes.",
-                        "tool_calls": None,
-                        "function_call": None,
-                        "provider_specific_fields": {
-                            "batch_job_id": batch_id,
-                            "batch_job_state": "in_progress",
-                            "unified_object_id": unified_object_id
-                        }
-                    }
-                )]
-                
+                litellm_model_response.choices = [
+                    Choices(
+                        finish_reason="batch_pending",
+                        index=0,
+                        message={
+                            "role": "assistant",
+                            "content": f"Batch job {batch_id} created and is pending. Status will be updated when the batch completes.",
+                            "tool_calls": None,
+                            "function_call": None,
+                            "provider_specific_fields": {
+                                "batch_job_id": batch_id,
+                                "batch_job_state": "in_progress",
+                                "unified_object_id": unified_object_id,
+                            },
+                        },
+                    )
+                ]
+
                 # Set response cost to 0 initially (will be updated when batch completes)
                 response_cost = 0.0
                 kwargs["response_cost"] = response_cost
@@ -374,12 +380,12 @@ class AnthropicPassthroughLoggingHandler:
                 kwargs["batch_id"] = batch_id
                 kwargs["unified_object_id"] = unified_object_id
                 kwargs["batch_job_state"] = "in_progress"
-                
+
                 logging_obj.model = model_name
                 logging_obj.model_call_details["model"] = logging_obj.model
                 logging_obj.model_call_details["response_cost"] = response_cost
                 logging_obj.model_call_details["batch_id"] = batch_id
-                
+
                 return {
                     "result": litellm_model_response,
                     "kwargs": kwargs,
@@ -391,32 +397,34 @@ class AnthropicPassthroughLoggingHandler:
                 litellm_model_response.model = "anthropic_batch"
                 litellm_model_response.object = "batch"
                 litellm_model_response.created = int(start_time.timestamp())
-                
+
                 # Add error-specific metadata
-                litellm_model_response.choices = [Choices(
-                    finish_reason="batch_error",
-                    index=0,
-                    message={
-                        "role": "assistant",
-                        "content": f"Batch job creation failed. Status: {httpx_response.status_code}",
-                        "tool_calls": None,
-                        "function_call": None,
-                        "provider_specific_fields": {
-                            "batch_job_state": "failed",
-                            "status_code": httpx_response.status_code
-                        }
-                    }
-                )]
-                
+                litellm_model_response.choices = [
+                    Choices(
+                        finish_reason="batch_error",
+                        index=0,
+                        message={
+                            "role": "assistant",
+                            "content": f"Batch job creation failed. Status: {httpx_response.status_code}",
+                            "tool_calls": None,
+                            "function_call": None,
+                            "provider_specific_fields": {
+                                "batch_job_state": "failed",
+                                "status_code": httpx_response.status_code,
+                            },
+                        },
+                    )
+                ]
+
                 kwargs["response_cost"] = 0.0
                 kwargs["model"] = "anthropic_batch"
                 kwargs["batch_job_state"] = "failed"
-                
+
                 return {
                     "result": litellm_model_response,
                     "kwargs": kwargs,
                 }
-                
+
         except Exception as e:
             verbose_proxy_logger.error(f"Error in batch_creation_handler: {e}")
             # Return basic response on error
@@ -425,27 +433,26 @@ class AnthropicPassthroughLoggingHandler:
             litellm_model_response.model = "anthropic_batch"
             litellm_model_response.object = "batch"
             litellm_model_response.created = int(start_time.timestamp())
-            
+
             # Add error-specific metadata
-            litellm_model_response.choices = [Choices(
-                finish_reason="batch_error",
-                index=0,
-                message={
-                    "role": "assistant",
-                    "content": f"Error creating batch job: {str(e)}",
-                    "tool_calls": None,
-                    "function_call": None,
-                    "provider_specific_fields": {
-                        "batch_job_state": "failed",
-                        "error": str(e)
-                    }
-                }
-            )]
-            
+            litellm_model_response.choices = [
+                Choices(
+                    finish_reason="batch_error",
+                    index=0,
+                    message={
+                        "role": "assistant",
+                        "content": f"Error creating batch job: {str(e)}",
+                        "tool_calls": None,
+                        "function_call": None,
+                        "provider_specific_fields": {"batch_job_state": "failed", "error": str(e)},
+                    },
+                )
+            ]
+
             kwargs["response_cost"] = 0.0
             kwargs["model"] = "anthropic_batch"
             kwargs["batch_job_state"] = "failed"
-            
+
             return {
                 "result": litellm_model_response,
                 "kwargs": kwargs,
@@ -464,15 +471,18 @@ class AnthropicPassthroughLoggingHandler:
         This will be picked up by the check_batch_cost polling mechanism.
         """
         try:
-            
+
             # Get the managed files hook from the logging object
             # This is a bit of a hack, but we need access to the proxy logging system
             from litellm.proxy.proxy_server import proxy_logging_obj
-            
+
             managed_files_hook = proxy_logging_obj.get_proxy_hook("managed_files")
-            if managed_files_hook is not None and hasattr(managed_files_hook, 'store_unified_object_id'):
+            if managed_files_hook is not None and hasattr(
+                managed_files_hook, "store_unified_object_id"
+            ):
                 # Create a mock user API key dict for the managed object storage
                 from litellm.proxy._types import LitellmUserRoles, UserAPIKeyAuth
+
                 user_api_key_dict = UserAPIKeyAuth(
                     user_id=kwargs.get("user_id", "default-user"),
                     api_key="",
@@ -495,9 +505,10 @@ class AnthropicPassthroughLoggingHandler:
                     model_max_budget={},  # Set to empty dict instead of None
                     model_spend={},  # Set to empty dict instead of None
                 )
-                
+
                 # Store the unified object for batch cost tracking
                 import asyncio
+
                 asyncio.create_task(
                     managed_files_hook.store_unified_object_id(  # type: ignore
                         unified_object_id=unified_object_id,
@@ -508,20 +519,22 @@ class AnthropicPassthroughLoggingHandler:
                         user_api_key_dict=user_api_key_dict,
                     )
                 )
-                
+
                 verbose_proxy_logger.info(
                     f"Stored Anthropic batch managed object with unified_object_id={unified_object_id}, batch_id={model_object_id}"
                 )
             else:
-                verbose_proxy_logger.warning("Managed files hook not available, cannot store batch object for cost tracking")
-                
+                verbose_proxy_logger.warning(
+                    "Managed files hook not available, cannot store batch object for cost tracking"
+                )
+
         except Exception as e:
             verbose_proxy_logger.error(f"Error storing Anthropic batch managed object: {e}")
 
     @staticmethod
     def get_actual_model_id_from_router(model_name: str) -> str:
         from litellm.proxy.proxy_server import llm_router
-        
+
         if llm_router is not None:
             # Try to find the model in the router by the model name
             # Use the existing get_model_ids method from router
@@ -534,7 +547,9 @@ class AnthropicPassthroughLoggingHandler:
             else:
                 # Fallback to model name
                 actual_model_id = model_name
-                verbose_proxy_logger.warning(f"Model not found in router, using model name: {actual_model_id}")
+                verbose_proxy_logger.warning(
+                    f"Model not found in router, using model name: {actual_model_id}"
+                )
                 return actual_model_id
         else:
             # Fallback if router is not available

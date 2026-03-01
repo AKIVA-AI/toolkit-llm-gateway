@@ -1,6 +1,8 @@
+from typing import Any, Dict, List, Optional
+
 import requests
-from typing import List, Dict, Any, Optional
-from .exceptions import UnauthorizedError, NotFoundError
+
+from .exceptions import NotFoundError, UnauthorizedError
 
 
 class UsersManagementClient:

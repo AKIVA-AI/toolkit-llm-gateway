@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import List, Optional
 
 import httpx
-
 import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -53,10 +52,7 @@ class PassThroughStreamingHandler:
 
             async for chunk in response.aiter_bytes():
                 raw_bytes.append(chunk)
-                if (
-                    getattr(litellm, "include_cost_in_streaming_usage", False)
-                    and model_name
-                ):
+                if getattr(litellm, "include_cost_in_streaming_usage", False) and model_name:
                     if endpoint_type == EndpointType.VERTEX_AI:
                         # Only handle streamRawPredict (uses Anthropic format)
                         if "streamRawPredict" in url_route or "rawPredict" in url_route:
@@ -109,27 +105,25 @@ class PassThroughStreamingHandler:
         - Vertex AI
         - OpenAI
         """
-        all_chunks = PassThroughStreamingHandler._convert_raw_bytes_to_str_lines(
-            raw_bytes
-        )
-        standard_logging_response_object: Optional[
-            PassThroughEndpointLoggingResultValues
-        ] = None
+        all_chunks = PassThroughStreamingHandler._convert_raw_bytes_to_str_lines(raw_bytes)
+        standard_logging_response_object: Optional[PassThroughEndpointLoggingResultValues] = None
         kwargs: dict = {}
         if endpoint_type == EndpointType.ANTHROPIC:
-            anthropic_passthrough_logging_handler_result = AnthropicPassthroughLoggingHandler._handle_logging_anthropic_collected_chunks(
-                litellm_logging_obj=litellm_logging_obj,
-                passthrough_success_handler_obj=passthrough_success_handler_obj,
-                url_route=url_route,
-                request_body=request_body,
-                endpoint_type=endpoint_type,
-                start_time=start_time,
-                all_chunks=all_chunks,
-                end_time=end_time,
+            anthropic_passthrough_logging_handler_result = (
+                AnthropicPassthroughLoggingHandler._handle_logging_anthropic_collected_chunks(
+                    litellm_logging_obj=litellm_logging_obj,
+                    passthrough_success_handler_obj=passthrough_success_handler_obj,
+                    url_route=url_route,
+                    request_body=request_body,
+                    endpoint_type=endpoint_type,
+                    start_time=start_time,
+                    all_chunks=all_chunks,
+                    end_time=end_time,
+                )
             )
-            standard_logging_response_object = (
-                anthropic_passthrough_logging_handler_result["result"]
-            )
+            standard_logging_response_object = anthropic_passthrough_logging_handler_result[
+                "result"
+            ]
             kwargs = anthropic_passthrough_logging_handler_result["kwargs"]
         elif endpoint_type == EndpointType.VERTEX_AI:
             vertex_passthrough_logging_handler_result = (
@@ -145,9 +139,7 @@ class PassThroughStreamingHandler:
                     model=model,
                 )
             )
-            standard_logging_response_object = (
-                vertex_passthrough_logging_handler_result["result"]
-            )
+            standard_logging_response_object = vertex_passthrough_logging_handler_result["result"]
             kwargs = vertex_passthrough_logging_handler_result["kwargs"]
         elif endpoint_type == EndpointType.OPENAI:
             openai_passthrough_logging_handler_result = (
@@ -162,9 +154,7 @@ class PassThroughStreamingHandler:
                     end_time=end_time,
                 )
             )
-            standard_logging_response_object = (
-                openai_passthrough_logging_handler_result["result"]
-            )
+            standard_logging_response_object = openai_passthrough_logging_handler_result["result"]
             kwargs = openai_passthrough_logging_handler_result["kwargs"]
 
         if standard_logging_response_object is None:

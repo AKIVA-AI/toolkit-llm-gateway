@@ -10,9 +10,6 @@ import os
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Optional, Type, Union
 
 from fastapi import HTTPException
-from pydantic import BaseModel
-from websockets.asyncio.client import ClientConnection, connect
-
 from litellm import DualCache
 from litellm._logging import verbose_proxy_logger
 from litellm._version import version as litellm_version
@@ -30,6 +27,8 @@ from litellm.types.utils import (
     ModelResponse,
     ModelResponseStream,
 )
+from pydantic import BaseModel
+from websockets.asyncio.client import ClientConnection, connect
 
 if TYPE_CHECKING:
     from litellm.types.proxy.guardrails.guardrail_hooks.base import GuardrailConfigModel
@@ -40,9 +39,7 @@ class AimGuardrailMissingSecrets(Exception):
 
 
 class AimGuardrail(CustomGuardrail):
-    def __init__(
-        self, api_key: Optional[str] = None, api_base: Optional[str] = None, **kwargs
-    ):
+    def __init__(self, api_key: Optional[str] = None, api_base: Optional[str] = None, **kwargs):
         self.async_handler = get_async_httpx_client(
             llm_provider=httpxSpecialProvider.GuardrailCallback
         )
@@ -53,12 +50,8 @@ class AimGuardrail(CustomGuardrail):
                 "pass it as a parameter to the guardrail in the config file"
             )
             raise AimGuardrailMissingSecrets(msg)
-        self.api_base = (
-            api_base or os.environ.get("AIM_API_BASE") or "https://api.aim.security"
-        )
-        self.ws_api_base = self.api_base.replace("http://", "ws://").replace(
-            "https://", "wss://"
-        )
+        self.api_base = api_base or os.environ.get("AIM_API_BASE") or "https://api.aim.security"
+        self.ws_api_base = self.api_base.replace("http://", "ws://").replace("https://", "wss://")
         self.dlp_entities: list[dict] = []
         self._max_dlp_entities = 100
         super().__init__(**kwargs)
@@ -88,9 +81,7 @@ class AimGuardrail(CustomGuardrail):
         )
         return data
 
-    async def call_aim_guardrail(
-        self, data: dict, hook: str, key_alias: Optional[str]
-    ) -> dict:
+    async def call_aim_guardrail(self, data: dict, hook: str, key_alias: Optional[str]) -> dict:
         user_email = data.get("metadata", {}).get("headers", {}).get("x-aim-user-email")
         call_id = data.get("litellm_call_id")
         headers = self._build_aim_headers(
@@ -116,9 +107,7 @@ class AimGuardrail(CustomGuardrail):
         elif action_type == "block_action":
             self._handle_block_action(res["analysis_result"], required_action)
         elif action_type == "anonymize_action":
-            return self._anonymize_request(
-                res, data
-            )
+            return self._anonymize_request(res, data)
         else:
             verbose_proxy_logger.error(f"Aim: {action_type} action")
         return data
@@ -132,9 +121,7 @@ class AimGuardrail(CustomGuardrail):
         )
         raise HTTPException(status_code=400, detail=detection_message)
 
-    def _anonymize_request(
-        self, res: Any, data: dict
-    ) -> dict:
+    def _anonymize_request(self, res: Any, data: dict) -> dict:
         verbose_proxy_logger.info("Aim: anonymize action")
         redacted_chat = res.get("redacted_chat")
         if not redacted_chat:
@@ -151,9 +138,7 @@ class AimGuardrail(CustomGuardrail):
     async def call_aim_guardrail_on_output(
         self, request_data: dict, output: str, hook: str, key_alias: Optional[str]
     ) -> Optional[dict]:
-        user_email = (
-            request_data.get("metadata", {}).get("headers", {}).get("x-aim-user-email")
-        )
+        user_email = request_data.get("metadata", {}).get("headers", {}).get("x-aim-user-email")
         call_id = request_data.get("litellm_call_id")
         response = await self.async_handler.post(
             f"{self.api_base}/fw/v1/analyze",
@@ -173,9 +158,7 @@ class AimGuardrail(CustomGuardrail):
         required_action = res.get("required_action")
         action_type = required_action and required_action.get("action_type", None)
         if action_type and action_type == "block_action":
-            return self._handle_block_action_on_output(
-                res["analysis_result"], required_action
-            )
+            return self._handle_block_action_on_output(res["analysis_result"], required_action)
         redacted_chat = res.get("redacted_chat", None)
 
         if action_type and action_type == "anonymize_action" and redacted_chat:
@@ -242,16 +225,12 @@ class AimGuardrail(CustomGuardrail):
             aim_output_guardrail_result = await self.call_aim_guardrail_on_output(
                 data, content, hook="output", key_alias=user_api_key_dict.key_alias
             )
-            if aim_output_guardrail_result and aim_output_guardrail_result.get(
-                "detection_message"
-            ):
+            if aim_output_guardrail_result and aim_output_guardrail_result.get("detection_message"):
                 raise HTTPException(
                     status_code=400,
                     detail=aim_output_guardrail_result.get("detection_message"),
                 )
-            if aim_output_guardrail_result and aim_output_guardrail_result.get(
-                "redacted_output"
-            ):
+            if aim_output_guardrail_result and aim_output_guardrail_result.get("redacted_output"):
                 response.choices[0].message.content = aim_output_guardrail_result.get(
                     "redacted_output"
                 )
@@ -263,9 +242,7 @@ class AimGuardrail(CustomGuardrail):
         response,
         request_data: dict,
     ) -> AsyncGenerator[ModelResponseStream, None]:
-        user_email = (
-            request_data.get("metadata", {}).get("headers", {}).get("x-aim-user-email")
-        )
+        user_email = request_data.get("metadata", {}).get("headers", {}).get("x-aim-user-email")
         call_id = request_data.get("litellm_call_id")
         async with connect(
             f"{self.ws_api_base}/fw/v1/analyze/stream",
@@ -276,9 +253,7 @@ class AimGuardrail(CustomGuardrail):
                 litellm_call_id=call_id,
             ),
         ) as websocket:
-            sender = asyncio.create_task(
-                self.forward_the_stream_to_aim(websocket, response)
-            )
+            sender = asyncio.create_task(self.forward_the_stream_to_aim(websocket, response))
             while True:
                 result = json.loads(await websocket.recv())
                 if verified_chunk := result.get("verified_chunk"):
@@ -291,9 +266,7 @@ class AimGuardrail(CustomGuardrail):
                         from litellm.proxy.proxy_server import StreamingCallbackError
 
                         raise StreamingCallbackError(blocking_message)
-                    verbose_proxy_logger.error(
-                        f"Unknown message received from AIM: {result}"
-                    )
+                    verbose_proxy_logger.error(f"Unknown message received from AIM: {result}")
                     return
 
     async def forward_the_stream_to_aim(

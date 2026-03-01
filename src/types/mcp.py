@@ -1,10 +1,9 @@
 import enum
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
+from litellm.types.llms.base import HiddenParams
 from pydantic import BaseModel
 from typing_extensions import TypedDict
-
-from litellm.types.llms.base import HiddenParams
 
 if TYPE_CHECKING:
     from mcp.types import EmbeddedResource as MCPEmbeddedResource
@@ -171,7 +170,5 @@ class MCPPostCallResponseObject(BaseModel):
     Pydantic object used for MCP post_call_hook response
     """
 
-    mcp_tool_call_response: List[
-        Union[MCPTextContent, MCPImageContent, MCPEmbeddedResource]
-    ]
+    mcp_tool_call_response: List[Union[MCPTextContent, MCPImageContent, MCPEmbeddedResource]]
     hidden_params: HiddenParams

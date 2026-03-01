@@ -8,7 +8,6 @@ import json
 from typing import TYPE_CHECKING, Any, Optional
 
 import httpx
-
 from litellm._logging import verbose_logger
 from litellm._uuid import uuid
 from litellm.types.llms.bedrock_agentcore import AgentCoreUsage
@@ -184,7 +183,7 @@ class AgentCoreSSEStreamIterator:
     def __next__(self) -> ModelResponse:
         """
         Sync iteration - parse SSE events and yield ModelResponse chunks.
-        
+
         Uses next() on the stored iterator to properly resume between calls.
         """
         try:

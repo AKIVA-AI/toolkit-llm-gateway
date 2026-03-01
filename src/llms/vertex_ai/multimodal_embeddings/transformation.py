@@ -1,7 +1,6 @@
 from typing import List, Optional, Union, cast
 
 from httpx import Headers, Response
-
 from litellm.exceptions import InternalServerError
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.llms.base_llm.embedding.transformation import LiteLLMLoggingObj
@@ -79,18 +78,14 @@ class VertexAIMultimodalEmbeddingConfig(BaseEmbeddingConfig):
             return Instance(
                 image=InstanceImage(
                     bytesBase64Encoded=(
-                        input_element.split(",")[1]
-                        if "," in input_element
-                        else input_element
+                        input_element.split(",")[1] if "," in input_element else input_element
                     )
                 )
             )
         else:
             return Instance(text=input_element)
 
-    def process_openai_embedding_input(
-        self, _input: Union[list, str]
-    ) -> List[Instance]:
+    def process_openai_embedding_input(self, _input: Union[list, str]) -> List[Instance]:
         """
         Process the input for multimodal embedding requests.
 
@@ -159,9 +154,7 @@ class VertexAIMultimodalEmbeddingConfig(BaseEmbeddingConfig):
         if "instances" in optional_params:
             request_data["instances"] = optional_params["instances"]
         elif isinstance(input, list):
-            vertex_instances: List[Instance] = self.process_openai_embedding_input(
-                _input=input
-            )
+            vertex_instances: List[Instance] = self.process_openai_embedding_input(_input=input)
             request_data["instances"] = vertex_instances
 
         else:
@@ -292,6 +285,4 @@ class VertexAIMultimodalEmbeddingConfig(BaseEmbeddingConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, Headers]
     ) -> BaseLLMException:
-        return VertexAIError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return VertexAIError(status_code=status_code, message=error_message, headers=headers)

@@ -34,16 +34,12 @@ def cost_per_token(
     prompt_cost: float = non_cached_text_tokens * model_info["input_cost_per_token"]
 
     ## CALCULATE OUTPUT COST
-    completion_cost: float = (
-        usage["completion_tokens"] * model_info["output_cost_per_token"]
-    )
+    completion_cost: float = usage["completion_tokens"] * model_info["output_cost_per_token"]
 
     ## Prompt Caching cost calculation
     if model_info.get("cache_read_input_token_cost") is not None and cached_tokens:
         # Note: We read ._cache_read_input_tokens from the Usage - since cost_calculator.py standardizes the cache read tokens on usage._cache_read_input_tokens
-        prompt_cost += cached_tokens * (
-            model_info.get("cache_read_input_token_cost", 0) or 0
-        )
+        prompt_cost += cached_tokens * (model_info.get("cache_read_input_token_cost", 0) or 0)
 
     ## Speech / Audio cost calculation
     if (

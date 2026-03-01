@@ -5,11 +5,10 @@ CompactifAI chat completion transformation
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 import httpx
-
+from litellm.llms.base_llm.chat.transformation import BaseLLMException
+from litellm.llms.openai.common_utils import OpenAIError
 from litellm.secret_managers.main import get_secret_str
 from litellm.types.utils import ModelResponse
-from litellm.llms.openai.common_utils import OpenAIError
-from litellm.llms.base_llm.chat.transformation import BaseLLMException
 
 from ...openai.chat.gpt_transformation import OpenAIGPTConfig
 

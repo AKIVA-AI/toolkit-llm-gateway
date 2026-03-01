@@ -3,7 +3,6 @@ from typing import Dict, Optional
 import litellm
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import ORJSONResponse
-
 from litellm.proxy._types import UserAPIKeyAuth
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
 from litellm.proxy.common_request_processing import ProxyBaseLLMRequestProcessing
@@ -32,13 +31,9 @@ def _update_request_data_with_litellm_managed_vector_store_registry(
         )
         if vector_store_to_run is not None:
             if "custom_llm_provider" in vector_store_to_run:
-                data["custom_llm_provider"] = vector_store_to_run.get(
-                    "custom_llm_provider"
-                )
+                data["custom_llm_provider"] = vector_store_to_run.get("custom_llm_provider")
             if "litellm_credential_name" in vector_store_to_run:
-                data["litellm_credential_name"] = vector_store_to_run.get(
-                    "litellm_credential_name"
-                )
+                data["litellm_credential_name"] = vector_store_to_run.get("litellm_credential_name")
             if "litellm_params" in vector_store_to_run:
                 litellm_params = vector_store_to_run.get("litellm_params", {}) or {}
                 data.update(litellm_params)

@@ -22,9 +22,7 @@ class LowestTPMLoggingHandler(CustomLogger):
     logged_failure: int = 0
     default_cache_time_seconds: int = 1 * 60 * 60  # 1 hour
 
-    def __init__(
-        self, router_cache: DualCache, routing_args: dict = {}
-    ):
+    def __init__(self, router_cache: DualCache, routing_args: dict = {}):
         self.router_cache = router_cache
         self.routing_args = RoutingArgs(**routing_args)
 
@@ -38,9 +36,7 @@ class LowestTPMLoggingHandler(CustomLogger):
             if kwargs["litellm_params"].get("metadata") is None:
                 pass
             else:
-                model_group = kwargs["litellm_params"]["metadata"].get(
-                    "model_group", None
-                )
+                model_group = kwargs["litellm_params"]["metadata"].get("model_group", None)
 
                 id = kwargs["litellm_params"].get("model_info", {}).get("id", None)
                 if model_group is None or id is None:
@@ -99,9 +95,7 @@ class LowestTPMLoggingHandler(CustomLogger):
             if kwargs["litellm_params"].get("metadata") is None:
                 pass
             else:
-                model_group = kwargs["litellm_params"]["metadata"].get(
-                    "model_group", None
-                )
+                model_group = kwargs["litellm_params"]["metadata"].get("model_group", None)
 
                 id = kwargs["litellm_params"].get("model_info", {}).get("id", None)
                 if model_group is None or id is None:
@@ -126,9 +120,7 @@ class LowestTPMLoggingHandler(CustomLogger):
                 # update cache
 
                 ## TPM
-                request_count_dict = (
-                    await self.router_cache.async_get_cache(key=tpm_key) or {}
-                )
+                request_count_dict = await self.router_cache.async_get_cache(key=tpm_key) or {}
                 request_count_dict[id] = request_count_dict.get(id, 0) + total_tokens
 
                 await self.router_cache.async_set_cache(
@@ -136,9 +128,7 @@ class LowestTPMLoggingHandler(CustomLogger):
                 )
 
                 ## RPM
-                request_count_dict = (
-                    await self.router_cache.async_get_cache(key=rpm_key) or {}
-                )
+                request_count_dict = await self.router_cache.async_get_cache(key=rpm_key) or {}
                 request_count_dict[id] = request_count_dict.get(id, 0) + 1
 
                 await self.router_cache.async_set_cache(

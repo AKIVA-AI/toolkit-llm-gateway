@@ -18,8 +18,6 @@ from typing import (
 )
 
 import httpx
-from pydantic import BaseModel
-
 from litellm.constants import DEFAULT_MAX_TOKENS, RESPONSE_FORMAT_TOOL_NAME
 from litellm.llms.custom_httpx.http_handler import AsyncHTTPHandler, HTTPHandler
 from litellm.types.llms.openai import (
@@ -29,6 +27,7 @@ from litellm.types.llms.openai import (
     ChatCompletionToolParam,
     ChatCompletionToolParamFunctionChunk,
 )
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from litellm.litellm_core_utils.streaming_handler import CustomStreamWrapper
@@ -63,15 +62,11 @@ class BaseLLMException(Exception):
         if request:
             self.request = request
         else:
-            self.request = httpx.Request(
-                method="POST", url="https://docs.litellm.ai/docs"
-            )
+            self.request = httpx.Request(method="POST", url="https://docs.litellm.ai/docs")
         if response:
             self.response = response
         else:
-            self.response = httpx.Response(
-                status_code=status_code, request=self.request
-            )
+            self.response = httpx.Response(status_code=status_code, request=self.request)
         self.body = body
         super().__init__(
             self.message
@@ -118,10 +113,7 @@ class BaseConfig(ABC):
         """
         OpenAI spec allows max_tokens or max_completion_tokens to be specified.
         """
-        return (
-            "max_tokens" in non_default_params
-            or "max_completion_tokens" in non_default_params
-        )
+        return "max_tokens" in non_default_params or "max_completion_tokens" in non_default_params
 
     def update_optional_params_with_thinking_tokens(
         self, non_default_params: dict, optional_params: dict
@@ -139,9 +131,7 @@ class BaseConfig(ABC):
                 "budget_tokens", None
             )
             if thinking_token_budget is not None:
-                optional_params["max_tokens"] = (
-                    thinking_token_budget + DEFAULT_MAX_TOKENS
-                )
+                optional_params["max_tokens"] = thinking_token_budget + DEFAULT_MAX_TOKENS
 
     def should_fake_stream(
         self,
@@ -237,9 +227,7 @@ class BaseConfig(ABC):
         if json_schema and not is_response_format_supported:
             _tool_choice = ChatCompletionToolChoiceObjectParam(
                 type="function",
-                function=ChatCompletionToolChoiceFunctionParam(
-                    name=RESPONSE_FORMAT_TOOL_NAME
-                ),
+                function=ChatCompletionToolChoiceFunctionParam(name=RESPONSE_FORMAT_TOOL_NAME),
             )
 
             _tool = ChatCompletionToolParam(

@@ -3,11 +3,11 @@ Supports writing files to Google AI Studio Files API.
 
 For vertex ai, check out the vertex_ai/files/handler.py file.
 """
+
 import time
 from typing import List, Optional
 
 import httpx
-
 from litellm._logging import verbose_logger
 from litellm.litellm_core_utils.prompt_templates.common_utils import extract_file_data
 from litellm.llms.base_llm.files.transformation import (
@@ -110,9 +110,7 @@ class GoogleAIStudioFilesHandler(GeminiModelInfo, BaseFilesConfig):
 
         # Initial metadata request body
         initial_data = {
-            "file": {
-                "display_name": extracted_data["filename"] or str(int(time.time()))
-            }
+            "file": {"display_name": extracted_data["filename"] or str(int(time.time()))}
         }
 
         # Step 2: Actual file upload data
@@ -151,9 +149,7 @@ class GoogleAIStudioFilesHandler(GeminiModelInfo, BaseFilesConfig):
 
             return OpenAIFileObject(
                 id=response_object["uri"],  # Gemini uses URI as identifier
-                bytes=int(
-                    response_object["sizeBytes"]
-                ),  # Gemini doesn't return file size
+                bytes=int(response_object["sizeBytes"]),  # Gemini doesn't return file size
                 created_at=int(
                     time.mktime(
                         time.strptime(

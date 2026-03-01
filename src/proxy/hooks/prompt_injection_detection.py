@@ -10,9 +10,8 @@
 from difflib import SequenceMatcher
 from typing import List, Literal, Optional
 
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import DualCache
 from litellm.constants import DEFAULT_PROMPT_INJECTION_SIMILARITY_THRESHOLD
@@ -91,8 +90,7 @@ class _OPTIONAL_PromptInjectionDetection(CustomLogger):
             )
             if (
                 self.prompt_injection_params.llm_api_name is None
-                or self.prompt_injection_params.llm_api_name
-                not in self.llm_router.model_names
+                or self.prompt_injection_params.llm_api_name not in self.llm_router.model_names
             ):
                 raise Exception(
                     "PromptInjectionDetection: Invalid LLM API Name. LLM API Name must be a 'model_name' in 'model_list'."
@@ -104,9 +102,7 @@ class _OPTIONAL_PromptInjectionDetection(CustomLogger):
             for adj in self.adjectives:
                 for prep in self.prepositions:
                     phrase = " ".join(filter(None, [verb, adj, prep])).strip()
-                    if (
-                        len(phrase.split()) > 2
-                    ):  # additional check to ensure more than 2 words
+                    if len(phrase.split()) > 2:  # additional check to ensure more than 2 words
                         combinations.append(phrase.lower())
         return combinations
 
@@ -171,9 +167,7 @@ class _OPTIONAL_PromptInjectionDetection(CustomLogger):
             if self.prompt_injection_params is not None:
                 # 1. check if heuristics check turned on
                 if self.prompt_injection_params.heuristics_check is True:
-                    is_prompt_attack = self.check_user_input_similarity(
-                        user_input=formatted_prompt
-                    )
+                    is_prompt_attack = self.check_user_input_similarity(user_input=formatted_prompt)
                     if is_prompt_attack is True:
                         raise HTTPException(
                             status_code=400,
@@ -185,16 +179,12 @@ class _OPTIONAL_PromptInjectionDetection(CustomLogger):
                 if self.prompt_injection_params.vector_db_check is True:
                     pass
             else:
-                is_prompt_attack = self.check_user_input_similarity(
-                    user_input=formatted_prompt
-                )
+                is_prompt_attack = self.check_user_input_similarity(user_input=formatted_prompt)
 
             if is_prompt_attack is True:
                 raise HTTPException(
                     status_code=400,
-                    detail={
-                        "error": "Rejected message. This is a prompt injection attack."
-                    },
+                    detail={"error": "Rejected message. This is a prompt injection attack."},
                 )
 
             return data
@@ -276,9 +266,7 @@ class _OPTIONAL_PromptInjectionDetection(CustomLogger):
         if is_prompt_attack is True:
             raise HTTPException(
                 status_code=400,
-                detail={
-                    "error": "Rejected message. This is a prompt injection attack."
-                },
+                detail={"error": "Rejected message. This is a prompt injection attack."},
             )
 
         return is_prompt_attack

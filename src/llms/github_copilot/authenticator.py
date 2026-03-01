@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import httpx
-
 from litellm._logging import verbose_logger
 from litellm.llms.custom_httpx.http_handler import _get_httpx_client
 
@@ -57,9 +56,7 @@ class Authenticator:
                 if access_token:
                     return access_token
         except IOError:
-            verbose_logger.warning(
-                "No existing access token found or error reading file"
-            )
+            verbose_logger.warning("No existing access token found or error reading file")
 
         for attempt in range(3):
             verbose_logger.debug(f"Access token acquisition attempt {attempt + 1}/3")
@@ -174,9 +171,7 @@ class Authenticator:
                 if "token" in response_json:
                     return response_json
                 else:
-                    verbose_logger.warning(
-                        f"API key response missing token: {response_json}"
-                    )
+                    verbose_logger.warning(f"API key response missing token: {response_json}")
             except httpx.HTTPStatusError as e:
                 verbose_logger.error(
                     f"HTTP error refreshing API key (attempt {attempt+1}/{max_retries}): {str(e)}"
@@ -301,10 +296,7 @@ class Authenticator:
                 if "access_token" in resp_json:
                     verbose_logger.info("Authentication successful!")
                     return resp_json["access_token"]
-                elif (
-                    "error" in resp_json
-                    and resp_json.get("error") == "authorization_pending"
-                ):
+                elif "error" in resp_json and resp_json.get("error") == "authorization_pending":
                     verbose_logger.debug(
                         f"Authorization pending (attempt {attempt+1}/{max_attempts})"
                     )
@@ -323,9 +315,7 @@ class Authenticator:
                     status_code=400,
                 )
             except Exception as e:
-                verbose_logger.error(
-                    f"Unexpected error polling for access token: {str(e)}"
-                )
+                verbose_logger.error(f"Unexpected error polling for access token: {str(e)}")
                 raise GetAccessTokenError(
                     message=f"Failed to get access token: {str(e)}",
                     status_code=400,
@@ -357,7 +347,6 @@ class Authenticator:
 
         print(  # noqa: T201
             f"Please visit {verification_uri} and enter code {user_code} to authenticate.",
-
             # When this is running in docker, it may not be flushed immediately
             # so we force flush to ensure the user sees the message
             flush=True,

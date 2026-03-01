@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, List, Literal, Optional, Union
 
 from httpx import Headers, Response
-
 from litellm.constants import DEFAULT_MAX_TOKENS
 from litellm.llms.base_llm.chat.transformation import BaseConfig, BaseLLMException
 from litellm.types.llms.openai import AllMessageValues
@@ -31,9 +30,9 @@ class PredibaseConfig(BaseConfig):
         DEFAULT_MAX_TOKENS  # openai default - requests hang if max_new_tokens not given
     )
     repetition_penalty: Optional[float] = None
-    return_full_text: Optional[
-        bool
-    ] = False  # by default don't return the input as part of the output
+    return_full_text: Optional[bool] = (
+        False  # by default don't return the input as part of the output
+    )
     seed: Optional[int] = None
     stop: Optional[List[str]] = None
     temperature: Optional[float] = None
@@ -100,9 +99,9 @@ class PredibaseConfig(BaseConfig):
                 optional_params["top_p"] = value
             if param == "n":
                 optional_params["best_of"] = value
-                optional_params[
-                    "do_sample"
-                ] = True  # Need to sample if you want best of for hf inference endpoints
+                optional_params["do_sample"] = (
+                    True  # Need to sample if you want best of for hf inference endpoints
+                )
             if param == "stream":
                 optional_params["stream"] = value
             if param == "stop":
@@ -154,9 +153,7 @@ class PredibaseConfig(BaseConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, Headers]
     ) -> BaseLLMException:
-        return PredibaseError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return PredibaseError(status_code=status_code, message=error_message, headers=headers)
 
     def validate_environment(
         self,

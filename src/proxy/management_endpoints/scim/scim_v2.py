@@ -6,6 +6,7 @@ This is an enterprise feature and requires a premium license.
 
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import litellm
 from fastapi import (
     APIRouter,
     Body,
@@ -16,10 +17,6 @@ from fastapi import (
     Request,
     Response,
 )
-from pydantic import BaseModel
-from typing_extensions import TypedDict
-
-import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm._uuid import uuid
 from litellm.litellm_core_utils.safe_json_dumps import safe_dumps
@@ -49,6 +46,8 @@ from litellm.proxy.management_endpoints.team_endpoints import (
 )
 from litellm.proxy.utils import _premium_user_check, handle_exception_on_proxy
 from litellm.types.proxy.management_endpoints.scim_v2 import *
+from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 
 class UserProvisionerHelpers:
@@ -90,9 +89,7 @@ class UserProvisionerHelpers:
             },
         )
 
-        return await ScimTransformations.transform_litellm_user_to_scim_user(
-            updated_user
-        )
+        return await ScimTransformations.transform_litellm_user_to_scim_user(updated_user)
 
 
 class ScimUserData(TypedDict):
@@ -136,14 +133,10 @@ async def _check_user_exists(user_id: str):
     """Check if user exists and return user, raise 404 if not found."""
     prisma_client = await _get_prisma_client_or_raise_exception()
 
-    user = await prisma_client.db.litellm_usertable.find_unique(
-        where={"user_id": user_id}
-    )
+    user = await prisma_client.db.litellm_usertable.find_unique(where={"user_id": user_id})
 
     if not user:
-        raise HTTPException(
-            status_code=404, detail={"error": f"User not found with ID: {user_id}"}
-        )
+        raise HTTPException(status_code=404, detail={"error": f"User not found with ID: {user_id}"})
 
     return user
 
@@ -152,9 +145,7 @@ async def _check_team_exists(team_id: str):
     """Check if team exists and return team, raise 404 if not found."""
     prisma_client = await _get_prisma_client_or_raise_exception()
 
-    team = await prisma_client.db.litellm_teamtable.find_unique(
-        where={"team_id": team_id}
-    )
+    team = await prisma_client.db.litellm_teamtable.find_unique(where={"team_id": team_id})
 
     if not team:
         raise HTTPException(
@@ -223,9 +214,7 @@ async def _extract_group_member_ids(group: SCIMGroup) -> GroupMemberExtractionRe
             user_id = member.value
 
             # Check if user exists
-            user = await prisma_client.db.litellm_usertable.find_unique(
-                where={"user_id": user_id}
-            )
+            user = await prisma_client.db.litellm_usertable.find_unique(where={"user_id": user_id})
 
             if user:
                 existing_member_ids.append(user_id)
@@ -254,9 +243,7 @@ async def _get_team_members_display(member_ids: List[str]) -> List[SCIMMember]:
     members: List[SCIMMember] = []
 
     for member_id in member_ids:
-        user = await prisma_client.db.litellm_usertable.find_unique(
-            where={"user_id": member_id}
-        )
+        user = await prisma_client.db.litellm_usertable.find_unique(where={"user_id": member_id})
         if user:
             display_name = user.user_email or user.user_id
             members.append(SCIMMember(value=user.user_id, display=display_name))
@@ -411,26 +398,20 @@ async def get_users(
                 where_conditions["user_email"] = email
 
         # Get users from database
-        users: List[LiteLLM_UserTable] = (
-            await prisma_client.db.litellm_usertable.find_many(
-                where=where_conditions,
-                skip=(startIndex - 1),
-                take=count,
-                order={"created_at": "desc"},
-            )
+        users: List[LiteLLM_UserTable] = await prisma_client.db.litellm_usertable.find_many(
+            where=where_conditions,
+            skip=(startIndex - 1),
+            take=count,
+            order={"created_at": "desc"},
         )
 
         # Get total count for pagination
-        total_count = await prisma_client.db.litellm_usertable.count(
-            where=where_conditions
-        )
+        total_count = await prisma_client.db.litellm_usertable.count(where=where_conditions)
 
         # Convert to SCIM format
         scim_users: List[SCIMUser] = []
         for user in users:
-            scim_user = await ScimTransformations.transform_litellm_user_to_scim_user(
-                user=user
-            )
+            scim_user = await ScimTransformations.transform_litellm_user_to_scim_user(user=user)
             scim_users.append(scim_user)
 
         return SCIMListResponse(
@@ -495,16 +476,12 @@ async def create_user(
             if existing_user:
                 raise HTTPException(
                     status_code=409,
-                    detail={
-                        "error": f"User already exists with username: {user.userName}"
-                    },
+                    detail={"error": f"User already exists with username: {user.userName}"},
                 )
 
         # Create user in database
         user_id = user.userName or str(uuid.uuid4())
-        metadata = _build_scim_metadata(
-            user_data["given_name"], user_data["family_name"]
-        )
+        metadata = _build_scim_metadata(user_data["given_name"], user_data["family_name"])
 
         default_role: Optional[
             Literal[
@@ -539,13 +516,9 @@ async def create_user(
             data=new_user_request,
         )
 
-        scim_user = await ScimTransformations.transform_litellm_user_to_scim_user(
-            user=created_user
-        )
+        scim_user = await ScimTransformations.transform_litellm_user_to_scim_user(user=created_user)
         return scim_user
-    except (
-        HTTPException
-    ) as e:  # allow exceptions like SCIMUserAlreadyExists to be raised
+    except HTTPException as e:  # allow exceptions like SCIMUserAlreadyExists to be raised
         raise e
     except Exception as e:
         raise handle_exception_on_proxy(e)
@@ -610,9 +583,7 @@ async def update_user(
         )
 
         # Convert back to SCIM format
-        scim_user = await ScimTransformations.transform_litellm_user_to_scim_user(
-            updated_user
-        )
+        scim_user = await ScimTransformations.transform_litellm_user_to_scim_user(updated_user)
 
         return scim_user
 
@@ -680,9 +651,7 @@ def _extract_group_values(value: Any) -> List[str]:
     return group_values
 
 
-def _handle_displayname_update(
-    op_type: str, value: Any, update_data: Dict[str, Any]
-) -> None:
+def _handle_displayname_update(op_type: str, value: Any, update_data: Dict[str, Any]) -> None:
     """Handle displayname updates."""
     if op_type == "remove":
         update_data["user_alias"] = None
@@ -690,9 +659,7 @@ def _handle_displayname_update(
         update_data["user_alias"] = str(value)
 
 
-def _handle_externalid_update(
-    op_type: str, value: Any, update_data: Dict[str, Any]
-) -> None:
+def _handle_externalid_update(op_type: str, value: Any, update_data: Dict[str, Any]) -> None:
     """Handle externalid updates."""
     if op_type == "remove":
         update_data["sso_user_id"] = None
@@ -713,9 +680,7 @@ def _handle_active_update(op_type: str, value: Any, metadata: Dict[str, Any]) ->
         metadata["scim_active"] = bool_val
 
 
-def _handle_name_update(
-    path: str, op_type: str, value: Any, scim_metadata: Dict[str, Any]
-) -> None:
+def _handle_name_update(path: str, op_type: str, value: Any, scim_metadata: Dict[str, Any]) -> None:
     """Handle name field updates (givenName, familyName)."""
     if path == "name.givenname":
         if op_type == "remove":
@@ -729,9 +694,7 @@ def _handle_name_update(
             scim_metadata["familyName"] = str(value)
 
 
-def _handle_group_operations(
-    op_type: str, value: Any, teams_set: Set[str]
-) -> Optional[Set[str]]:
+def _handle_group_operations(op_type: str, value: Any, teams_set: Set[str]) -> Optional[Set[str]]:
     """Handle group/team membership operations."""
     group_values = _extract_group_values(value)
     if op_type == "replace":
@@ -744,9 +707,7 @@ def _handle_group_operations(
     return None
 
 
-def _handle_generic_metadata(
-    path: str, op_type: str, value: Any, metadata: Dict[str, Any]
-) -> None:
+def _handle_generic_metadata(path: str, op_type: str, value: Any, metadata: Dict[str, Any]) -> None:
     """Handle generic metadata operations for unknown paths."""
     if op_type == "remove":
         metadata.pop(path, None)
@@ -799,7 +760,7 @@ async def patch_team_membership(
 ) -> bool:
     """
     Add or remove user from teams
-    
+
     Handles duplicate membership gracefully (idempotent operation).
     If a user is already in a team, that's fine - we don't treat it as an error.
     """
@@ -810,9 +771,7 @@ async def patch_team_membership(
                     team_id=_team_id,
                     member=Member(user_id=user_id, role="user"),
                 ),
-                user_api_key_dict=UserAPIKeyAuth(
-                    user_role=LitellmUserRoles.PROXY_ADMIN
-                ),
+                user_api_key_dict=UserAPIKeyAuth(user_role=LitellmUserRoles.PROXY_ADMIN),
             )
         except ProxyException as e:
             # Handle duplicate membership gracefully - this is idempotent
@@ -821,9 +780,7 @@ async def patch_team_membership(
                     f"User {user_id} is already in team {_team_id}, skipping add"
                 )
             else:
-                verbose_proxy_logger.exception(
-                    f"Error adding user to team {_team_id}: {e}"
-                )
+                verbose_proxy_logger.exception(f"Error adding user to team {_team_id}: {e}")
         except Exception as e:
             verbose_proxy_logger.exception(f"Error adding user to team {_team_id}: {e}")
 
@@ -831,14 +788,10 @@ async def patch_team_membership(
         try:
             await team_member_delete(
                 data=TeamMemberDeleteRequest(team_id=_team_id, user_id=user_id),
-                user_api_key_dict=UserAPIKeyAuth(
-                    user_role=LitellmUserRoles.PROXY_ADMIN
-                ),
+                user_api_key_dict=UserAPIKeyAuth(user_role=LitellmUserRoles.PROXY_ADMIN),
             )
         except Exception as e:
-            verbose_proxy_logger.exception(
-                f"Error removing user from team {_team_id}: {e}"
-            )
+            verbose_proxy_logger.exception(f"Error removing user from team {_team_id}: {e}")
 
     return True
 
@@ -891,9 +844,7 @@ async def patch_user(
             data=update_data,
         )
 
-        scim_user = await ScimTransformations.transform_litellm_user_to_scim_user(
-            updated_user
-        )
+        scim_user = await ScimTransformations.transform_litellm_user_to_scim_user(updated_user)
 
         return scim_user
 
@@ -941,9 +892,7 @@ async def get_groups(
         )
 
         # Get total count for pagination
-        total_count = await prisma_client.db.litellm_teamtable.count(
-            where=where_conditions
-        )
+        total_count = await prisma_client.db.litellm_teamtable.count(where=where_conditions)
 
         # Convert to SCIM format
         scim_groups = []
@@ -996,9 +945,7 @@ async def get_group(
     try:
         team = await _check_team_exists(group_id)
 
-        scim_group = await ScimTransformations.transform_litellm_team_to_scim_group(
-            team
-        )
+        scim_group = await ScimTransformations.transform_litellm_team_to_scim_group(team)
         verbose_proxy_logger.debug(f"SCIM GET GROUP response: {scim_group}")
         return scim_group
 
@@ -1042,8 +989,7 @@ async def create_group(
         # Extract and process group members (creating users that don't exist)
         member_result = await _extract_group_member_ids(group)
         members_with_roles = [
-            Member(user_id=member_id, role="user")
-            for member_id in member_result.all_member_ids
+            Member(user_id=member_id, role="user") for member_id in member_result.all_member_ids
         ]
 
         # Create team in database
@@ -1057,9 +1003,7 @@ async def create_group(
             user_api_key_dict=UserAPIKeyAuth(user_role=LitellmUserRoles.PROXY_ADMIN),
         )
 
-        scim_group = await ScimTransformations.transform_litellm_team_to_scim_group(
-            created_team
-        )
+        scim_group = await ScimTransformations.transform_litellm_team_to_scim_group(created_team)
         return scim_group
     except Exception as e:
         raise handle_exception_on_proxy(e)
@@ -1089,9 +1033,7 @@ async def update_group(
 
         # Extract and process group members (creating users that don't exist)
         member_result = await _extract_group_member_ids(group)
-        verbose_proxy_logger.debug(
-            f"SCIM PUT GROUP all_member_ids: {member_result.all_member_ids}"
-        )
+        verbose_proxy_logger.debug(f"SCIM PUT GROUP all_member_ids: {member_result.all_member_ids}")
         verbose_proxy_logger.debug(
             f"SCIM PUT GROUP created_users: {len(member_result.created_users)}"
         )
@@ -1124,9 +1066,7 @@ async def update_group(
         )
 
         # Convert to SCIM format and return
-        scim_group = await ScimTransformations.transform_litellm_team_to_scim_group(
-            updated_team
-        )
+        scim_group = await ScimTransformations.transform_litellm_team_to_scim_group(updated_team)
         return scim_group
 
     except Exception as e:

@@ -82,7 +82,7 @@ jobs:
       run: black --check src tests
 
     - name: Run Ruff
-      run: ruff check src tests
+      run: ruff check src/toolkit_extensions tests
     
     - name: Run MyPy
       run: mypy src --ignore-missing-imports

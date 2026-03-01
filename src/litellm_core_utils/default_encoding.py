@@ -11,9 +11,7 @@ except (ImportError, AttributeError):
     # Old way to access resources, which setuptools deprecated some time ago
     import pkg_resources  # type: ignore
 
-    filename = pkg_resources.resource_filename(
-        __name__, "litellm_core_utils/tokenizers"
-    )
+    filename = pkg_resources.resource_filename(__name__, "litellm_core_utils/tokenizers")
 
 os.environ["TIKTOKEN_CACHE_DIR"] = os.getenv(
     "CUSTOM_TIKTOKEN_CACHE_DIR", filename

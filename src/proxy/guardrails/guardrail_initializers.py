@@ -129,8 +129,7 @@ def initialize_hide_secrets(litellm_params: LitellmParams, guardrail: Guardrail)
         )
     except ImportError:
         raise Exception(
-            "Trying to use Secret Detection"
-            + CommonProxyErrors.missing_enterprise_package.value
+            "Trying to use Secret Detection" + CommonProxyErrors.missing_enterprise_package.value
         )
 
     _secret_detection_object = _ENTERPRISE_SecretDetection(

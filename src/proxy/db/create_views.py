@@ -132,9 +132,7 @@ async def create_missing_views(db: _db):  # noqa: PLR0915
 
         print("MonthlyGlobalSpendPerKey Created!")  # noqa
     try:
-        await db.query_raw(
-            """SELECT 1 FROM "MonthlyGlobalSpendPerUserPerKey" LIMIT 1"""
-        )
+        await db.query_raw("""SELECT 1 FROM "MonthlyGlobalSpendPerUserPerKey" LIMIT 1""")
         print("MonthlyGlobalSpendPerUserPerKey Exists!")  # noqa
     except Exception:
         sql_query = """

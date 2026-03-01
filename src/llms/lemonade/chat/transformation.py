@@ -1,10 +1,10 @@
 """
 Translate from OpenAI's `/v1/chat/completions` to Lemonade's `/v1/chat/completions`
 """
+
 from typing import Any, List, Optional, Tuple, Union
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.secret_managers.main import get_secret_str
@@ -63,20 +63,20 @@ class LemonadeChatConfig(OpenAILikeChatConfig):
     def get_models(self, api_key: Optional[str] = None, api_base: Optional[str] = None):
         """
         Get available models from Lemonade API.
-        
+
         This method queries the Lemonade /models endpoint to retrieve the list of available models.
-        
+
         Args:
             api_key: Optional API key (Lemonade doesn't require authentication)
             api_base: Optional API base URL (defaults to LEMONADE_API_BASE env var or http://localhost:8000)
-            
+
         Returns:
             List of model names prefixed with "lemonade/"
         """
         api_base, api_key = self._get_openai_compatible_provider_info(
             api_base=api_base, api_key=api_key
         )
-        
+
         if api_base is None:
             raise ValueError(
                 "LEMONADE_API_BASE is not set. Please set the environment variable to query Lemonade's /models endpoint."
@@ -105,14 +105,11 @@ class LemonadeChatConfig(OpenAILikeChatConfig):
     ) -> Tuple[Optional[str], Optional[str]]:
         # lemonade is openai compatible, we just need to set this to custom_openai and have the api_base be lemonade's endpoint
         api_base = (
-            api_base
-            or get_secret_str("LEMONADE_API_BASE")
-            or "http://localhost:8000/api/v1"
+            api_base or get_secret_str("LEMONADE_API_BASE") or "http://localhost:8000/api/v1"
         )  # type: ignore
         # Lemonade doesn't check the key
         key = "lemonade"
         return api_base, key
-
 
     def transform_response(
         self,
@@ -146,4 +143,3 @@ class LemonadeChatConfig(OpenAILikeChatConfig):
         setattr(model_response, "model", "lemonade/" + model)
 
         return model_response
-    

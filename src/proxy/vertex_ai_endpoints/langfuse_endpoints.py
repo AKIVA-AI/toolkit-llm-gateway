@@ -14,9 +14,8 @@ from base64 import b64encode
 from typing import Optional
 
 import httpx
-from fastapi import APIRouter, Request, Response
-
 import litellm
+from fastapi import APIRouter, Request, Response
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
 from litellm.proxy.litellm_pre_call_utils import _get_dynamic_logging_metadata
@@ -69,19 +68,14 @@ async def langfuse_proxy_route(
         request=request, api_key="Bearer {}".format(api_key)
     )
 
-    callback_settings_obj: Optional[
-        TeamCallbackMetadata
-    ] = _get_dynamic_logging_metadata(
+    callback_settings_obj: Optional[TeamCallbackMetadata] = _get_dynamic_logging_metadata(
         user_api_key_dict=user_api_key_dict, proxy_config=proxy_config
     )
 
     dynamic_langfuse_public_key: Optional[str] = None
     dynamic_langfuse_secret_key: Optional[str] = None
     dynamic_langfuse_host: Optional[str] = None
-    if (
-        callback_settings_obj is not None
-        and callback_settings_obj.callback_vars is not None
-    ):
+    if callback_settings_obj is not None and callback_settings_obj.callback_vars is not None:
         for k, v in callback_settings_obj.callback_vars.items():
             if k == "langfuse_public_key":
                 dynamic_langfuse_public_key = v
@@ -95,9 +89,7 @@ async def langfuse_proxy_route(
         or os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
         or "https://cloud.langfuse.com"
     )
-    if not (
-        base_target_url.startswith("http://") or base_target_url.startswith("https://")
-    ):
+    if not (base_target_url.startswith("http://") or base_target_url.startswith("https://")):
         # add http:// if unset, assume communicating over private network - e.g. render
         base_target_url = "http://" + base_target_url
 

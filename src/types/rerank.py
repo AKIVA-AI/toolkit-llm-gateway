@@ -59,9 +59,7 @@ class RerankResponseResult(TypedDict, total=False):
 
 class RerankResponse(BaseModel):
     id: Optional[str] = None
-    results: Optional[
-        List[RerankResponseResult]
-    ] = None  # Contains index and relevance_score
+    results: Optional[List[RerankResponseResult]] = None  # Contains index and relevance_score
     meta: Optional[RerankResponseMeta] = None  # Contains api_version and billed_units
 
     # Define private attributes using PrivateAttr

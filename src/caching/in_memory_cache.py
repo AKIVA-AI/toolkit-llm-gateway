@@ -8,18 +8,17 @@ Has 4 methods:
     - async_get_cache
 """
 
+import heapq
 import json
 import sys
 import time
-import heapq
 from typing import TYPE_CHECKING, Any, List, Optional
 
 if TYPE_CHECKING:
     from litellm.types.caching import RedisPipelineIncrementOperation
 
-from pydantic import BaseModel
-
 from litellm.constants import MAX_SIZE_PER_ITEM_IN_MEMORY_CACHE_IN_KB
+from pydantic import BaseModel
 
 from .base_cache import BaseCache
 
@@ -73,9 +72,7 @@ class InMemoryCache(BaseCache):
                 return size <= self.max_size_per_item
 
             # Fallback for complex types
-            if isinstance(value, BaseModel) and hasattr(
-                value, "model_dump"
-            ):  # Pydantic v2
+            if isinstance(value, BaseModel) and hasattr(value, "model_dump"):  # Pydantic v2
                 value = value.model_dump()
             elif hasattr(value, "isoformat"):  # datetime objects
                 return True  # datetime strings are always small

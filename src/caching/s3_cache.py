@@ -11,9 +11,9 @@ Has 4 methods:
 import ast
 import asyncio
 import json
+from datetime import datetime, timedelta, timezone
 from functools import partial
 from typing import Optional
-from datetime import datetime, timezone, timedelta
 
 from litellm._logging import print_verbose, verbose_logger
 
@@ -120,13 +120,11 @@ class S3Cache(BaseCache):
 
             print_verbose(f"Get S3 Cache: key: {key}")
             # Download the data from S3
-            cached_response = self.s3_client.get_object(
-                Bucket=self.bucket_name, Key=key
-            )
+            cached_response = self.s3_client.get_object(Bucket=self.bucket_name, Key=key)
 
             if cached_response is not None:
                 if "Expires" in cached_response:
-                    expires_time = cached_response['Expires']
+                    expires_time = cached_response["Expires"]
                     current_time = datetime.now(expires_time.tzinfo)
 
                     if current_time > expires_time:
@@ -137,9 +135,7 @@ class S3Cache(BaseCache):
                     cached_response["Body"].read().decode("utf-8")
                 )  # Convert bytes to string
                 try:
-                    cached_response = json.loads(
-                        cached_response
-                    )  # Convert string to dictionary
+                    cached_response = json.loads(cached_response)  # Convert string to dictionary
                 except Exception:
                     cached_response = ast.literal_eval(cached_response)
             if not isinstance(cached_response, dict):
@@ -157,9 +153,7 @@ class S3Cache(BaseCache):
                 return None
 
         except Exception as e:
-            verbose_logger.error(
-                f"S3 Caching: get_cache() - Got exception from S3: {e}"
-            )
+            verbose_logger.error(f"S3 Caching: get_cache() - Got exception from S3: {e}")
 
     async def async_get_cache(self, key, **kwargs):
         """
@@ -173,9 +167,7 @@ class S3Cache(BaseCache):
             result = await loop.run_in_executor(None, func)
             return result
         except Exception as e:
-            verbose_logger.error(
-                f"S3 Caching: async_get_cache() - Got exception from S3: {e}"
-            )
+            verbose_logger.error(f"S3 Caching: async_get_cache() - Got exception from S3: {e}")
             return None
 
     def flush_cache(self):

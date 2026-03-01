@@ -4,7 +4,6 @@ import sys
 from typing import Any, List, Optional, Tuple
 
 from fastapi import HTTPException, Request, status
-
 from litellm import Router, provider_list
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import *
@@ -37,9 +36,7 @@ def _check_valid_ip(
         return True, None
 
     # if general_settings.get("use_x_forwarded_for") is True then use x-forwarded-for
-    client_ip = _get_request_ip_address(
-        request=request, use_x_forwarded_for=use_x_forwarded_for
-    )
+    client_ip = _get_request_ip_address(request=request, use_x_forwarded_for=use_x_forwarded_for)
 
     # Check if IP address is allowed
     if client_ip not in allowed_ips:
@@ -122,9 +119,7 @@ def _allow_model_level_clientside_configurable_parameters(
     if model_info is None:
         # check if wildcard model is set
         if model.split("/", 1)[0] in provider_list:
-            model_info = llm_router.get_model_group_info(
-                model_group=model.split("/", 1)[0]
-            )
+            model_info = llm_router.get_model_group_info(model_group=model.split("/", 1)[0])
 
     if model_info is None:
         return False
@@ -231,9 +226,7 @@ async def pre_db_read_auth_checks(
                 f"Trying to set allowed_routes. This is an Enterprise feature. {CommonProxyErrors.not_premium_user.value}"
             )
         if route not in _allowed_routes:
-            verbose_proxy_logger.error(
-                f"Route {route} not in allowed_routes={_allowed_routes}"
-            )
+            verbose_proxy_logger.error(f"Route {route} not in allowed_routes={_allowed_routes}")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Access forbidden: Route {route} not allowed",
@@ -296,9 +289,7 @@ def get_request_route(request: Request) -> str:
     remove base url from path if set e.g. `/genai/chat/completions` -> `/chat/completions
     """
     try:
-        if hasattr(request, "base_url") and request.url.path.startswith(
-            request.base_url.path
-        ):
+        if hasattr(request, "base_url") and request.url.path.startswith(request.base_url.path):
             # remove base_url from path
             return request.url.path[len(request.base_url.path) - 1 :]
         else:
@@ -343,9 +334,7 @@ async def check_if_request_size_is_safe(request: Request) -> bool:
         if content_length:
             header_size = int(content_length)
             header_size_mb = bytes_to_mb(bytes_value=header_size)
-            verbose_proxy_logger.debug(
-                f"content_length request size in MB={header_size_mb}"
-            )
+            verbose_proxy_logger.debug(f"content_length request size in MB={header_size_mb}")
 
             if header_size_mb > max_request_size_mb:
                 raise ProxyException(
@@ -360,9 +349,7 @@ async def check_if_request_size_is_safe(request: Request) -> bool:
             body_size = len(body)
             request_size_mb = bytes_to_mb(bytes_value=body_size)
 
-            verbose_proxy_logger.debug(
-                f"request body request size in MB={request_size_mb}"
-            )
+            verbose_proxy_logger.debug(f"request body request size in MB={request_size_mb}")
             if request_size_mb > max_request_size_mb:
                 raise ProxyException(
                     message=f"Request size is too large. Request size is {request_size_mb} MB. Max size is {max_request_size_mb} MB",
@@ -469,7 +456,8 @@ def get_model_rate_limit_from_metadata(
     if getattr(user_api_key_dict, metadata_accessor_key):
         return getattr(user_api_key_dict, metadata_accessor_key).get(rate_limit_key)
     return None
-  
+
+
 def get_team_model_rpm_limit(
     user_api_key_dict: UserAPIKeyAuth,
 ) -> Optional[Dict[str, int]]:
@@ -550,9 +538,7 @@ def get_end_user_id_from_request_body(
         # Prefer user mappings (new behavior)
         user_id_mapping = general_settings.get("user_header_mappings", None)
         if user_id_mapping:
-            custom_header_name_to_check = get_customer_user_header_from_mapping(
-                user_id_mapping
-            )
+            custom_header_name_to_check = get_customer_user_header_from_mapping(user_id_mapping)
 
         # Fallback to deprecated user_header_name if mapping did not specify
         if not custom_header_name_to_check:
@@ -567,9 +553,7 @@ def get_end_user_id_from_request_body(
                 if header_name.lower() == custom_header_name_to_check.lower():
                     user_id_from_header = header_value
                     user_id_str = (
-                        str(user_id_from_header)
-                        if user_id_from_header is not None
-                        else ""
+                        str(user_id_from_header) if user_id_from_header is not None else ""
                     )
                     if user_id_str.strip():
                         return user_id_str
@@ -596,9 +580,7 @@ def get_end_user_id_from_request_body(
     return None
 
 
-def get_model_from_request(
-    request_data: dict, route: str
-) -> Optional[Union[str, List[str]]]:
+def get_model_from_request(request_data: dict, route: str) -> Optional[Union[str, List[str]]]:
     # First try to get model from request_data
     model = request_data.get("model") or request_data.get("target_model_names")
 

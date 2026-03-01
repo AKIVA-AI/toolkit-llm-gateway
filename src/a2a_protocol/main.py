@@ -196,7 +196,11 @@ async def asend_message(
         )
 
         # Extract params from request
-        params = request.params.model_dump(mode="json") if hasattr(request.params, "model_dump") else dict(request.params)
+        params = (
+            request.params.model_dump(mode="json")
+            if hasattr(request.params, "model_dump")
+            else dict(request.params)
+        )
 
         response_dict = await A2ACompletionBridgeHandler.handle_non_streaming(
             request_id=str(request.id),
@@ -346,7 +350,11 @@ async def asend_message_streaming(
         )
 
         # Extract params from request
-        params = request.params.model_dump(mode="json") if hasattr(request.params, "model_dump") else dict(request.params)
+        params = (
+            request.params.model_dump(mode="json")
+            if hasattr(request.params, "model_dump")
+            else dict(request.params)
+        )
 
         async for chunk in A2ACompletionBridgeHandler.handle_streaming(
             request_id=str(request.id),
@@ -377,7 +385,9 @@ async def asend_message_streaming(
     stream = a2a_client.send_message_streaming(request)
 
     # Build logging object for streaming completion callbacks
-    agent_card = getattr(a2a_client, "_litellm_agent_card", None) or getattr(a2a_client, "agent_card", None)
+    agent_card = getattr(a2a_client, "_litellm_agent_card", None) or getattr(
+        a2a_client, "agent_card", None
+    )
     agent_name = getattr(agent_card, "name", "unknown") if agent_card else "unknown"
     model = f"a2a_agent/{agent_name}"
 
@@ -533,5 +543,3 @@ async def aget_agent_card(
         f"Fetched agent card: {agent_card.name if hasattr(agent_card, 'name') else 'unknown'}"
     )
     return agent_card
-
-

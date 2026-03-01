@@ -1,13 +1,13 @@
 """
 Prometheus Auth Middleware
 """
-from fastapi import Request
-from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
 
 import litellm
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from litellm.proxy._types import SpecialHeaders
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
+from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class PrometheusAuthMiddleware(BaseHTTPMiddleware):
@@ -32,9 +32,7 @@ class PrometheusAuthMiddleware(BaseHTTPMiddleware):
                 try:
                     await user_api_key_auth(
                         request=request,
-                        api_key=request.headers.get(
-                            SpecialHeaders.openai_authorization.value
-                        )
+                        api_key=request.headers.get(SpecialHeaders.openai_authorization.value)
                         or "",
                     )
                 except Exception as e:

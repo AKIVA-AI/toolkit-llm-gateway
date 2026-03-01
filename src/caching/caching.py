@@ -15,14 +15,13 @@ import traceback
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.constants import CACHED_STREAMING_CHUNK_DELAY
 from litellm.litellm_core_utils.model_param_helper import ModelParamHelper
 from litellm.types.caching import *
 from litellm.types.utils import EmbeddingResponse, all_litellm_params
+from pydantic import BaseModel
 
 from .azure_blob_cache import AzureBlobCache
 from .base_cache import BaseCache
@@ -253,8 +252,7 @@ class Cache:
             self.ttl = default_in_memory_ttl
 
         if (
-            self.type == LiteLLMCacheType.REDIS
-            or self.type == LiteLLMCacheType.REDIS_SEMANTIC
+            self.type == LiteLLMCacheType.REDIS or self.type == LiteLLMCacheType.REDIS_SEMANTIC
         ) and default_in_redis_ttl is not None:
             self.ttl = default_in_redis_ttl
 
@@ -300,9 +298,7 @@ class Cache:
         verbose_logger.debug("\nCreated cache key: %s", cache_key)
         hashed_cache_key = Cache._get_hashed_cache_key(cache_key)
         hashed_cache_key = self._add_namespace_to_cache_key(hashed_cache_key, **kwargs)
-        self._set_preset_cache_key_in_kwargs(
-            preset_cache_key=hashed_cache_key, **kwargs
-        )
+        self._set_preset_cache_key_in_kwargs(preset_cache_key=hashed_cache_key, **kwargs)
         return hashed_cache_key
 
     def _get_param_value(
@@ -330,15 +326,13 @@ class Cache:
         metadata: Dict = kwargs.get("metadata", {}) or {}
         litellm_params: Dict = kwargs.get("litellm_params", {}) or {}
         metadata_in_litellm_params: Dict = litellm_params.get("metadata", {}) or {}
-        model_group: Optional[str] = metadata.get(
+        model_group: Optional[str] = metadata.get("model_group") or metadata_in_litellm_params.get(
             "model_group"
-        ) or metadata_in_litellm_params.get("model_group")
+        )
         caching_group = self._get_caching_group(metadata, model_group)
         return caching_group or model_group or kwargs["model"]
 
-    def _get_caching_group(
-        self, metadata: dict, model_group: Optional[str]
-    ) -> Optional[str]:
+    def _get_caching_group(self, metadata: dict, model_group: Optional[str]) -> Optional[str]:
         caching_groups: Optional[List] = metadata.get("caching_groups", [])
         if caching_groups:
             for group in caching_groups:
@@ -508,21 +502,15 @@ class Cache:
                     or float("inf")
                 )
                 if dynamic_cache_object is not None:
-                    cached_result = dynamic_cache_object.get_cache(
-                        cache_key, messages=messages
-                    )
+                    cached_result = dynamic_cache_object.get_cache(cache_key, messages=messages)
                 else:
                     cached_result = self.cache.get_cache(cache_key, messages=messages)
-                return self._get_cache_logic(
-                    cached_result=cached_result, max_age=max_age
-                )
+                return self._get_cache_logic(cached_result=cached_result, max_age=max_age)
         except Exception:
             print_verbose(f"An exception occurred: {traceback.format_exc()}")
             return None
 
-    async def async_get_cache(
-        self, dynamic_cache_object: Optional[BaseCache] = None, **kwargs
-    ):
+    async def async_get_cache(self, dynamic_cache_object: Optional[BaseCache] = None, **kwargs):
         """
         Async get cache implementation.
 
@@ -544,16 +532,10 @@ class Cache:
                     "s-max-age", cache_control_args.get("s-maxage", float("inf"))
                 )
                 if dynamic_cache_object is not None:
-                    cached_result = await dynamic_cache_object.async_get_cache(
-                        cache_key, **kwargs
-                    )
+                    cached_result = await dynamic_cache_object.async_get_cache(cache_key, **kwargs)
                 else:
-                    cached_result = await self.cache.async_get_cache(
-                        cache_key, **kwargs
-                    )
-                return self._get_cache_logic(
-                    cached_result=cached_result, max_age=max_age
-                )
+                    cached_result = await self.cache.async_get_cache(cache_key, **kwargs)
+                return self._get_cache_logic(cached_result=cached_result, max_age=max_age)
         except Exception:
             print_verbose(f"An exception occurred: {traceback.format_exc()}")
             return None
@@ -602,9 +584,7 @@ class Cache:
         try:
             if self.should_use_cache(**kwargs) is not True:
                 return
-            cache_key, cached_data, kwargs = self._add_cache_logic(
-                result=result, **kwargs
-            )
+            cache_key, cached_data, kwargs = self._add_cache_logic(result=result, **kwargs)
             self.cache.set_cache(cache_key, cached_data, **kwargs)
         except Exception as e:
             verbose_logger.exception(f"LiteLLM Cache: Excepton add_cache: {str(e)}")
@@ -622,13 +602,9 @@ class Cache:
                 # high traffic - fill in results in memory and then flush
                 await self.batch_cache_write(result, **kwargs)
             else:
-                cache_key, cached_data, kwargs = self._add_cache_logic(
-                    result=result, **kwargs
-                )
+                cache_key, cached_data, kwargs = self._add_cache_logic(result=result, **kwargs)
                 if dynamic_cache_object is not None:
-                    await dynamic_cache_object.async_set_cache(
-                        cache_key, cached_data, **kwargs
-                    )
+                    await dynamic_cache_object.async_set_cache(cache_key, cached_data, **kwargs)
                 else:
                     await self.cache.async_set_cache(cache_key, cached_data, **kwargs)
         except Exception as e:
@@ -722,13 +698,9 @@ class Cache:
                 cache_list.append((cache_key, cached_data))
 
             if dynamic_cache_object is not None:
-                await dynamic_cache_object.async_set_cache_pipeline(
-                    cache_list=cache_list, **kwargs
-                )
+                await dynamic_cache_object.async_set_cache_pipeline(cache_list=cache_list, **kwargs)
             else:
-                await self.cache.async_set_cache_pipeline(
-                    cache_list=cache_list, **kwargs
-                )
+                await self.cache.async_set_cache_pipeline(cache_list=cache_list, **kwargs)
         except Exception as e:
             verbose_logger.exception(f"LiteLLM Cache: Excepton add_cache: {str(e)}")
 

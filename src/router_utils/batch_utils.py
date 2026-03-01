@@ -8,9 +8,7 @@ from litellm.types.llms.openai import FileTypes, OpenAIFilesPurpose
 
 
 class InMemoryFile(io.BytesIO):
-    def __init__(
-        self, content: bytes, name: str, content_type: str = "application/jsonl"
-    ):
+    def __init__(self, content: bytes, name: str, content_type: str = "application/jsonl"):
         super().__init__(content)
         self.name = name
         self.content_type = content_type
@@ -55,9 +53,7 @@ def parse_jsonl_with_embedded_newlines(content: str) -> List[dict]:
             json_object = json.loads(buffer.strip())
             json_objects.append(json_object)
         except json.JSONDecodeError as e:
-            verbose_logger.error(
-                f"error parsing final buffer: {buffer[:100]}..., error: {e}"
-            )
+            verbose_logger.error(f"error parsing final buffer: {buffer[:100]}..., error: {e}")
             raise e
 
     return json_objects

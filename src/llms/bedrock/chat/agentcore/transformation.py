@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 from urllib.parse import quote
 
 import httpx
-
 from litellm._logging import verbose_logger
 from litellm._uuid import uuid
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
@@ -76,9 +75,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
         Get the complete url for the request
         """
         ### SET RUNTIME ENDPOINT ###
-        aws_bedrock_runtime_endpoint = optional_params.get(
-            "aws_bedrock_runtime_endpoint", None
-        )
+        aws_bedrock_runtime_endpoint = optional_params.get("aws_bedrock_runtime_endpoint", None)
 
         # Extract ARN from model string
         agent_runtime_arn = self._get_agent_runtime_arn(model)
@@ -284,9 +281,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
             return ""
 
         return "".join(
-            block["text"]
-            for block in content_list
-            if isinstance(block, dict) and "text" in block
+            block["text"] for block in content_list if isinstance(block, dict) and "text" in block
         )
 
     def _calculate_usage(
@@ -307,9 +302,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
             from litellm.utils import token_counter
 
             prompt_tokens = token_counter(model=model, messages=messages)
-            completion_tokens = token_counter(
-                model=model, text=content, count_response_tokens=True
-            )
+            completion_tokens = token_counter(model=model, text=content, count_response_tokens=True)
             total_tokens = prompt_tokens + completion_tokens
 
             verbose_logger.debug(
@@ -349,9 +342,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
             final_message=result,  # type: ignore
         )
 
-    def _get_parsed_response(
-        self, raw_response: httpx.Response
-    ) -> AgentCoreParsedResponse:
+    def _get_parsed_response(self, raw_response: httpx.Response) -> AgentCoreParsedResponse:
         """
         Parse AgentCore response based on content type.
 
@@ -375,9 +366,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
             # SSE stream response (text/event-stream or default)
             verbose_logger.debug("Parsing SSE stream response")
             response_text = raw_response.text
-            verbose_logger.debug(
-                f"AgentCore response (first 500 chars): {response_text[:500]}"
-            )
+            verbose_logger.debug(f"AgentCore response (first 500 chars): {response_text[:500]}")
             return self._parse_sse_stream(response_text)
 
     def _parse_sse_stream(self, response_text: str) -> AgentCoreParsedResponse:
@@ -411,9 +400,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
             # Process event data
             if "event" in data and isinstance(data["event"], dict):
                 event_payload = data["event"]
-                verbose_logger.debug(
-                    f"Event payload keys: {list(event_payload.keys())}"
-                )
+                verbose_logger.debug(f"Event payload keys: {list(event_payload.keys())}")
 
                 # Extract usage metadata
                 if usage := self._extract_usage_from_event(data):
@@ -493,14 +480,10 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
         )
 
         if response.status_code != 200:
-            raise BedrockError(
-                status_code=response.status_code, message=str(response.read())
-            )
+            raise BedrockError(status_code=response.status_code, message=str(response.read()))
 
         # Create iterator for SSE stream
-        completion_stream = self.get_streaming_response(
-            model=model, raw_response=response
-        )
+        completion_stream = self.get_streaming_response(model=model, raw_response=response)
 
         streaming_response = CustomStreamWrapper(
             completion_stream=completion_stream,
@@ -544,9 +527,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
         from litellm.utils import CustomStreamWrapper
 
         if client is None or not isinstance(client, AsyncHTTPHandler):
-            client = get_async_httpx_client(
-                llm_provider=cast(Any, "bedrock"), params={}
-            )
+            client = get_async_httpx_client(llm_provider=cast(Any, "bedrock"), params={})
 
         verbose_logger.debug(f"Making async streaming request to: {api_base}")
 
@@ -565,9 +546,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
             )
 
         # Create iterator for SSE stream
-        completion_stream = self.get_streaming_response(
-            model=model, raw_response=response
-        )
+        completion_stream = self.get_streaming_response(model=model, raw_response=response)
 
         streaming_response = CustomStreamWrapper(
             completion_stream=completion_stream,
@@ -651,9 +630,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
                 setattr(model_response, "usage", usage)
             else:
                 # Calculate token usage using LiteLLM's token counter
-                verbose_logger.debug(
-                    "No usage data from AgentCore - calculating tokens"
-                )
+                verbose_logger.debug("No usage data from AgentCore - calculating tokens")
                 calculated_usage = self._calculate_usage(model, messages, content)
                 if calculated_usage:
                     setattr(model_response, "usage", calculated_usage)
@@ -661,9 +638,7 @@ class AmazonAgentCoreConfig(BaseConfig, BaseAWSLLM):
             return model_response
 
         except Exception as e:
-            verbose_logger.error(
-                f"Error processing Bedrock AgentCore response: {str(e)}"
-            )
+            verbose_logger.error(f"Error processing Bedrock AgentCore response: {str(e)}")
             raise BedrockError(
                 message=f"Error processing response: {str(e)}",
                 status_code=raw_response.status_code,

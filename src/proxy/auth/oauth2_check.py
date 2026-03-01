@@ -3,7 +3,6 @@ import os
 from typing import Dict, Optional, Tuple, cast
 
 import httpx
-
 from litellm._logging import verbose_proxy_logger
 from litellm.llms.custom_httpx.http_handler import (
     get_async_httpx_client,
@@ -142,18 +141,14 @@ class Oauth2Handler:
         token_info_endpoint = os.getenv("OAUTH_TOKEN_INFO_ENDPOINT")
         user_id_field_name = os.environ.get("OAUTH_USER_ID_FIELD_NAME", "sub")
         user_role_field_name = os.environ.get("OAUTH_USER_ROLE_FIELD_NAME", "role")
-        user_team_id_field_name = os.environ.get(
-            "OAUTH_USER_TEAM_ID_FIELD_NAME", "team_id"
-        )
+        user_team_id_field_name = os.environ.get("OAUTH_USER_TEAM_ID_FIELD_NAME", "team_id")
 
         # OAuth2 client credentials for introspection endpoint authentication
         oauth_client_id = os.environ.get("OAUTH_CLIENT_ID")
         oauth_client_secret = os.environ.get("OAUTH_CLIENT_SECRET")
 
         if not token_info_endpoint:
-            raise ValueError(
-                "OAUTH_TOKEN_INFO_ENDPOINT environment variable is not set"
-            )
+            raise ValueError("OAUTH_TOKEN_INFO_ENDPOINT environment variable is not set")
 
         client = get_async_httpx_client(llm_provider=httpxSpecialProvider.Oauth2Check)
 
@@ -175,9 +170,7 @@ class Oauth2Handler:
                     oauth_client_secret=oauth_client_secret,
                 )
 
-                response = await client.post(
-                    token_info_endpoint, headers=headers, data=data
-                )
+                response = await client.post(token_info_endpoint, headers=headers, data=data)
             else:
                 # Generic token info endpoint - uses GET with Bearer token
                 verbose_proxy_logger.debug("Using generic token info endpoint (GET)")

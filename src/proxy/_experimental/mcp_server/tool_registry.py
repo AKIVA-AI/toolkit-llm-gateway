@@ -52,16 +52,10 @@ class MCPToolRegistry:
         List all registered tools
         """
         if tool_prefix:
-            return [
-                tool
-                for tool in self.tools.values()
-                if tool.name.startswith(tool_prefix)
-            ]
+            return [tool for tool in self.tools.values() if tool.name.startswith(tool_prefix)]
         return list(self.tools.values())
 
-    def convert_tools_to_mcp_sdk_tool_type(
-        self, tools: List[MCPTool]
-    ) -> List["MCPToolSDKTool"]:
+    def convert_tools_to_mcp_sdk_tool_type(self, tools: List[MCPTool]) -> List["MCPToolSDKTool"]:
         if MCPToolSDKTool is None:
             raise ImportError(
                 "MCP SDK is not installed. Please install it with: pip install 'litellm[proxy]'"
@@ -75,9 +69,7 @@ class MCPToolRegistry:
             for tool in tools
         ]
 
-    def load_tools_from_config(
-        self, mcp_tools_config: Optional[Dict[str, Any]] = None
-    ) -> None:
+    def load_tools_from_config(self, mcp_tools_config: Optional[Dict[str, Any]] = None) -> None:
         """
         Load and register tools from the proxy config
 

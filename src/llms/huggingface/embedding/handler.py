@@ -3,7 +3,6 @@ import os
 from typing import Any, Callable, Dict, List, Literal, Optional, Union, get_args
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.custom_httpx.http_handler import (
@@ -34,9 +33,7 @@ def get_hf_task_embedding_for_model(
             return task_type
         else:
             raise Exception(
-                "Invalid task_type={}. Expected one of={}".format(
-                    task_type, hf_tasks_embeddings
-                )
+                "Invalid task_type={}. Expected one of={}".format(task_type, hf_tasks_embeddings)
             )
     http_client = HTTPHandler(concurrent_limit=1)
 
@@ -57,9 +54,7 @@ async def async_get_hf_task_embedding_for_model(
             return task_type
         else:
             raise Exception(
-                "Invalid task_type={}. Expected one of={}".format(
-                    task_type, hf_tasks_embeddings
-                )
+                "Invalid task_type={}. Expected one of={}".format(task_type, hf_tasks_embeddings)
             )
     http_client = get_async_httpx_client(
         llm_provider=litellm.LlmProviders.HUGGINGFACE,
@@ -81,9 +76,7 @@ class HuggingFaceEmbedding(BaseLLM):
     def __init__(self) -> None:
         super().__init__()
 
-    def _transform_input_on_pipeline_tag(
-        self, input: List, pipeline_tag: Optional[str]
-    ) -> dict:
+    def _transform_input_on_pipeline_tag(self, input: List, pipeline_tag: Optional[str]) -> dict:
         if pipeline_tag is None:
             return {"inputs": input}
         if pipeline_tag == "sentence-similarity" or pipeline_tag == "similarity":
@@ -177,14 +170,10 @@ class HuggingFaceEmbedding(BaseLLM):
                     model=model, task_type=task_type, embed_url=embed_url, input=input
                 )  # type: ignore
 
-            data = self._transform_input_on_pipeline_tag(
-                input=input, pipeline_tag=hf_task
-            )
+            data = self._transform_input_on_pipeline_tag(input=input, pipeline_tag=hf_task)
 
         if len(optional_params.keys()) > 0:
-            data = self._process_optional_params(
-                data=data, optional_params=optional_params
-            )
+            data = self._process_optional_params(data=data, optional_params=optional_params)
 
         return data
 
@@ -229,9 +218,7 @@ class HuggingFaceEmbedding(BaseLLM):
                         {
                             "object": "embedding",
                             "index": idx,
-                            "embedding": embedding[0][
-                                0
-                            ],  # flatten list returned from hf
+                            "embedding": embedding[0][0],  # flatten list returned from hf
                         }
                     )
         model_response.object = "list"
@@ -357,9 +344,7 @@ class HuggingFaceEmbedding(BaseLLM):
         elif "HUGGINGFACE_API_BASE" in os.environ:
             embed_url = os.getenv("HUGGINGFACE_API_BASE", "")
         else:
-            embed_url = (
-                f"https://router.huggingface.co/hf-inference/pipeline/{task}/{model}"
-            )
+            embed_url = f"https://router.huggingface.co/hf-inference/pipeline/{task}/{model}"
 
         ## ROUTING ##
         if aembedding is True:

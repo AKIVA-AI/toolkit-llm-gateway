@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
 import httpx
-
 from litellm.types.containers.main import ContainerCreateOptionalRequestParams
 from litellm.types.router import GenericLiteLLMParams
 
@@ -89,7 +88,7 @@ class BaseContainerConfig(ABC):
         litellm_params: dict,
     ) -> str:
         """Get the complete url for the request.
-        
+
         OPTIONAL - Some providers need `model` in `api_base`.
         """
         if api_base is None:
@@ -106,7 +105,7 @@ class BaseContainerConfig(ABC):
         headers: dict,
     ) -> dict:
         """Transform the container creation request.
-        
+
         Returns:
             dict: Request data for container creation.
         """
@@ -133,7 +132,7 @@ class BaseContainerConfig(ABC):
         extra_query: dict[str, Any] | None = None,
     ) -> tuple[str, dict]:
         """Transform the container list request into a URL and params.
-        
+
         Returns:
             tuple[str, dict]: (url, params) for the container list request.
         """
@@ -157,7 +156,7 @@ class BaseContainerConfig(ABC):
         headers: dict,
     ) -> tuple[str, dict]:
         """Transform the container retrieve request into a URL and data/params.
-        
+
         Returns:
             tuple[str, dict]: (url, params) for the container retrieve request.
         """
@@ -181,7 +180,7 @@ class BaseContainerConfig(ABC):
         headers: dict,
     ) -> tuple[str, dict]:
         """Transform the container delete request into a URL and data.
-        
+
         Returns:
             tuple[str, dict]: (url, data) for the container delete request.
         """
@@ -209,7 +208,7 @@ class BaseContainerConfig(ABC):
         extra_query: dict[str, Any] | None = None,
     ) -> tuple[str, dict]:
         """Transform the container file list request into a URL and params.
-        
+
         Returns:
             tuple[str, dict]: (url, params) for the container file list request.
         """
@@ -234,7 +233,7 @@ class BaseContainerConfig(ABC):
         headers: dict,
     ) -> tuple[str, dict]:
         """Transform the container file content request into a URL and params.
-        
+
         Returns:
             tuple[str, dict]: (url, params) for the container file content request.
         """
@@ -247,16 +246,16 @@ class BaseContainerConfig(ABC):
         logging_obj: LiteLLMLoggingObj,
     ) -> bytes:
         """Transform the container file content response.
-        
+
         Returns:
             bytes: The raw file content.
         """
         ...
 
     def get_error_class(
-        self, 
-        error_message: str, 
-        status_code: int, 
+        self,
+        error_message: str,
+        status_code: int,
         headers: dict | httpx.Headers,
     ) -> BaseLLMException:
         from ..chat.transformation import BaseLLMException
@@ -266,4 +265,3 @@ class BaseContainerConfig(ABC):
             message=error_message,
             headers=headers,
         )
-

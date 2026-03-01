@@ -339,4 +339,3 @@ class BaseRAGIngestion(ABC):
                 file_id=None,
                 error=str(e),
             )
-

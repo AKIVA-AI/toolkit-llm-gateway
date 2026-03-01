@@ -114,15 +114,11 @@ class VertexAIRAGTransformation(VertexBase):
         Returns:
             Request payload dict for importRagFiles API
         """
-        transformation_config = self.transform_chunking_strategy_to_vertex_format(
-            chunking_strategy
-        )
+        transformation_config = self.transform_chunking_strategy_to_vertex_format(chunking_strategy)
 
         return {
             "import_rag_files_config": {
-                "gcs_source": {
-                    "uris": [gcs_uri]
-                },
+                "gcs_source": {"uris": [gcs_uri]},
                 "rag_file_transformation_config": transformation_config,
             }
         }
@@ -137,9 +133,7 @@ class VertexAIRAGTransformation(VertexBase):
 
         Uses the base class method to get credentials.
         """
-        credentials = self.get_vertex_ai_credentials(
-            {"vertex_credentials": vertex_credentials}
-        )
+        credentials = self.get_vertex_ai_credentials({"vertex_credentials": vertex_credentials})
         project = vertex_project or self.get_vertex_ai_project({})
 
         access_token, _ = self._ensure_access_token(
@@ -152,4 +146,3 @@ class VertexAIRAGTransformation(VertexBase):
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
-

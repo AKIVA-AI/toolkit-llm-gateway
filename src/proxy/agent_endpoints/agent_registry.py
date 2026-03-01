@@ -20,15 +20,11 @@ class AgentRegistry:
         self.agent_list.append(agent_config)
 
     def deregister_agent(self, agent_name: str):
-        self.agent_list = [
-            agent for agent in self.agent_list if agent.agent_name != agent_name
-        ]
+        self.agent_list = [agent for agent in self.agent_list if agent.agent_name != agent_name]
 
     def get_agent_list(self, agent_names: Optional[List[str]] = None):
         if agent_names is not None:
-            return [
-                agent for agent in self.agent_list if agent.agent_name in agent_names
-            ]
+            return [agent for agent in self.agent_list if agent.agent_name in agent_names]
         return self.agent_list
 
     def get_public_agent_list(self) -> List[AgentResponse]:
@@ -41,9 +37,7 @@ class AgentRegistry:
         return public_agent_list
 
     def _create_agent_id(self, agent_config: AgentConfig) -> str:
-        return hashlib.sha256(
-            json.dumps(agent_config, sort_keys=True).encode()
-        ).hexdigest()
+        return hashlib.sha256(json.dumps(agent_config, sort_keys=True).encode()).hexdigest()
 
     def load_agents_from_config(self, agent_config: Optional[List[AgentConfig]] = None):
         if agent_config is None:
@@ -102,9 +96,7 @@ class AgentRegistry:
             if hasattr(litellm_params_obj, "model_dump"):
                 litellm_params_dict = litellm_params_obj.model_dump()
             else:
-                litellm_params_dict = (
-                    dict(litellm_params_obj) if litellm_params_obj else {}
-                )
+                litellm_params_dict = dict(litellm_params_obj) if litellm_params_obj else {}
             litellm_params: str = safe_dumps(litellm_params_dict)
 
             # Serialize agent_card_params
@@ -185,9 +177,7 @@ class AgentRegistry:
             if augment_agent.get("agent_name"):
                 update_data["agent_name"] = augment_agent.get("agent_name")
             if augment_agent.get("litellm_params"):
-                update_data["litellm_params"] = safe_dumps(
-                    augment_agent.get("litellm_params")
-                )
+                update_data["litellm_params"] = safe_dumps(augment_agent.get("litellm_params"))
             if augment_agent.get("agent_card_params"):
                 update_data["agent_card_params"] = safe_dumps(
                     augment_agent.get("agent_card_params")
@@ -223,9 +213,7 @@ class AgentRegistry:
             if hasattr(litellm_params_obj, "model_dump"):
                 litellm_params_dict = litellm_params_obj.model_dump()
             else:
-                litellm_params_dict = (
-                    dict(litellm_params_obj) if litellm_params_obj else {}
-                )
+                litellm_params_dict = dict(litellm_params_obj) if litellm_params_obj else {}
             litellm_params: str = safe_dumps(litellm_params_dict)
 
             # Serialize agent_card_params

@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import httpx
-
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.types.llms.openai import (
     AllMessageValues,
@@ -20,11 +19,9 @@ else:
 
 class BaseImageGenerationConfig(ABC):
     @abstractmethod
-    def get_supported_openai_params(
-        self, model: str
-    ) -> List[OpenAIImageGenerationOptionalParams]:
+    def get_supported_openai_params(self, model: str) -> List[OpenAIImageGenerationOptionalParams]:
         pass
-    
+
     @abstractmethod
     def map_openai_params(
         self,
@@ -34,7 +31,6 @@ class BaseImageGenerationConfig(ABC):
         drop_params: bool,
     ) -> dict:
         pass
-
 
     def get_complete_url(
         self,

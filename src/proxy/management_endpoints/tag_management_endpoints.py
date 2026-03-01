@@ -15,7 +15,6 @@ import json
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.litellm_core_utils.safe_json_dumps import safe_dumps
 from litellm.proxy._types import UserAPIKeyAuth
@@ -54,9 +53,7 @@ async def _get_model_names(prisma_client, model_ids: list) -> Dict[str, str]:
         return {}
 
 
-async def get_deployments_by_model(
-    model: str, llm_router: "Router"
-) -> List["Deployment"]:
+async def get_deployments_by_model(model: str, llm_router: "Router") -> List["Deployment"]:
     """
     Get all deployments by model
     """
@@ -98,7 +95,7 @@ async def new_tag(
     - description: Optional[str] - Description of what this tag represents
     - models: List[str] - List of either 'model_id' or 'model_name' allowed for this tag
     - budget_id: Optional[str] - The id for a budget (tpm/rpm/max budget) for the tag
-    
+
     ### IF NO BUDGET ID - CREATE ONE WITH THESE PARAMS ###
     - max_budget: Optional[float] - Max budget for tag
     - tpm_limit: Optional[int] - Max tpm limit for tag
@@ -116,22 +113,16 @@ async def new_tag(
     )
 
     if prisma_client is None:
-        raise HTTPException(
-            status_code=500, detail=CommonProxyErrors.db_not_connected_error.value
-        )
+        raise HTTPException(status_code=500, detail=CommonProxyErrors.db_not_connected_error.value)
     if llm_router is None:
-        raise HTTPException(
-            status_code=500, detail=CommonProxyErrors.no_llm_router.value
-        )
+        raise HTTPException(status_code=500, detail=CommonProxyErrors.no_llm_router.value)
     try:
         # Check if tag already exists
         existing_tag = await prisma_client.db.litellm_tagtable.find_unique(
             where={"tag_name": tag.name}
         )
         if existing_tag is not None:
-            raise HTTPException(
-                status_code=400, detail=f"Tag {tag.name} already exists"
-            )
+            raise HTTPException(status_code=400, detail=f"Tag {tag.name} already exists")
 
         # Handle budget creation/assignment using common helper
         budget_id = await handle_budget_for_entity(
@@ -233,7 +224,7 @@ async def update_tag(
     - description: Optional[str] - Updated description
     - models: List[str] - Updated list of allowed LLM models
     - budget_id: Optional[str] - The id for a budget to associate with the tag
-    
+
     ### BUDGET UPDATE PARAMS ###
     - max_budget: Optional[float] - Max budget for tag
     - tpm_limit: Optional[int] - Max tpm limit for tag
@@ -276,7 +267,7 @@ async def update_tag(
             "models": tag.models or [],
             "model_info": json.dumps(model_info),
         }
-        
+
         # Add budget_id if it changed
         if budget_id != existing_tag.budget_id:
             update_data["budget_id"] = budget_id
@@ -338,9 +329,7 @@ async def info_tag(
         found_tag_names = {tag.tag_name for tag in tag_records}
         missing_tags = [name for name in data.names if name not in found_tag_names]
         if missing_tags:
-            raise HTTPException(
-                status_code=404, detail=f"Tags not found: {missing_tags}"
-            )
+            raise HTTPException(status_code=404, detail=f"Tags not found: {missing_tags}")
 
         # Build response
         requested_tags = {}
@@ -430,8 +419,7 @@ async def list_tags(
         )
 
         dynamic_tags_list = [
-            LiteLLM_DailyTagSpendTable(**dynamic_tag.model_dump())
-            for dynamic_tag in dynamic_tags
+            LiteLLM_DailyTagSpendTable(**dynamic_tag.model_dump()) for dynamic_tag in dynamic_tags
         ]
 
         dynamic_tag_config = [

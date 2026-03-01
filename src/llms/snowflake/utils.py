@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
+from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.secret_managers.main import get_secret_str
 from litellm.types.llms.openai import AllMessageValues
-from litellm.llms.base_llm.chat.transformation import BaseLLMException
 
 if TYPE_CHECKING:
     from litellm.litellm_core_utils.litellm_logging import Logging as _LiteLLMLoggingObj

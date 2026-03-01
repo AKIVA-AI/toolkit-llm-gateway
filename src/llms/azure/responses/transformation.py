@@ -1,8 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Union
 
 import httpx
-from openai.types.responses import ResponseReasoningItem
-
 from litellm._logging import verbose_logger
 from litellm.llms.azure.common_utils import BaseAzureLLM
 from litellm.llms.openai.responses.transformation import OpenAIResponsesAPIConfig
@@ -10,6 +8,7 @@ from litellm.types.llms.openai import *
 from litellm.types.responses.main import *
 from litellm.types.router import GenericLiteLLMParams
 from litellm.types.utils import LlmProviders
+from openai.types.responses import ResponseReasoningItem
 
 if TYPE_CHECKING:
     from litellm.litellm_core_utils.litellm_logging import Logging as _LiteLLMLoggingObj
@@ -43,7 +42,7 @@ class AzureOpenAIResponsesAPIConfig(OpenAIResponsesAPIConfig):
         """
         Handle reasoning items to filter out the status field.
         Issue: https://github.com/BerriAI/litellm/issues/13484
-        
+
         Azure OpenAI API does not accept 'status' field in reasoning input items.
         """
         if item.get("type") == "reasoning":
@@ -73,12 +72,11 @@ class AzureOpenAIResponsesAPIConfig(OpenAIResponsesAPIConfig):
                 filtered_item = {
                     k: v
                     for k, v in item.items()
-                    if v is not None
-                    or k not in {"status", "content", "encrypted_content"}
+                    if v is not None or k not in {"status", "content", "encrypted_content"}
                 }
                 return filtered_item
         return item
-    
+
     def _validate_input_param(
         self, input: Union[str, ResponseInputParam]
     ) -> Union[str, ResponseInputParam]:
@@ -90,7 +88,7 @@ class AzureOpenAIResponsesAPIConfig(OpenAIResponsesAPIConfig):
 
         # First call parent's validation
         validated_input = super()._validate_input_param(input)
-        
+
         # Then filter out status from message items
         if isinstance(validated_input, list):
             filtered_input: List[Any] = []
@@ -102,7 +100,7 @@ class AzureOpenAIResponsesAPIConfig(OpenAIResponsesAPIConfig):
                 else:
                     filtered_input.append(item)
             return cast(ResponseInputParam, filtered_input)
-        
+
         return validated_input
 
     def transform_responses_api_request(
@@ -157,9 +155,7 @@ class AzureOpenAIResponsesAPIConfig(OpenAIResponsesAPIConfig):
     #########################################################
     ########## DELETE RESPONSE API TRANSFORMATION ##############
     #########################################################
-    def _construct_url_for_response_id_in_path(
-        self, api_base: str, response_id: str
-    ) -> str:
+    def _construct_url_for_response_id_in_path(self, api_base: str, response_id: str) -> str:
         """
         Constructs a URL for the API request with the response_id in the path.
         """
@@ -246,9 +242,7 @@ class AzureOpenAIResponsesAPIConfig(OpenAIResponsesAPIConfig):
         order: Literal["asc", "desc"] = "desc",
     ) -> Tuple[str, Dict]:
         url = (
-            self._construct_url_for_response_id_in_path(
-                api_base=api_base, response_id=response_id
-            )
+            self._construct_url_for_response_id_in_path(api_base=api_base, response_id=response_id)
             + "/input_items"
         )
         params: Dict[str, Any] = {}
@@ -323,7 +317,5 @@ class AzureOpenAIResponsesAPIConfig(OpenAIResponsesAPIConfig):
         except Exception:
             from litellm.llms.azure.chat.gpt_transformation import AzureOpenAIError
 
-            raise AzureOpenAIError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise AzureOpenAIError(message=raw_response.text, status_code=raw_response.status_code)
         return ResponsesAPIResponse(**raw_response_json)

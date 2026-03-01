@@ -11,11 +11,9 @@ import os
 from typing import Any, Optional, Tuple, Union, cast
 
 import httpx
+import litellm
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, WebSocket
 from fastapi.responses import StreamingResponse
-from starlette.websockets import WebSocketState
-
-import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm.constants import BEDROCK_AGENT_RUNTIME_PASS_THROUGH_ROUTES
 from litellm.llms.vertex_ai.vertex_llm_base import VertexBase
@@ -42,6 +40,7 @@ from litellm.proxy.vector_store_endpoints.utils import (
 from litellm.secret_managers.main import get_secret_str
 from litellm.types.utils import LlmProviders
 from litellm.utils import ProviderConfigManager
+from starlette.websockets import WebSocketState
 
 from .passthrough_endpoint_router import PassthroughEndpointRouter
 
@@ -100,9 +99,7 @@ async def llm_passthrough_factory_proxy_route(
         model=None,
     )
     if provider_config is None:
-        raise HTTPException(
-            status_code=404, detail=f"Provider {custom_llm_provider} not found"
-        )
+        raise HTTPException(status_code=404, detail=f"Provider {custom_llm_provider} not found")
 
     base_target_url = provider_config.get_api_base()
 
@@ -196,9 +193,7 @@ async def gemini_proxy_route(
         request=request, api_key=f"Bearer {google_ai_studio_api_key}"
     )
 
-    base_target_url = (
-        os.getenv("GEMINI_API_BASE") or "https://generativelanguage.googleapis.com"
-    )
+    base_target_url = os.getenv("GEMINI_API_BASE") or "https://generativelanguage.googleapis.com"
     encoded_endpoint = httpx.URL(endpoint).path
 
     # Ensure endpoint starts with '/' for proper URL construction
@@ -313,9 +308,7 @@ async def vllm_proxy_route(
     from litellm.proxy.proxy_server import llm_router
 
     request_body = await get_request_body(request)
-    is_router_model = is_passthrough_request_using_router_model(
-        request_body, llm_router
-    )
+    is_router_model = is_passthrough_request_using_router_model(request_body, llm_router)
     is_streaming_request = is_passthrough_request_streaming(request_body)
     if is_router_model and llm_router:
         result = cast(
@@ -507,15 +500,15 @@ async def milvus_proxy_route(
     # Update the request object with the modified collection name
     _safe_set_request_parsed_body(request, request_body)
 
-    vector_store = litellm.vector_store_registry.get_litellm_managed_vector_store_from_registry_by_name(
-        vector_store_name=vector_store_name
+    vector_store = (
+        litellm.vector_store_registry.get_litellm_managed_vector_store_from_registry_by_name(
+            vector_store_name=vector_store_name
+        )
     )
     if vector_store is None:
         raise Exception(f"Vector store not found for {vector_store_name}")
     litellm_params = vector_store.get("litellm_params") or {}
-    auth_credentials = provider_config.get_auth_credentials(
-        litellm_params=litellm_params
-    )
+    auth_credentials = provider_config.get_auth_credentials(litellm_params=litellm_params)
 
     extra_headers = auth_credentials.get("headers") or {}
 
@@ -526,9 +519,7 @@ async def milvus_proxy_route(
     )
 
     if base_target_url is None:
-        raise Exception(
-            f"api_base not found in vector store configuration for {vector_store_name}"
-        )
+        raise Exception(f"api_base not found in vector store configuration for {vector_store_name}")
 
     encoded_endpoint = httpx.URL(endpoint).path
 
@@ -711,7 +702,6 @@ async def handle_bedrock_passthrough_router_model(
         Response or StreamingResponse depending on endpoint type
     """
     from fastapi import Response as FastAPIResponse
-
     from litellm.proxy.common_request_processing import ProxyBaseLLMRequestProcessing
 
     # Detect streaming based on endpoint
@@ -981,9 +971,7 @@ async def bedrock_proxy_route(
 
     aws_region_name = litellm.utils.get_secret(secret_name="AWS_REGION_NAME")
     if _is_bedrock_agent_runtime_route(endpoint=endpoint):  # handle bedrock agents
-        base_target_url = (
-            f"https://bedrock-agent-runtime.{aws_region_name}.amazonaws.com"
-        )
+        base_target_url = f"https://bedrock-agent-runtime.{aws_region_name}.amazonaws.com"
     else:
         return await bedrock_llm_proxy_route(
             endpoint=endpoint,
@@ -1078,10 +1066,8 @@ async def assemblyai_proxy_route(
     assembly_region = AssemblyAIPassthroughLoggingHandler._get_assembly_region_from_url(
         url=str(request.url)
     )
-    base_target_url = (
-        AssemblyAIPassthroughLoggingHandler._get_assembly_base_url_from_region(
-            region=assembly_region
-        )
+    base_target_url = AssemblyAIPassthroughLoggingHandler._get_assembly_base_url_from_region(
+        region=assembly_region
     )
     encoded_endpoint = httpx.URL(endpoint).path
     # Ensure endpoint starts with '/' for proper URL construction
@@ -1227,10 +1213,8 @@ async def azure_proxy_route(
                 )
             elif is_vector_store_index:
                 # get the api key from the provider config
-                provider_config = (
-                    ProviderConfigManager.get_provider_vector_stores_config(
-                        provider=litellm.LlmProviders.AZURE_AI
-                    )
+                provider_config = ProviderConfigManager.get_provider_vector_stores_config(
+                    provider=litellm.LlmProviders.AZURE_AI
                 )
                 if provider_config is None:
                     raise Exception("Provider config not found for Azure AI")
@@ -1397,9 +1381,7 @@ def _override_vertex_params_from_router_credentials(
 
     litellm_params = router_credentials.get("litellm_params", {})
     if not litellm_params:
-        verbose_proxy_logger.warning(
-            "Vector store credentials found but litellm_params is empty"
-        )
+        verbose_proxy_logger.warning("Vector store credentials found but litellm_params is empty")
         return vertex_project, vertex_location
 
     # Extract vertex_project and vertex_location from litellm_params
@@ -1509,8 +1491,10 @@ async def _prepare_vertex_auth_headers(
         }
 
         if base_target_url is not None:
-            base_target_url = get_vertex_pass_through_handler.update_base_target_url_with_credential_location(
-                base_target_url, vertex_location
+            base_target_url = (
+                get_vertex_pass_through_handler.update_base_target_url_with_credential_location(
+                    base_target_url, vertex_location
+                )
             )
 
     return (
@@ -1581,9 +1565,7 @@ async def _base_vertex_proxy_route(
         location=vertex_location,
     )
 
-    base_target_url = get_vertex_pass_through_handler.get_default_base_target_url(
-        vertex_location
-    )
+    base_target_url = get_vertex_pass_through_handler.get_default_base_target_url(vertex_location)
 
     # Prepare authentication headers
     (
@@ -1678,21 +1660,15 @@ async def vertex_discovery_proxy_route(
 
     if vector_store_id_match:
         vector_store_id = vector_store_id_match.group(1)
-        verbose_proxy_logger.debug(
-            "Extracted vector store ID from endpoint: %s", vector_store_id
-        )
+        verbose_proxy_logger.debug("Extracted vector store ID from endpoint: %s", vector_store_id)
 
         # Retrieve vector store credentials from the registry
-        vector_store_credentials = (
-            passthrough_endpoint_router.get_vector_store_credentials(
-                vector_store_id=vector_store_id
-            )
+        vector_store_credentials = passthrough_endpoint_router.get_vector_store_credentials(
+            vector_store_id=vector_store_id
         )
 
         if vector_store_credentials:
-            verbose_proxy_logger.debug(
-                "Found vector store credentials for ID: %s", vector_store_id
-            )
+            verbose_proxy_logger.debug("Found vector store credentials for ID: %s", vector_store_id)
         else:
             verbose_proxy_logger.warning(
                 "Vector store ID %s found in endpoint but no credentials found in registry",
@@ -1832,10 +1808,7 @@ class BaseOpenAIPassThroughHandler:
         """
         Appends the OpenAI-Beta header to the headers if the request is an OpenAI Assistants API request
         """
-        if (
-            RouteChecks._is_assistants_api_request(request) is True
-            and "OpenAI-Beta" not in headers
-        ):
+        if RouteChecks._is_assistants_api_request(request) is True and "OpenAI-Beta" not in headers:
             headers["OpenAI-Beta"] = "assistants=v2"
         return headers
 
@@ -1875,14 +1848,9 @@ class BaseOpenAIPassThroughHandler:
             joined_path_str = str(base_url.copy_with(path=full_path))
 
         # Apply OpenAI-specific path handling for both branches
-        if (
-            custom_llm_provider == litellm.LlmProviders.OPENAI
-            and "/v1/" not in joined_path_str
-        ):
+        if custom_llm_provider == litellm.LlmProviders.OPENAI and "/v1/" not in joined_path_str:
             # Insert v1 after api.openai.com for OpenAI requests
-            joined_path_str = joined_path_str.replace(
-                "api.openai.com/", "api.openai.com/v1/"
-            )
+            joined_path_str = joined_path_str.replace("api.openai.com/", "api.openai.com/v1/")
 
         return joined_path_str
 
@@ -1944,9 +1912,7 @@ async def vertex_ai_live_websocket_passthrough(
         )
 
     try:
-        resolved_location = resolved_location or (
-            vertex_llm_base.get_default_vertex_location()
-        )
+        resolved_location = resolved_location or (vertex_llm_base.get_default_vertex_location())
         if model:
             resolved_location = vertex_llm_base.get_vertex_region(
                 vertex_region=resolved_location,
@@ -1982,9 +1948,7 @@ async def vertex_ai_live_websocket_passthrough(
         if host_location == "global"
         else f"{host_location}-aiplatform.googleapis.com"
     )
-    service_url = (
-        f"wss://{host}/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent"
-    )
+    service_url = f"wss://{host}/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent"
 
     upstream_headers = {
         "Authorization": f"Bearer {access_token}",

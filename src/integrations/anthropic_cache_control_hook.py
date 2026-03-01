@@ -111,10 +111,8 @@ class AnthropicCacheControlHook(CustomPromptManagement):
         elif targetted_role is not None:
             for msg in messages:
                 if msg.get("role") == targetted_role:
-                    msg = (
-                        AnthropicCacheControlHook._safe_insert_cache_control_in_message(
-                            message=msg, control=control
-                        )
+                    msg = AnthropicCacheControlHook._safe_insert_cache_control_in_message(
+                        message=msg, control=control
                     )
         return messages
 
@@ -240,9 +238,7 @@ class AnthropicCacheControlHook(CustomPromptManagement):
             _init_custom_logger_compatible_class,
         )
 
-        if AnthropicCacheControlHook.should_use_anthropic_cache_control_hook(
-            non_default_params
-        ):
+        if AnthropicCacheControlHook.should_use_anthropic_cache_control_hook(non_default_params):
             return _init_custom_logger_compatible_class(
                 logging_integration="anthropic_cache_control_hook",
                 internal_usage_cache=None,

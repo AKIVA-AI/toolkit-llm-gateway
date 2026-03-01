@@ -1,9 +1,8 @@
 from enum import Enum
 from typing import Optional
 
-from typing_extensions import TypedDict
-
 from litellm.types.integrations.custom_logger import StandardCustomLoggerInitParams
+from typing_extensions import TypedDict
 
 DD_MAX_BATCH_SIZE = 1000
 

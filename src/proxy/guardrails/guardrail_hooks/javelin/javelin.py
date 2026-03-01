@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional, Type, Union
 
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import CustomGuardrail
 from litellm.llms.custom_httpx.http_handler import (
@@ -59,9 +58,7 @@ class JavelinGuardrail(CustomGuardrail):
         )
         self.javelin_api_key = api_key or get_secret_str("JAVELIN_API_KEY")
         self.api_base = (
-            api_base
-            or get_secret_str("JAVELIN_API_BASE")
-            or "https://api-dev.javelin.live"
+            api_base or get_secret_str("JAVELIN_API_BASE") or "https://api-dev.javelin.live"
         )
         self.api_version = api_version
         self.guardrail_name = guardrail_name
@@ -215,14 +212,10 @@ class JavelinGuardrail(CustomGuardrail):
         should_reject = False
 
         # Debug: Log the full Javelin response
-        verbose_proxy_logger.debug(
-            "Javelin Guardrail: Full Javelin response: %s", javelin_response
-        )
+        verbose_proxy_logger.debug("Javelin Guardrail: Full Javelin response: %s", javelin_response)
 
         for assessment in assessments:
-            verbose_proxy_logger.debug(
-                "Javelin Guardrail: Processing assessment: %s", assessment
-            )
+            verbose_proxy_logger.debug("Javelin Guardrail: Processing assessment: %s", assessment)
             for assessment_type, assessment_data in assessment.items():
                 verbose_proxy_logger.debug(
                     "Javelin Guardrail: Processing assessment_type: %s, data: %s",
@@ -257,7 +250,9 @@ class JavelinGuardrail(CustomGuardrail):
 
         if should_reject:
             if not reject_prompt:
-                reject_prompt = f"Request blocked by Javelin guardrails due to {self.guardrail_name} violation."
+                reject_prompt = (
+                    f"Request blocked by Javelin guardrails due to {self.guardrail_name} violation."
+                )
 
             verbose_proxy_logger.debug(
                 "Javelin Guardrail: Blocking request with reject_prompt: '%s'",

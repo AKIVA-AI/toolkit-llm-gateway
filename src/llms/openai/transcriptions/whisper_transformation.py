@@ -1,7 +1,6 @@
 from typing import List, Optional, Union
 
 from httpx import Headers, Response
-
 from litellm.llms.base_llm.audio_transcription.transformation import (
     AudioTranscriptionRequestData,
     BaseAudioTranscriptionConfig,
@@ -138,10 +137,7 @@ class OpenAIWhisperAudioTranscriptionConfig(BaseAudioTranscriptionConfig):
                 f"Error transforming response to json: {str(e)}\nResponse: {raw_response.text}"
             )
 
-        if any(
-            key in raw_response_json
-            for key in TranscriptionResponse.model_fields.keys()
-        ):
+        if any(key in raw_response_json for key in TranscriptionResponse.model_fields.keys()):
             return TranscriptionResponse(**raw_response_json)
         else:
             raise ValueError(

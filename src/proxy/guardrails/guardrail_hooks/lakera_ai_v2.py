@@ -3,9 +3,8 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import CustomGuardrail
 from litellm.llms.custom_httpx.http_handler import (
@@ -54,9 +53,7 @@ class LakeraAIGuardrail(CustomGuardrail):
         )
         self.lakera_api_key = api_key or os.environ["LAKERA_API_KEY"]
         self.project_id = project_id
-        self.api_base = (
-            api_base or get_secret_str("LAKERA_API_BASE") or "https://api.lakera.ai"
-        )
+        self.api_base = api_base or get_secret_str("LAKERA_API_BASE") or "https://api.lakera.ai"
         self.payload: Optional[bool] = payload
         self.breakdown: Optional[bool] = breakdown
         self.metadata: Optional[Dict] = metadata
@@ -94,9 +91,7 @@ class LakeraAIGuardrail(CustomGuardrail):
                 headers={"Authorization": f"Bearer {self.lakera_api_key}"},
                 json=request,
             )
-            verbose_proxy_logger.debug(
-                "Lakera AI v2 guard response: %s", response.json()
-            )
+            verbose_proxy_logger.debug("Lakera AI v2 guard response: %s", response.json())
             lakera_response = LakeraAIResponse(**response.json())
             return lakera_response, masked_entity_count
         except Exception as e:
@@ -193,16 +188,12 @@ class LakeraAIGuardrail(CustomGuardrail):
 
         event_type: GuardrailEventHooks = GuardrailEventHooks.pre_call
         if self.should_run_guardrail(data=data, event_type=event_type) is not True:
-            verbose_proxy_logger.debug(
-                "Lakera AI: not running guardrail. Guardrail is disabled."
-            )
+            verbose_proxy_logger.debug("Lakera AI: not running guardrail. Guardrail is disabled.")
             return data
 
         new_messages: Optional[List[AllMessageValues]] = data.get("messages")
         if new_messages is None:
-            verbose_proxy_logger.warning(
-                "Lakera AI: not running guardrail. No messages in data"
-            )
+            verbose_proxy_logger.warning("Lakera AI: not running guardrail. No messages in data")
             return data
 
         #########################################################
@@ -229,9 +220,7 @@ class LakeraAIGuardrail(CustomGuardrail):
                 )
             else:
                 # If there are other violations or not set to mask PII, raise exception
-                raise self._get_http_exception_for_blocked_guardrail(
-                    lakera_guardrail_response
-                )
+                raise self._get_http_exception_for_blocked_guardrail(lakera_guardrail_response)
 
         #########################################################
         ########## 3. Add the guardrail to the applied guardrails header ##########
@@ -258,9 +247,7 @@ class LakeraAIGuardrail(CustomGuardrail):
 
         new_messages: Optional[List[AllMessageValues]] = data.get("messages")
         if new_messages is None:
-            verbose_proxy_logger.warning(
-                "Lakera AI: not running guardrail. No messages in data"
-            )
+            verbose_proxy_logger.warning("Lakera AI: not running guardrail. No messages in data")
             return
 
         #########################################################
@@ -287,9 +274,7 @@ class LakeraAIGuardrail(CustomGuardrail):
                 )
             else:
                 # If there are other violations or not set to mask PII, raise exception
-                raise self._get_http_exception_for_blocked_guardrail(
-                    lakera_guardrail_response
-                )
+                raise self._get_http_exception_for_blocked_guardrail(lakera_guardrail_response)
 
         #########################################################
         ########## 3. Add the guardrail to the applied guardrails header ##########
@@ -300,9 +285,7 @@ class LakeraAIGuardrail(CustomGuardrail):
 
         return data
 
-    def _is_only_pii_violation(
-        self, lakera_response: Optional[LakeraAIResponse]
-    ) -> bool:
+    def _is_only_pii_violation(self, lakera_response: Optional[LakeraAIResponse]) -> bool:
         """
         Returns True if there are only PII violations in the response.
         """

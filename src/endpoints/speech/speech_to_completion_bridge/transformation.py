@@ -29,9 +29,7 @@ class SpeechToCompletionBridgeTransformationHandler:
             if isinstance(voice, str):
                 passed_optional_params["audio"] = {"voice": voice}
                 if "response_format" in optional_params:
-                    passed_optional_params["audio"]["format"] = optional_params[
-                        "response_format"
-                    ]
+                    passed_optional_params["audio"]["format"] = optional_params["response_format"]
 
         return_kwargs = {
             "model": model,
@@ -101,13 +99,10 @@ class SpeechToCompletionBridgeTransformationHandler:
             "tts" in model.lower() or "preview-tts" in model.lower()
         )
 
-    def transform_response(
-        self, model_response: "ModelResponse"
-    ) -> "HttpxBinaryResponseContent":
+    def transform_response(self, model_response: "ModelResponse") -> "HttpxBinaryResponseContent":
         import base64
 
         import httpx
-
         from litellm.types.llms.openai import HttpxBinaryResponseContent
         from litellm.types.utils import Choices
 

@@ -136,9 +136,7 @@ async def run_async_fallback(
             fallback_depth = fallback_depth + 1
             kwargs["fallback_depth"] = fallback_depth
             kwargs["max_fallbacks"] = max_fallbacks
-            response = await litellm_router.async_function_with_fallbacks(
-                *args, **kwargs
-            )
+            response = await litellm_router.async_function_with_fallbacks(*args, **kwargs)
             verbose_router_logger.info("Successful fallback b/w models.")
             response = add_fallback_headers_to_response(
                 response=response,
@@ -178,9 +176,7 @@ async def log_success_fallback_event(
         Errors during logging are caught and reported but do not interrupt the process.
     """
     # Get deduplicated CustomLogger instances from all callback lists
-    custom_loggers = litellm.logging_callback_manager.get_custom_loggers_for_type(
-        CustomLogger
-    )
+    custom_loggers = litellm.logging_callback_manager.get_custom_loggers_for_type(CustomLogger)
 
     for _callback_custom_logger in custom_loggers:
         try:
@@ -190,9 +186,7 @@ async def log_success_fallback_event(
                 original_exception=original_exception,
             )
         except Exception as e:
-            verbose_router_logger.error(
-                f"Error in log_success_fallback_event: {str(e)}"
-            )
+            verbose_router_logger.error(f"Error in log_success_fallback_event: {str(e)}")
 
 
 async def log_failure_fallback_event(
@@ -212,9 +206,7 @@ async def log_failure_fallback_event(
         Errors during logging are caught and reported but do not interrupt the process.
     """
     # Get deduplicated CustomLogger instances from all callback lists
-    custom_loggers = litellm.logging_callback_manager.get_custom_loggers_for_type(
-        CustomLogger
-    )
+    custom_loggers = litellm.logging_callback_manager.get_custom_loggers_for_type(CustomLogger)
 
     for _callback_custom_logger in custom_loggers:
         try:
@@ -224,9 +216,7 @@ async def log_failure_fallback_event(
                 original_exception=original_exception,
             )
         except Exception as e:
-            verbose_router_logger.error(
-                f"Error in log_failure_fallback_event: {str(e)}"
-            )
+            verbose_router_logger.error(f"Error in log_failure_fallback_event: {str(e)}")
 
 
 def _check_non_standard_fallback_format(fallbacks: Optional[List[Any]]) -> bool:

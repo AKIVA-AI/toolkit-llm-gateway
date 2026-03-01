@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Union, Dict, Literal
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 from litellm.secret_managers.main import get_secret_str
 from litellm.types.llms.openai import (
@@ -76,14 +76,16 @@ class GradientAIConfig(OpenAILikeChatConfig):
         ]
         return supported_params
 
-    def validate_environment(self,
-                             headers: dict,
-                             model: str,
-                             messages: List[AllMessageValues],
-                             optional_params: dict,
-                             litellm_params: dict,
-                             api_key: Optional[str] = None,
-                             api_base: Optional[str] = None):
+    def validate_environment(
+        self,
+        headers: dict,
+        model: str,
+        messages: List[AllMessageValues],
+        optional_params: dict,
+        litellm_params: dict,
+        api_key: Optional[str] = None,
+        api_base: Optional[str] = None,
+    ):
         api_key = api_key or get_secret_str("GRADIENT_AI_API_KEY")
         if api_key is None:
             raise ValueError("GradientAI API key not found")
@@ -139,9 +141,10 @@ class GradientAIConfig(OpenAILikeChatConfig):
                 optional_params[param] = value
             elif not drop_params:
                 from litellm.utils import UnsupportedParamsError
+
                 raise UnsupportedParamsError(
                     status_code=400,
-                    message=f"GradientAI does not support parameter '{param}'. To drop unsupported params, set `drop_params=True`."
+                    message=f"GradientAI does not support parameter '{param}'. To drop unsupported params, set `drop_params=True`.",
                 )
 
         return optional_params

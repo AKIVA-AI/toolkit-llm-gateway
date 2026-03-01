@@ -1,16 +1,15 @@
 ﻿"""
 Tests for cost tracking
 """
-import pytest
+
 from decimal import Decimal
 from unittest.mock import Mock
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import pytest
 
-from toolkit_extensions.database.models import Base, User, Team, Project, LLMRequest
-from toolkit_extensions.database.connection import DatabaseManager, DatabaseConfig, init_database
 from toolkit_extensions.cost_tracker import CostTracker, CostTrackingMiddleware
+from toolkit_extensions.database.connection import DatabaseConfig, init_database
+from toolkit_extensions.database.models import LLMRequest, User
 
 
 @pytest.fixture(scope="module")
@@ -22,6 +21,7 @@ def db_manager():
     yield manager
     # Cleanup
     import os
+
     if os.path.exists("./test_gateway.db"):
         os.remove("./test_gateway.db")
 
@@ -41,9 +41,9 @@ def test_track_basic_request(db_manager, cost_tracker):
         completion_tokens=50,
         total_cost=0.006,
     )
-    
+
     assert request_id is not None
-    
+
     # Verify in database
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -64,9 +64,9 @@ def test_track_request_with_user(db_manager, cost_tracker):
         total_cost=0.006,
         user_email="alice@company.com",
     )
-    
+
     assert request_id is not None
-    
+
     # Verify user was created and linked
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -84,9 +84,9 @@ def test_track_request_with_team(db_manager, cost_tracker):
         total_cost=0.006,
         team_name="Engineering",
     )
-    
+
     assert request_id is not None
-    
+
     # Verify team was created and linked
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -104,9 +104,9 @@ def test_track_request_with_project(db_manager, cost_tracker):
         total_cost=0.006,
         project_name="Chatbot v2",
     )
-    
+
     assert request_id is not None
-    
+
     # Verify project was created and linked
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -126,9 +126,9 @@ def test_track_request_with_all_attribution(db_manager, cost_tracker):
         team_name="Engineering",
         project_name="Chatbot v2",
     )
-    
+
     assert request_id is not None
-    
+
     # Verify all attribution
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -148,9 +148,9 @@ def test_track_request_with_performance_metrics(db_manager, cost_tracker):
         latency_ms=500,
         cache_hit=True,
     )
-    
+
     assert request_id is not None
-    
+
     # Verify metrics
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -169,9 +169,9 @@ def test_track_error_request(db_manager, cost_tracker):
         status="error",
         error_message="API rate limit exceeded",
     )
-    
+
     assert request_id is not None
-    
+
     # Verify error info
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -190,12 +190,12 @@ def test_track_request_with_metadata(db_manager, cost_tracker):
         metadata={
             "session_id": "abc123",
             "endpoint": "/v1/chat/completions",
-            "custom_field": "value"
-        }
+            "custom_field": "value",
+        },
     )
-    
+
     assert request_id is not None
-    
+
     # Verify metadata
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -208,9 +208,9 @@ def test_disabled_tracking(db_manager):
     # Get current count
     with db_manager.session() as session:
         initial_count = session.query(LLMRequest).count()
-    
+
     tracker = CostTracker(enabled=False)
-    
+
     request_id = tracker.track_request(
         model="gpt-4",
         provider="openai",
@@ -218,9 +218,9 @@ def test_disabled_tracking(db_manager):
         completion_tokens=50,
         total_cost=0.006,
     )
-    
+
     assert request_id is None
-    
+
     # Verify no NEW records added
     with db_manager.session() as session:
         final_count = session.query(LLMRequest).count()
@@ -230,7 +230,7 @@ def test_disabled_tracking(db_manager):
 def test_middleware_track_completion(db_manager):
     """Test middleware tracking a completion"""
     middleware = CostTrackingMiddleware(enabled=True)
-    
+
     # Mock LiteLLM response
     response = Mock()
     response.model = "gpt-4"
@@ -240,21 +240,17 @@ def test_middleware_track_completion(db_manager):
     response._hidden_params = {
         "response_cost": 0.006,
         "custom_llm_provider": "openai",
-        "cache_hit": False
+        "cache_hit": False,
     }
-    
+
     request_id = middleware.track_completion(
         response=response,
         start_time=None,
-        metadata={
-            "user": "alice@company.com",
-            "team": "Engineering",
-            "project": "Chatbot v2"
-        }
+        metadata={"user": "alice@company.com", "team": "Engineering", "project": "Chatbot v2"},
     )
-    
+
     assert request_id is not None
-    
+
     # Verify in database
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -267,18 +263,18 @@ def test_middleware_track_completion(db_manager):
 def test_middleware_track_error(db_manager):
     """Test middleware tracking an error"""
     middleware = CostTrackingMiddleware(enabled=True)
-    
+
     request_id = middleware.track_error(
         model="gpt-4",
         provider="openai",
         error_message="API timeout",
         metadata={
             "user": "alice@company.com",
-        }
+        },
     )
-    
+
     assert request_id is not None
-    
+
     # Verify in database
     with db_manager.session() as session:
         request = session.query(LLMRequest).filter_by(id=request_id).first()
@@ -291,7 +287,7 @@ def test_reuse_existing_user(db_manager, cost_tracker):
     """Test that existing users are reused"""
     # Use unique email for this test
     test_email = "alice_unique_test@company.com"
-    
+
     # Create first request
     cost_tracker.track_request(
         model="gpt-4",
@@ -301,7 +297,7 @@ def test_reuse_existing_user(db_manager, cost_tracker):
         total_cost=0.006,
         user_email=test_email,
     )
-    
+
     # Create second request with same user
     cost_tracker.track_request(
         model="gpt-3.5-turbo",
@@ -311,16 +307,12 @@ def test_reuse_existing_user(db_manager, cost_tracker):
         total_cost=0.001,
         user_email=test_email,
     )
-    
+
     # Verify only one user was created
     with db_manager.session() as session:
         user_count = session.query(User).filter_by(email=test_email).count()
         assert user_count == 1
-        
+
         # Verify both requests linked to same user
-        requests = session.query(LLMRequest).join(User).filter(
-            User.email == test_email
-        ).all()
+        requests = session.query(LLMRequest).join(User).filter(User.email == test_email).all()
         assert len(requests) == 2
-
-

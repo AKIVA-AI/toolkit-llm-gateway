@@ -5,7 +5,6 @@ Translate between Cohere's `/rerank` format and Azure AI's `/rerank` format.
 from typing import Optional
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.cohere.rerank.transformation import CohereRerankConfig
@@ -19,8 +18,8 @@ class AzureAIRerankConfig(CohereRerankConfig):
     """
 
     def get_complete_url(
-        self, 
-        api_base: Optional[str], 
+        self,
+        api_base: Optional[str],
         model: str,
         optional_params: Optional[dict] = None,
     ) -> str:

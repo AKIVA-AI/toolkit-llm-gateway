@@ -1,9 +1,9 @@
-from litellm._uuid import uuid
 from typing import Optional
 
 import litellm
 from litellm._logging import verbose_logger
-from litellm.litellm_core_utils.core_helpers import safe_deep_copy, filter_internal_params
+from litellm._uuid import uuid
+from litellm.litellm_core_utils.core_helpers import filter_internal_params, safe_deep_copy
 
 from .asyncify import run_async_function
 
@@ -62,9 +62,7 @@ async def async_completion_with_fallbacks(**kwargs):
                 return response
 
         except Exception as e:
-            verbose_logger.exception(
-                f"Fallback attempt failed for model {model}: {str(e)}"
-            )
+            verbose_logger.exception(f"Fallback attempt failed for model {model}: {str(e)}")
             most_recent_exception_str = str(e)
             continue
 

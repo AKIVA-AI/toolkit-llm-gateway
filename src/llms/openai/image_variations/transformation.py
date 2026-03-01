@@ -2,7 +2,6 @@ from typing import Any, List, Optional, Union
 
 from aiohttp import ClientResponse
 from httpx import Headers, Response
-
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.llms.base_llm.image_variations.transformation import LiteLLMLoggingObj
 from litellm.types.llms.openai import OpenAIImageVariationOptionalParams
@@ -13,9 +12,7 @@ from ..common_utils import OpenAIError
 
 
 class OpenAIImageVariationConfig(BaseImageVariationConfig):
-    def get_supported_openai_params(
-        self, model: str
-    ) -> List[OpenAIImageVariationOptionalParams]:
+    def get_supported_openai_params(self, model: str) -> List[OpenAIImageVariationOptionalParams]:
         return ["n", "size", "response_format", "user"]
 
     def map_openai_params(

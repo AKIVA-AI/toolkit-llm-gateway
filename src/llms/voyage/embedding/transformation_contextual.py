@@ -2,10 +2,10 @@
 This module is used to transform the request and response for the Voyage contextualized embeddings API. 
 This would be used for all the contextualized embeddings models in Voyage. 
 """
+
 from typing import List, Optional, Union
 
 import httpx
-
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.llms.base_llm.embedding.transformation import BaseEmbeddingConfig
@@ -125,9 +125,7 @@ class VoyageContextualEmbeddingConfig(BaseEmbeddingConfig):
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise VoyageError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise VoyageError(message=raw_response.text, status_code=raw_response.status_code)
 
         # model_response.usage
         model_response.model = raw_response_json.get("model")
@@ -144,9 +142,7 @@ class VoyageContextualEmbeddingConfig(BaseEmbeddingConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, httpx.Headers]
     ) -> BaseLLMException:
-        return VoyageError(
-            message=error_message, status_code=status_code, headers=headers
-        )
+        return VoyageError(message=error_message, status_code=status_code, headers=headers)
 
     @staticmethod
     def is_contextualized_embeddings(model: str) -> bool:

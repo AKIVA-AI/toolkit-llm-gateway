@@ -3,14 +3,12 @@
 from typing import TYPE_CHECKING, Any, Iterable, List, Literal, Optional, Union
 
 import httpx
-
 from litellm._logging import verbose_logger
 from litellm.types.llms.openai import AllMessageValues
 
 if TYPE_CHECKING:
-    from opentelemetry.trace import Span as _Span
-
     from litellm.types.utils import ModelResponseStream
+    from opentelemetry.trace import Span as _Span
 
     Span = Union[_Span, Any]
 else:
@@ -38,18 +36,16 @@ def safe_divide_seconds(
 
 
 def safe_divide(
-    numerator: Union[int, float], 
-    denominator: Union[int, float], 
-    default: Union[int, float] = 0
+    numerator: Union[int, float], denominator: Union[int, float], default: Union[int, float] = 0
 ) -> Union[int, float]:
     """
     Safely divide two numbers, returning a default value if denominator is zero.
-    
+
     Args:
         numerator: The number to divide
         denominator: The number to divide by
         default: Value to return if denominator is zero (defaults to 0)
-    
+
     Returns:
         The result of numerator/denominator, or default if denominator is zero
     """
@@ -71,9 +67,7 @@ def map_finish_reason(
         return "length"
     elif finish_reason == "ERROR_TOXIC":
         return "content_filter"
-    elif (
-        finish_reason == "ERROR"
-    ):  # openai currently doesn't support an 'error' finish reason
+    elif finish_reason == "ERROR":  # openai currently doesn't support an 'error' finish reason
         return "stop"
     # huggingface mapping https://huggingface.github.io/text-generation-inference/#/Text%20Generation%20Inference/generate_stream
     elif finish_reason == "eos_token" or finish_reason == "stop_sequence":
@@ -122,9 +116,7 @@ def remove_items_at_indices(items: Optional[List[Any]], indices: Iterable[int]) 
             items.pop(index)
 
 
-def add_missing_spend_metadata_to_litellm_metadata(
-    litellm_metadata: dict, metadata: dict
-) -> dict:
+def add_missing_spend_metadata_to_litellm_metadata(litellm_metadata: dict, metadata: dict) -> dict:
     """
     Helper to get litellm metadata for spend tracking
 
@@ -153,7 +145,8 @@ def get_metadata_variable_name_from_kwargs(
     - LiteLLM is now moving to using `litellm_metadata` for our metadata
     """
     return "litellm_metadata" if "litellm_metadata" in kwargs else "metadata"
-    
+
+
 def get_litellm_metadata_from_kwargs(kwargs: dict):
     """
     Helper to get litellm metadata from all litellm request kwargs
@@ -197,9 +190,7 @@ def _get_parent_otel_span_from_kwargs(
             return kwargs["litellm_parent_otel_span"]
         return None
     except Exception as e:
-        verbose_logger.exception(
-            "Error in _get_parent_otel_span_from_kwargs: " + str(e)
-        )
+        verbose_logger.exception("Error in _get_parent_otel_span_from_kwargs: " + str(e))
         return None
 
 
@@ -246,8 +237,8 @@ def safe_deep_copy(data):
     Safe Deep Copy
 
     The LiteLLM request may contain objects that cannot be pickled/deep-copied
-    (e.g., tracing spans, locks, clients). 
-    
+    (e.g., tracing spans, locks, clients).
+
     This helper deep-copies each top-level key independently; on failure keeps
     original ref
     """
@@ -266,13 +257,8 @@ def safe_deep_copy(data):
         if "metadata" in data and "litellm_parent_otel_span" in data["metadata"]:
             litellm_parent_otel_span = data["metadata"].pop("litellm_parent_otel_span")
             data["metadata"]["litellm_parent_otel_span"] = "placeholder"
-        if (
-            "litellm_metadata" in data
-            and "litellm_parent_otel_span" in data["litellm_metadata"]
-        ):
-            litellm_parent_otel_span = data["litellm_metadata"].pop(
-                "litellm_parent_otel_span"
-            )
+        if "litellm_metadata" in data and "litellm_parent_otel_span" in data["litellm_metadata"]:
+            litellm_parent_otel_span = data["litellm_metadata"].pop("litellm_parent_otel_span")
             data["litellm_metadata"]["litellm_parent_otel_span"] = "placeholder"
 
     # Step 2: Per-key deepcopy with fallback
@@ -293,36 +279,31 @@ def safe_deep_copy(data):
     if isinstance(data, dict) and litellm_parent_otel_span is not None:
         if "metadata" in data and "litellm_parent_otel_span" in data["metadata"]:
             data["metadata"]["litellm_parent_otel_span"] = litellm_parent_otel_span
-        if (
-            "litellm_metadata" in data
-            and "litellm_parent_otel_span" in data["litellm_metadata"]
-        ):
-            data["litellm_metadata"][
-                "litellm_parent_otel_span"
-            ] = litellm_parent_otel_span
+        if "litellm_metadata" in data and "litellm_parent_otel_span" in data["litellm_metadata"]:
+            data["litellm_metadata"]["litellm_parent_otel_span"] = litellm_parent_otel_span
     return new_data
 
 
 def filter_exceptions_from_params(data: Any, max_depth: int = 20) -> Any:
     """
     Recursively filter out Exception objects and callable objects from dicts/lists.
-    
+
     This is a defensive utility to prevent deepcopy failures when exception objects
     are accidentally stored in parameter dictionaries (e.g., optional_params).
     Also filters callable objects (functions) to prevent JSON serialization errors.
     Exceptions and callables should not be stored in params - this function removes them.
-    
+
     Args:
         data: The data structure to filter (dict, list, or any other type)
         max_depth: Maximum recursion depth to prevent infinite loops
-        
+
     Returns:
         Filtered data structure with Exception and callable objects removed, or None if the
         entire input was an Exception or callable
     """
     if max_depth <= 0:
         return data
-    
+
     # Skip exception objects
     if isinstance(data, Exception):
         return None
@@ -333,7 +314,7 @@ def filter_exceptions_from_params(data: Any, max_depth: int = 20) -> Any:
     obj_type_name = type(data).__name__
     if obj_type_name in ["Logging", "LiteLLMLoggingObj"]:
         return None
-    
+
     if isinstance(data, dict):
         result: dict[str, Any] = {}
         for k, v in data.items():
@@ -369,34 +350,30 @@ def filter_exceptions_from_params(data: Any, max_depth: int = 20) -> Any:
 def filter_internal_params(data: dict, additional_internal_params: Optional[set] = None) -> dict:
     """
     Filter out LiteLLM internal parameters that shouldn't be sent to provider APIs.
-    
+
     This removes internal/MCP-related parameters that are used by LiteLLM internally
     but should not be included in API requests to providers.
-    
+
     Args:
         data: Dictionary of parameters to filter
         additional_internal_params: Optional set of additional internal parameter names to filter
-        
+
     Returns:
         Filtered dictionary with internal parameters removed
     """
     if not isinstance(data, dict):
         return data
-    
+
     # Known internal parameters that should never be sent to provider APIs
     internal_params = {
         "skip_mcp_handler",
         "mcp_handler_context",
         "_skip_mcp_handler",
     }
-    
+
     # Add any additional internal params if provided
     if additional_internal_params:
         internal_params.update(additional_internal_params)
-    
+
     # Filter out internal parameters
-    return {
-        k: v
-        for k, v in data.items()
-        if k not in internal_params
-    }
+    return {k: v for k, v in data.items() if k not in internal_params}

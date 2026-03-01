@@ -1,10 +1,9 @@
 from typing import TYPE_CHECKING, Any, Optional, Union
 
+import litellm
 from pydantic import ConfigDict
 from semantic_router.encoders import DenseEncoder
 from semantic_router.encoders.base import AsymmetricDenseMixin
-
-import litellm
 
 if TYPE_CHECKING:
     from litellm.router import Router
@@ -18,23 +17,19 @@ def litellm_to_list(embeds: litellm.EmbeddingResponse) -> list[list[float]]:
     :param embeds: The LiteLLM embedding response.
     :return: A list of embeddings.
     """
-    if (
-        not embeds
-        or not isinstance(embeds, litellm.EmbeddingResponse)
-        or not embeds.data
-    ):
+    if not embeds or not isinstance(embeds, litellm.EmbeddingResponse) or not embeds.data:
         raise ValueError("No embeddings found in LiteLLM embedding response.")
     return [x["embedding"] for x in embeds.data]
 
 
 class CustomDenseEncoder(DenseEncoder):
-    model_config = ConfigDict(extra='allow')
+    model_config = ConfigDict(extra="allow")
 
     def __init__(self, litellm_router_instance: Optional["Router"] = None, **kwargs):
         # Extract litellm_router_instance from kwargs if passed there
-        if 'litellm_router_instance' in kwargs:
-            litellm_router_instance = kwargs.pop('litellm_router_instance')
-        
+        if "litellm_router_instance" in kwargs:
+            litellm_router_instance = kwargs.pop("litellm_router_instance")
+
         super().__init__(**kwargs)
         self.litellm_router_instance = litellm_router_instance
 
@@ -91,57 +86,41 @@ class LiteLLMRouterEncoder(CustomDenseEncoder, AsymmetricDenseMixin):
             raise ValueError("litellm_router_instance is not set")
         try:
             embeds = self.litellm_router_instance.embedding(
-                input=docs, 
-                model=self.model_name, 
-                **kwargs
+                input=docs, model=self.model_name, **kwargs
             )
             return litellm_to_list(embeds)
         except Exception as e:
-            raise ValueError(
-                f"{self.type.capitalize()} API call failed. Error: {e}"
-            ) from e
+            raise ValueError(f"{self.type.capitalize()} API call failed. Error: {e}") from e
 
     def encode_documents(self, docs: list[str], **kwargs) -> list[list[float]]:
         if self.litellm_router_instance is None:
             raise ValueError("litellm_router_instance is not set")
         try:
             embeds = self.litellm_router_instance.embedding(
-                input=docs, 
-                model=self.model_name, 
-                **kwargs
+                input=docs, model=self.model_name, **kwargs
             )
             return litellm_to_list(embeds)
         except Exception as e:
-            raise ValueError(
-                f"{self.type.capitalize()} API call failed. Error: {e}"
-            ) from e
+            raise ValueError(f"{self.type.capitalize()} API call failed. Error: {e}") from e
 
     async def aencode_queries(self, docs: list[str], **kwargs) -> list[list[float]]:
         if self.litellm_router_instance is None:
             raise ValueError("litellm_router_instance is not set")
         try:
             embeds = await self.litellm_router_instance.aembedding(
-                input=docs, 
-                model=self.model_name,
-                **kwargs
+                input=docs, model=self.model_name, **kwargs
             )
             return litellm_to_list(embeds)
         except Exception as e:
-            raise ValueError(
-                f"{self.type.capitalize()} API call failed. Error: {e}"
-            ) from e
+            raise ValueError(f"{self.type.capitalize()} API call failed. Error: {e}") from e
 
     async def aencode_documents(self, docs: list[str], **kwargs) -> list[list[float]]:
         if self.litellm_router_instance is None:
             raise ValueError("litellm_router_instance is not set")
         try:
             embeds = await self.litellm_router_instance.aembedding(
-                input=docs, 
-                model=self.model_name,
-                **kwargs
+                input=docs, model=self.model_name, **kwargs
             )
             return litellm_to_list(embeds)
         except Exception as e:
-            raise ValueError(
-                f"{self.type.capitalize()} API call failed. Error: {e}"
-            ) from e
+            raise ValueError(f"{self.type.capitalize()} API call failed. Error: {e}") from e

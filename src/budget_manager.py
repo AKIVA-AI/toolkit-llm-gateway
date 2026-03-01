@@ -62,14 +62,10 @@ class BudgetManager:
             # Load the user_dict from hosted db
             url = self.api_base + "/get_budget"
             data = {"project_name": self.project_name}
-            response = litellm.module_level_client.post(
-                url, headers=self.headers, json=data
-            )
+            response = litellm.module_level_client.post(url, headers=self.headers, json=data)
             response = response.json()
             if response["status"] == "error":
-                self.user_dict = (
-                    {}
-                )  # assume this means the user dict hasn't been stored yet
+                self.user_dict = {}  # assume this means the user dict hasn't been stored yet
             else:
                 self.user_dict = response["data"]
 
@@ -152,9 +148,7 @@ class BudgetManager:
                 "Either a chat completion object or the text response needs to be passed in. Learn more - https://docs.litellm.ai/docs/budget_manager"
             )
 
-        self.user_dict[user]["current_cost"] = cost + self.user_dict[user].get(
-            "current_cost", 0
-        )
+        self.user_dict[user]["current_cost"] = cost + self.user_dict[user].get("current_cost", 0)
         if "model_cost" in self.user_dict[user]:
             self.user_dict[user]["model_cost"][model] = cost + self.user_dict[user][
                 "model_cost"
@@ -188,9 +182,7 @@ class BudgetManager:
         current_time = time.time()
 
         # Convert duration from days to seconds
-        duration_in_seconds = (
-            self.user_dict[user]["duration"] * HOURS_IN_A_DAY * 60 * 60
-        )
+        duration_in_seconds = self.user_dict[user]["duration"] * HOURS_IN_A_DAY * 60 * 60
 
         # Check if duration has elapsed
         if current_time - last_updated_at >= duration_in_seconds:
@@ -216,15 +208,11 @@ class BudgetManager:
 
             # save the user dict
             with open("user_cost.json", "w") as json_file:
-                json.dump(
-                    self.user_dict, json_file, indent=4
-                )  # Indent for pretty formatting
+                json.dump(self.user_dict, json_file, indent=4)  # Indent for pretty formatting
             return {"status": "success"}
         elif self.client_type == "hosted":
             url = self.api_base + "/set_budget"
             data = {"project_name": self.project_name, "user_dict": self.user_dict}
-            response = litellm.module_level_client.post(
-                url, headers=self.headers, json=data
-            )
+            response = litellm.module_level_client.post(url, headers=self.headers, json=data)
             response = response.json()
             return response

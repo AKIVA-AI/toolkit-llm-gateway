@@ -102,9 +102,7 @@ class FeatherlessAIConfig(OpenAIGPTConfig):
     ) -> Tuple[Optional[str], Optional[str]]:
         # FeatherlessAI is openai compatible, set to custom_openai and use FeatherlessAI's endpoint
         api_base = (
-            api_base
-            or get_secret_str("FEATHERLESS_API_BASE")
-            or "https://api.featherless.ai/v1"
+            api_base or get_secret_str("FEATHERLESS_API_BASE") or "https://api.featherless.ai/v1"
         )
         dynamic_api_key = api_key or get_secret_str("FEATHERLESS_API_KEY")
         return api_base, dynamic_api_key

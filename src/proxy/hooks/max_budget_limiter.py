@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-
 from litellm import verbose_logger
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import DualCache

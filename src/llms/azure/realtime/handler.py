@@ -6,13 +6,13 @@ This requires websockets, and is currently only supported on LiteLLM Proxy.
 
 from typing import Any, Optional, cast
 
+from litellm._logging import verbose_proxy_logger
 from litellm.constants import REALTIME_WEBSOCKET_MAX_MESSAGE_SIZE_BYTES
 
 from ....litellm_core_utils.litellm_logging import Logging as LiteLLMLogging
 from ....litellm_core_utils.realtime_streaming import RealTimeStreaming
 from ....llms.custom_httpx.http_handler import get_shared_realtime_ssl_context
 from ..azure import AzureChatCompletion
-from litellm._logging import verbose_proxy_logger
 
 # BACKEND_WS_URL = "ws://localhost:8080/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01"
 
@@ -58,7 +58,7 @@ class AzureOpenAIRealtime(AzureChatCompletion):
 
         # Determine path based on realtime_protocol
         if realtime_protocol in ("GA", "v1"):
-            path = "/openai/v1/realtime" 
+            path = "/openai/v1/realtime"
             return f"{api_base}{path}?model={model}"
         else:
             # Default to beta path for backwards compatibility
@@ -86,9 +86,7 @@ class AzureOpenAIRealtime(AzureChatCompletion):
         if api_version is None:
             raise ValueError("api_version is required for Azure OpenAI calls")
 
-        url = self._construct_url(
-            api_base, model, api_version, realtime_protocol=realtime_protocol
-        )
+        url = self._construct_url(api_base, model, api_version, realtime_protocol=realtime_protocol)
 
         try:
             ssl_context = get_shared_realtime_ssl_context()

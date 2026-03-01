@@ -8,17 +8,14 @@
 import os
 import sys
 
-sys.path.insert(
-    0, os.path.abspath("../..")
-)  # Adds the parent directory to the system path
+sys.path.insert(0, os.path.abspath("../.."))  # Adds the parent directory to the system path
 import json
 import sys
 from typing import Dict, List, Literal, Optional, Union
 
 import httpx
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import (
     CustomGuardrail,
@@ -62,9 +59,7 @@ class lakeraAI_Moderation(CustomGuardrail):
         self.lakera_api_key = api_key or os.environ["LAKERA_API_KEY"]
         self.moderation_check = moderation_check
         self.category_thresholds = category_thresholds
-        self.api_base = (
-            api_base or get_secret("LAKERA_API_BASE") or "https://api.lakera.ai"
-        )
+        self.api_base = api_base or get_secret("LAKERA_API_BASE") or "https://api.lakera.ai"
         super().__init__(**kwargs)
 
     #### CALL HOOKS - proxy only ####
@@ -79,15 +74,9 @@ class lakeraAI_Moderation(CustomGuardrail):
         if self.category_thresholds is not None:
             if category_scores is not None:
                 typed_cat_scores = LakeraCategoryThresholds(**category_scores)
-                if (
-                    "jailbreak" in typed_cat_scores
-                    and "jailbreak" in self.category_thresholds
-                ):
+                if "jailbreak" in typed_cat_scores and "jailbreak" in self.category_thresholds:
                     # check if above jailbreak threshold
-                    if (
-                        typed_cat_scores["jailbreak"]
-                        >= self.category_thresholds["jailbreak"]
-                    ):
+                    if typed_cat_scores["jailbreak"] >= self.category_thresholds["jailbreak"]:
                         raise HTTPException(
                             status_code=400,
                             detail={
@@ -150,9 +139,9 @@ class lakeraAI_Moderation(CustomGuardrail):
         text = ""
         _json_data: str = ""
         if "messages" in data and isinstance(data["messages"], list):
-            prompt_injection_obj: Optional[
-                GuardrailItem
-            ] = litellm.guardrail_name_config_map.get("prompt_injection")
+            prompt_injection_obj: Optional[GuardrailItem] = litellm.guardrail_name_config_map.get(
+                "prompt_injection"
+            )
             if prompt_injection_obj is not None:
                 enabled_roles = prompt_injection_obj.enabled_roles
             else:
@@ -168,9 +157,7 @@ class lakeraAI_Moderation(CustomGuardrail):
                         stringified_roles.append(role.value)
                     elif isinstance(role, str):
                         stringified_roles.append(role)
-            lakera_input_dict: Dict = {
-                role: None for role in INPUT_POSITIONING_MAP.keys()
-            }
+            lakera_input_dict: Dict = {role: None for role in INPUT_POSITIONING_MAP.keys()}
             system_message = None
             tool_call_messages: List = []
             for message in data["messages"]:
@@ -328,9 +315,7 @@ class lakeraAI_Moderation(CustomGuardrail):
             # v2 guardrails implementation
 
             if (
-                self.should_run_guardrail(
-                    data=data, event_type=GuardrailEventHooks.pre_call
-                )
+                self.should_run_guardrail(data=data, event_type=GuardrailEventHooks.pre_call)
                 is not True
             ):
                 return None

@@ -53,9 +53,7 @@ def get_nested_value(
 
     # Remove metadata. prefix if it exists
     key_path = (
-        key_path.replace("metadata.", "", 1)
-        if key_path.startswith("metadata.")
-        else key_path
+        key_path.replace("metadata.", "", 1) if key_path.startswith("metadata.") else key_path
     )
 
     # Split the key path into parts
@@ -100,7 +98,7 @@ def _parse_path_segments(path: str) -> list:
 
     # Match field names OR bracket expressions
     # Pattern: field_name (anything except . or [) | [anything_in_brackets]
-    pattern = r'[^\.\[]+|\[[^\]]*\]'
+    pattern = r"[^\.\[]+|\[[^\]]*\]"
     segments = re.findall(pattern, path)
     return segments
 
@@ -165,7 +163,9 @@ def _delete_nested_value_custom(
         else:
             # Navigate deeper
             if segment in data:
-                next_segment = segments[segment_index + 1] if segment_index + 1 < len(segments) else None
+                next_segment = (
+                    segments[segment_index + 1] if segment_index + 1 < len(segments) else None
+                )
 
                 # If next segment is array notation, current field should be list
                 if next_segment and (next_segment.startswith("[")):

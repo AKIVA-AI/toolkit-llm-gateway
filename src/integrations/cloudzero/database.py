@@ -182,9 +182,7 @@ class LiteLLMDatabase:
                 WHERE i.indrelid = $1::regclass AND i.indisprimary;
                 """
                 pk_response = await client.db.query_raw(pk_query, f'"{table_name}"')
-                primary_keys = (
-                    [row["attname"] for row in pk_response] if pk_response else []
-                )
+                primary_keys = [row["attname"] for row in pk_response] if pk_response else []
 
                 # Get foreign key information
                 fk_query = """

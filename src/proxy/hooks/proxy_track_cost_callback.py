@@ -24,9 +24,7 @@ from litellm.utils import get_end_user_id_for_cost_tracking
 
 class _ProxyDBLogger(CustomLogger):
     async def async_log_success_event(self, kwargs, response_obj, start_time, end_time):
-        await self._PROXY_track_cost_callback(
-            kwargs, response_obj, start_time, end_time
-        )
+        await self._PROXY_track_cost_callback(kwargs, response_obj, start_time, end_time)
 
     async def async_post_call_failure_hook(
         self,
@@ -38,9 +36,7 @@ class _ProxyDBLogger(CustomLogger):
         request_route = user_api_key_dict.request_route
         if _ProxyDBLogger._should_track_errors_in_db() is False:
             return
-        elif request_route is not None and not RouteChecks.is_llm_api_route(
-            route=request_route
-        ):
+        elif request_route is not None and not RouteChecks.is_llm_api_route(route=request_route):
             return
 
         from litellm.proxy.proxy_server import proxy_logging_obj
@@ -68,11 +64,9 @@ class _ProxyDBLogger(CustomLogger):
         )
         _metadata["user_api_key"] = user_api_key_dict.api_key
         _metadata["status"] = "failure"
-        _metadata["error_information"] = (
-            StandardLoggingPayloadSetup.get_error_information(
-                original_exception=original_exception,
-                traceback_str=traceback_str,
-            )
+        _metadata["error_information"] = StandardLoggingPayloadSetup.get_error_information(
+            original_exception=original_exception,
+            traceback_str=traceback_str,
         )
 
         existing_metadata: dict = request_data.get("metadata", None) or {}
@@ -80,25 +74,31 @@ class _ProxyDBLogger(CustomLogger):
 
         if "litellm_params" not in request_data:
             request_data["litellm_params"] = {}
-        
+
         existing_litellm_params = request_data.get("litellm_params", {})
         existing_litellm_metadata = existing_litellm_params.get("metadata", {}) or {}
-        
+
         # Preserve tags from existing metadata
         if existing_litellm_metadata.get("tags"):
             existing_metadata["tags"] = existing_litellm_metadata.get("tags")
-        
+
         request_data["litellm_params"]["proxy_server_request"] = (
-            request_data.get("proxy_server_request") or existing_litellm_params.get("proxy_server_request") or {}
+            request_data.get("proxy_server_request")
+            or existing_litellm_params.get("proxy_server_request")
+            or {}
         )
         request_data["litellm_params"]["metadata"] = existing_metadata
-        
+
         # Preserve model name and custom_llm_provider
         if "model" not in request_data:
-            request_data["model"] = existing_litellm_params.get("model") or request_data.get("model", "")
+            request_data["model"] = existing_litellm_params.get("model") or request_data.get(
+                "model", ""
+            )
         if "custom_llm_provider" not in request_data:
-            request_data["custom_llm_provider"] = existing_litellm_params.get("custom_llm_provider") or request_data.get("custom_llm_provider", "")
-        
+            request_data["custom_llm_provider"] = existing_litellm_params.get(
+                "custom_llm_provider"
+            ) or request_data.get("custom_llm_provider", "")
+
         await proxy_logging_obj.db_spend_update_writer.update_database(
             token=user_api_key_dict.api_key,
             response_cost=0.0,
@@ -211,20 +211,18 @@ class _ProxyDBLogger(CustomLogger):
                             or "response_cost_failure_debug_info is None in standard_logging_object"
                         )
                     else:
-                        cost_tracking_failure_debug_info = (
-                            "standard_logging_object not found"
-                        )
+                        cost_tracking_failure_debug_info = "standard_logging_object not found"
                     model = kwargs.get("model")
                     raise Exception(
                         f"Cost tracking failed for model={model}.\nDebug info - {cost_tracking_failure_debug_info}\nAdd custom pricing - https://docs.litellm.ai/docs/proxy/custom_pricing"
                     )
         except Exception as e:
-            error_msg = f"Error in tracking cost callback - {str(e)}\n Traceback:{traceback.format_exc()}"
+            error_msg = (
+                f"Error in tracking cost callback - {str(e)}\n Traceback:{traceback.format_exc()}"
+            )
             model = kwargs.get("model", "")
             metadata = get_litellm_metadata_from_kwargs(kwargs=kwargs)
-            litellm_metadata = kwargs.get("litellm_params", {}).get(
-                "litellm_metadata", {}
-            )
+            litellm_metadata = kwargs.get("litellm_params", {}).get("litellm_metadata", {})
             old_metadata = kwargs.get("litellm_params", {}).get("metadata", {})
             call_type = kwargs.get("call_type", "")
             error_msg += f"\n Args to _PROXY_track_cost_callback\n model: {model}\n chosen_metadata: {metadata}\n litellm_metadata: {litellm_metadata}\n old_metadata: {old_metadata}\n call_type: {call_type}\n"
@@ -235,9 +233,7 @@ class _ProxyDBLogger(CustomLogger):
                 )
             )
 
-            verbose_proxy_logger.exception(
-                "Error in tracking cost callback - %s", str(e)
-            )
+            verbose_proxy_logger.exception("Error in tracking cost callback - %s", str(e))
 
     @staticmethod
     def _should_track_errors_in_db():

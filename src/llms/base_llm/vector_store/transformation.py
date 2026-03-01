@@ -2,11 +2,10 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import httpx
-
 from litellm.types.router import GenericLiteLLMParams
 from litellm.types.vector_stores import (
-    BaseVectorStoreAuthCredentials,
     VECTOR_STORE_OPENAI_PARAMS,
+    BaseVectorStoreAuthCredentials,
     VectorStoreCreateOptionalRequestParams,
     VectorStoreCreateResponse,
     VectorStoreIndexEndpoints,
@@ -28,9 +27,7 @@ else:
 
 class BaseVectorStoreConfig:
 
-    def get_supported_openai_params(
-        self, model: str
-    ) -> List[VECTOR_STORE_OPENAI_PARAMS]:
+    def get_supported_openai_params(self, model: str) -> List[VECTOR_STORE_OPENAI_PARAMS]:
         return []
 
     def map_openai_params(
@@ -42,9 +39,7 @@ class BaseVectorStoreConfig:
         return optional_params
 
     @abstractmethod
-    def get_auth_credentials(
-        self, litellm_params: dict
-    ) -> BaseVectorStoreAuthCredentials:
+    def get_auth_credentials(self, litellm_params: dict) -> BaseVectorStoreAuthCredentials:
         pass
 
     @abstractmethod

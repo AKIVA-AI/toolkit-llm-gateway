@@ -1,6 +1,5 @@
-from typing import Literal, Optional
+from typing import Optional
 
-import litellm
 from litellm.integrations.custom_logger import CustomLogger
 from litellm.proxy.proxy_server import DualCache, UserAPIKeyAuth
 from litellm.types.utils import CallTypesLiteral

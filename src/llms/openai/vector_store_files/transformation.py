@@ -1,7 +1,6 @@
 from typing import Any, Dict, Optional, Tuple, cast
 
 import httpx
-
 import litellm
 from litellm.llms.base_llm.vector_store_files.transformation import (
     BaseVectorStoreFilesConfig,
@@ -41,9 +40,7 @@ class OpenAIVectorStoreFilesConfig(BaseVectorStoreFilesConfig):
             }
         }
 
-    def get_vector_store_file_endpoints_by_type(self) -> Dict[
-        str, Tuple[Tuple[str, str], ...]
-    ]:
+    def get_vector_store_file_endpoints_by_type(self) -> Dict[str, Tuple[Tuple[str, str], ...]]:
         return {
             "read": (
                 ("GET", "/vector_stores/{vector_store_id}/files"),

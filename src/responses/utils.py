@@ -12,8 +12,6 @@ from typing import (
     overload,
 )
 
-from pydantic import BaseModel
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.llms.base_llm.responses.transformation import BaseResponsesAPIConfig
@@ -30,6 +28,7 @@ from litellm.types.utils import (
     SpecialEnums,
     Usage,
 )
+from pydantic import BaseModel
 
 
 class ResponsesAPIRequestUtils:
@@ -50,9 +49,7 @@ class ResponsesAPIRequestUtils:
             if k not in supported_params:
                 unsupported_params[k] = non_default_params[k]
         if unsupported_params:
-            if litellm.drop_params is True or (
-                drop_params is not None and drop_params is True
-            ):
+            if litellm.drop_params is True or (drop_params is not None and drop_params is True):
                 pass
             else:
                 raise litellm.UnsupportedParamsError(
@@ -82,9 +79,7 @@ class ResponsesAPIRequestUtils:
 
         # Remove None values and internal parameters
         # Get supported parameters for the model
-        supported_params = responses_api_provider_config.get_supported_openai_params(
-            model
-        )
+        supported_params = responses_api_provider_config.get_supported_openai_params(model)
 
         non_default_params = cast(Dict, response_api_optional_params)
         # Check for unsupported parameters
@@ -132,15 +127,13 @@ class ResponsesAPIRequestUtils:
         special_params = params.pop("kwargs", {})
 
         additional_drop_params = params.pop("additional_drop_params", None)
-        non_default_params = (
-            PreProcessNonDefaultParams.base_pre_process_non_default_params(
-                passed_params=params,
-                special_params=special_params,
-                custom_llm_provider=custom_llm_provider,
-                additional_drop_params=additional_drop_params,
-                default_param_values={k: None for k in valid_keys},
-                additional_endpoint_specific_params=["input"],
-            )
+        non_default_params = PreProcessNonDefaultParams.base_pre_process_non_default_params(
+            passed_params=params,
+            special_params=special_params,
+            custom_llm_provider=custom_llm_provider,
+            additional_drop_params=additional_drop_params,
+            default_param_values={k: None for k in valid_keys},
+            additional_endpoint_specific_params=["input"],
         )
 
         # decode previous_response_id if it's a litellm encoded id
@@ -168,7 +161,7 @@ class ResponsesAPIRequestUtils:
         responses_api_response: ResponsesAPIResponse,
         custom_llm_provider: Optional[str],
         litellm_metadata: Optional[Dict[str, Any]] = None,
-    ) -> ResponsesAPIResponse: 
+    ) -> ResponsesAPIResponse:
         ...
 
     @overload
@@ -177,7 +170,7 @@ class ResponsesAPIRequestUtils:
         responses_api_response: Dict[str, Any],
         custom_llm_provider: Optional[str],
         litellm_metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]: 
+    ) -> Dict[str, Any]:
         ...
 
     # fmt: on
@@ -223,12 +216,10 @@ class ResponsesAPIRequestUtils:
         response_id: str,
     ) -> str:
         """Build the responses_api_response_id"""
-        assembled_id: str = str(
-            SpecialEnums.LITELLM_MANAGED_RESPONSE_COMPLETE_STR.value
-        ).format(custom_llm_provider, model_id, response_id)
-        base64_encoded_id: str = base64.b64encode(assembled_id.encode("utf-8")).decode(
-            "utf-8"
+        assembled_id: str = str(SpecialEnums.LITELLM_MANAGED_RESPONSE_COMPLETE_STR.value).format(
+            custom_llm_provider, model_id, response_id
         )
+        base64_encoded_id: str = base64.b64encode(assembled_id.encode("utf-8")).decode("utf-8")
         return f"resp_{base64_encoded_id}"
 
     @staticmethod
@@ -260,9 +251,7 @@ class ResponsesAPIRequestUtils:
             custom_llm_provider = None
             model_id = None
 
-            if (
-                len(parts) >= 3
-            ):  # Full format with custom_llm_provider, model_id, and response_id
+            if len(parts) >= 3:  # Full format with custom_llm_provider, model_id, and response_id
                 custom_llm_provider_part = parts[0]
                 model_id_part = parts[1]
                 response_part = parts[2]
@@ -293,8 +282,8 @@ class ResponsesAPIRequestUtils:
         """Get the model_id from the response_id"""
         if response_id is None:
             return None
-        decoded_response_id = (
-            ResponsesAPIRequestUtils._decode_responses_api_response_id(response_id)
+        decoded_response_id = ResponsesAPIRequestUtils._decode_responses_api_response_id(
+            response_id
         )
         return decoded_response_id.get("model_id") or None
 
@@ -315,10 +304,8 @@ class ResponsesAPIRequestUtils:
         Returns:
             The original previous_response_id
         """
-        decoded_response_id = (
-            ResponsesAPIRequestUtils._decode_responses_api_response_id(
-                previous_response_id
-            )
+        decoded_response_id = ResponsesAPIRequestUtils._decode_responses_api_response_id(
+            previous_response_id
         )
         return decoded_response_id.get("response_id", previous_response_id)
 
@@ -370,26 +357,27 @@ class ResponsesAPIRequestUtils:
         Extract MCP auth headers from the request to pass to MCP server.
         Headers from tools.headers in request body should be passed to MCP server.
         """
-        from starlette.datastructures import Headers
-
         from litellm.proxy._experimental.mcp_server.auth.user_api_key_auth_mcp import (
             MCPRequestHandler,
         )
+        from starlette.datastructures import Headers
 
         # Extract headers from secret_fields which contains the original request headers
         raw_headers_from_request: Optional[Dict[str, str]] = None
         if secret_fields and isinstance(secret_fields, dict):
             raw_headers_from_request = secret_fields.get("raw_headers")
-        
+
         # Extract MCP-specific headers using MCPRequestHandler methods
         mcp_auth_header: Optional[str] = None
         mcp_server_auth_headers: Optional[Dict[str, Dict[str, str]]] = None
         oauth2_headers: Optional[Dict[str, str]] = None
-        
+
         if raw_headers_from_request:
             headers_obj = Headers(raw_headers_from_request)
             mcp_auth_header = MCPRequestHandler._get_mcp_auth_header_from_headers(headers_obj)
-            mcp_server_auth_headers = MCPRequestHandler._get_mcp_server_auth_headers_from_headers(headers_obj)
+            mcp_server_auth_headers = MCPRequestHandler._get_mcp_server_auth_headers_from_headers(
+                headers_obj
+            )
             oauth2_headers = MCPRequestHandler._get_oauth2_headers_from_headers(headers_obj)
 
         if tools:
@@ -400,7 +388,11 @@ class ResponsesAPIRequestUtils:
                         # Merge tool headers into mcp_server_auth_headers
                         # Extract server-specific headers from tool.headers
                         headers_obj_from_tool = Headers(tool_headers)
-                        tool_mcp_server_auth_headers = MCPRequestHandler._get_mcp_server_auth_headers_from_headers(headers_obj_from_tool)
+                        tool_mcp_server_auth_headers = (
+                            MCPRequestHandler._get_mcp_server_auth_headers_from_headers(
+                                headers_obj_from_tool
+                            )
+                        )
                         if tool_mcp_server_auth_headers:
                             if mcp_server_auth_headers is None:
                                 mcp_server_auth_headers = {}
@@ -413,7 +405,7 @@ class ResponsesAPIRequestUtils:
                         if raw_headers_from_request is None:
                             raw_headers_from_request = {}
                         raw_headers_from_request.update(tool_headers)
-        
+
         return mcp_auth_header, mcp_server_auth_headers, oauth2_headers, raw_headers_from_request
 
 
@@ -439,9 +431,7 @@ class ResponseAPILoggingUtils:
                 total_tokens=0,
             )
         response_api_usage: ResponseAPIUsage = (
-            ResponseAPIUsage(**usage_input)
-            if isinstance(usage_input, dict)
-            else usage_input
+            ResponseAPIUsage(**usage_input) if isinstance(usage_input, dict) else usage_input
         )
         prompt_tokens: int = response_api_usage.input_tokens or 0
         completion_tokens: int = response_api_usage.output_tokens or 0
@@ -458,7 +448,7 @@ class ResponseAPILoggingUtils:
                     response_api_usage.output_tokens_details, "reasoning_tokens", None
                 )
             )
-            
+
         chat_usage = Usage(
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,

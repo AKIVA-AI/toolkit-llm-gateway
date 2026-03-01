@@ -5,9 +5,6 @@ import json
 import os
 from typing import TYPE_CHECKING, Any, Optional
 
-from opentelemetry.trace import Status, StatusCode
-from typing_extensions import override
-
 from litellm._logging import verbose_logger
 from litellm.integrations._types.open_inference import SpanAttributes as OpenInferenceSpanAttributes
 from litellm.integrations.arize import _utils
@@ -19,6 +16,8 @@ from litellm.integrations.opentelemetry_utils.base_otel_llm_obs_attributes impor
 from litellm.litellm_core_utils.safe_json_dumps import safe_dumps
 from litellm.types.integrations.weave_otel import WeaveOtelConfig, WeaveSpanAttributes
 from litellm.types.utils import StandardCallbackDynamicParams
+from opentelemetry.trace import Status, StatusCode
+from typing_extensions import override
 
 if TYPE_CHECKING:
     from opentelemetry.trace import Span
@@ -100,7 +99,9 @@ def _set_weave_specific_attributes(span: Span, kwargs: dict[str, Any], response_
             output_dict = response_obj
 
         if output_dict:
-            safe_set_attribute(span, OpenInferenceSpanAttributes.OUTPUT_VALUE, safe_dumps(output_dict))
+            safe_set_attribute(
+                span, OpenInferenceSpanAttributes.OUTPUT_VALUE, safe_dumps(output_dict)
+            )
 
 
 def _get_weave_authorization_header(api_key: str) -> str:
@@ -281,7 +282,9 @@ class WeaveOtelLogger(OpenTelemetry):
         primary_span_parent = None
 
         # 1. Primary span
-        span = self._start_primary_span(kwargs, response_obj, start_time, end_time, ctx, primary_span_parent)
+        span = self._start_primary_span(
+            kwargs, response_obj, start_time, end_time, ctx, primary_span_parent
+        )
 
         # 2. Raw-request sub-span (skipped for Weave via _maybe_log_raw_request override)
         self._maybe_log_raw_request(kwargs, response_obj, start_time, end_time, span)

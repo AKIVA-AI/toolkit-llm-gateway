@@ -1,8 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 
-from typing_extensions import TypedDict
-
 from litellm.types.guardrails import PiiEntityType
+from typing_extensions import TypedDict
 
 
 class PresidioAnalyzeRequest(TypedDict, total=False):

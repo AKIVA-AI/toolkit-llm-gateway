@@ -28,9 +28,7 @@ def get_response_headers(_response_headers: Optional[dict] = None) -> dict:
             "x-ratelimit-remaining-requests"
         ]
     if "x-ratelimit-limit-tokens" in _response_headers:
-        openai_headers["x-ratelimit-limit-tokens"] = _response_headers[
-            "x-ratelimit-limit-tokens"
-        ]
+        openai_headers["x-ratelimit-limit-tokens"] = _response_headers["x-ratelimit-limit-tokens"]
     if "x-ratelimit-remaining-tokens" in _response_headers:
         openai_headers["x-ratelimit-remaining-tokens"] = _response_headers[
             "x-ratelimit-remaining-tokens"

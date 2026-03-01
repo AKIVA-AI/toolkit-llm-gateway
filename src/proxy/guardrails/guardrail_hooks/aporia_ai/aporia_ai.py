@@ -8,15 +8,12 @@
 import os
 import sys
 
-sys.path.insert(
-    0, os.path.abspath("../..")
-)  # Adds the parent directory to the system path
+sys.path.insert(0, os.path.abspath("../.."))  # Adds the parent directory to the system path
 import json
 import sys
 from typing import TYPE_CHECKING, Any, List, Literal, Optional, Type
 
 from fastapi import HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import (
     CustomGuardrail,
@@ -39,9 +36,7 @@ if TYPE_CHECKING:
 
 
 class AporiaGuardrail(CustomGuardrail):
-    def __init__(
-        self, api_key: Optional[str] = None, api_base: Optional[str] = None, **kwargs
-    ):
+    def __init__(self, api_key: Optional[str] = None, api_base: Optional[str] = None, **kwargs):
         self.async_handler = get_async_httpx_client(
             llm_provider=httpxSpecialProvider.GuardrailCallback
         )
@@ -97,9 +92,7 @@ class AporiaGuardrail(CustomGuardrail):
             new_messages=new_messages, response_string=response_string
         )
 
-        data.update(
-            self.get_guardrail_dynamic_request_body_params(request_data=request_data)
-        )
+        data.update(self.get_guardrail_dynamic_request_body_params(request_data=request_data))
 
         _json_data = json.dumps(data)
 
@@ -227,9 +220,7 @@ class AporiaGuardrail(CustomGuardrail):
                 request_data=data, guardrail_name=self.guardrail_name
             )
         else:
-            verbose_proxy_logger.warning(
-                "Aporia AI: not running guardrail. No messages in data"
-            )
+            verbose_proxy_logger.warning("Aporia AI: not running guardrail. No messages in data")
             pass
 
     @staticmethod

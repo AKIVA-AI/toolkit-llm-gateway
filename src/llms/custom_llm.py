@@ -20,7 +20,6 @@ from typing import (
 )
 
 import httpx
-
 from litellm.llms.custom_httpx.http_handler import AsyncHTTPHandler, HTTPHandler
 from litellm.types.utils import GenericStreamingChunk
 from litellm.utils import EmbeddingResponse, ImageResponse, ModelResponse
@@ -198,9 +197,7 @@ class CustomLLM(BaseLLM):
         raise CustomLLMError(status_code=500, message="Not implemented yet!")
 
 
-def custom_chat_llm_router(
-    async_fn: bool, stream: Optional[bool], custom_llm: CustomLLM
-):
+def custom_chat_llm_router(async_fn: bool, stream: Optional[bool], custom_llm: CustomLLM):
     """
     Routes call to CustomLLM completion/acompletion/streaming/astreaming functions, based on call type
 

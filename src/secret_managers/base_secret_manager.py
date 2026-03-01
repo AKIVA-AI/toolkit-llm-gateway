@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, Union
 
 import httpx
-
 from litellm import verbose_logger
 
 
@@ -59,7 +58,7 @@ class BaseSecretManager(ABC):
         description: Optional[str] = None,
         optional_params: Optional[dict] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
-        tags: Optional[Union[dict, list]] = None
+        tags: Optional[Union[dict, list]] = None,
     ) -> Dict[str, Any]:
         """
         Asynchronously write a secret to the secret manager.
@@ -174,7 +173,5 @@ class BaseSecretManager(ABC):
         except httpx.TimeoutException:
             raise ValueError("Timeout error occurred")
         except Exception as e:
-            verbose_logger.exception(
-                "Error rotating secret in AWS Secrets Manager: %s", str(e)
-            )
+            verbose_logger.exception("Error rotating secret in AWS Secrets Manager: %s", str(e))
             raise

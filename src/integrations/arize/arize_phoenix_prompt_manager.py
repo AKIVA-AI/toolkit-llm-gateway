@@ -6,7 +6,6 @@ Fetches prompt versions from Arize Phoenix and provides workspace-based access c
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from jinja2 import DictLoader, Environment, select_autoescape
-
 from litellm.integrations.custom_prompt_management import CustomPromptManagement
 from litellm.integrations.prompt_management_base import (
     PromptManagementBase,
@@ -43,9 +42,7 @@ class ArizePhoenixPromptTemplate:
         self.template_format = metadata.get("template_format", "MUSTACHE")
 
     def __repr__(self):
-        return (
-            f"ArizePhoenixPromptTemplate(id='{self.template_id}', model='{self.model}')"
-        )
+        return f"ArizePhoenixPromptTemplate(id='{self.template_id}', model='{self.model}')"
 
 
 class ArizePhoenixTemplateManager:
@@ -70,9 +67,7 @@ class ArizePhoenixTemplateManager:
         self.api_base = api_base
         self.prompt_id = prompt_id
         self.prompts: Dict[str, ArizePhoenixPromptTemplate] = {}
-        self.arize_client = ArizePhoenixClient(
-            api_key=self.api_key, api_base=self.api_base
-        )
+        self.arize_client = ArizePhoenixClient(api_key=self.api_key, api_base=self.api_base)
 
         self.jinja_env = Environment(
             loader=DictLoader({}),
@@ -177,9 +172,7 @@ class ArizePhoenixTemplateManager:
             # Combine rendered content
             final_content = " ".join(rendered_content_parts)
 
-            rendered_messages.append(
-                {"role": role, "content": final_content}  # type: ignore
-            )
+            rendered_messages.append({"role": role, "content": final_content})  # type: ignore
 
         return rendered_messages
 
@@ -265,9 +258,7 @@ class ArizePhoenixPromptManager(CustomPromptManagement):
             raise ValueError(f"Prompt template '{prompt_id}' not found")
 
         # Render the template
-        rendered_messages = self.prompt_manager.render_template(
-            prompt_id, prompt_variables or {}
-        )
+        rendered_messages = self.prompt_manager.render_template(prompt_id, prompt_variables or {})
 
         # Extract metadata
         metadata = {

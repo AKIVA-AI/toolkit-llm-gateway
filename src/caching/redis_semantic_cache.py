@@ -283,9 +283,7 @@ class RedisSemanticCache(BaseCache):
 
         # Route the embedding request through the proxy if appropriate
         router_model_names = (
-            [m["model_name"] for m in llm_model_list]
-            if llm_model_list is not None
-            else []
+            [m["model_name"] for m in llm_model_list] if llm_model_list is not None else []
         )
 
         try:
@@ -431,9 +429,7 @@ class RedisSemanticCache(BaseCache):
         aindex = await self.llmcache._get_async_index()
         return await aindex.info()
 
-    async def async_set_cache_pipeline(
-        self, cache_list: List[Tuple[str, Any]], **kwargs
-    ) -> None:
+    async def async_set_cache_pipeline(self, cache_list: List[Tuple[str, Any]], **kwargs) -> None:
         """
         Asynchronously store multiple values in the semantic cache.
 

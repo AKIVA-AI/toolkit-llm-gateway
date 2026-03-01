@@ -40,9 +40,7 @@ class TraceloopLogger:
         from opentelemetry.trace import SpanKind, Status, StatusCode
 
         try:
-            print_verbose(
-                f"Traceloop Logging - Enters logging function for model {kwargs}"
-            )
+            print_verbose(f"Traceloop Logging - Enters logging function for model {kwargs}")
 
             tracer = self.tracer_wrapper.get_tracer()
 
@@ -54,9 +52,7 @@ class TraceloopLogger:
             )
 
             if span.is_recording():
-                span.set_attribute(
-                    SpanAttributes.LLM_REQUEST_MODEL, kwargs.get("model")
-                )
+                span.set_attribute(SpanAttributes.LLM_REQUEST_MODEL, kwargs.get("model"))
                 if "stop" in optional_params:
                     span.set_attribute(
                         SpanAttributes.LLM_CHAT_STOP_SEQUENCES,
@@ -82,9 +78,7 @@ class TraceloopLogger:
                         optional_params.get("tools", optional_params.get("functions")),
                     )
                 if "user" in optional_params:
-                    span.set_attribute(
-                        SpanAttributes.LLM_USER, optional_params.get("user")
-                    )
+                    span.set_attribute(SpanAttributes.LLM_USER, optional_params.get("user"))
                 if "max_tokens" in optional_params:
                     span.set_attribute(
                         SpanAttributes.LLM_REQUEST_MAX_TOKENS,
@@ -106,9 +100,7 @@ class TraceloopLogger:
                         prompt.get("content"),
                     )
 
-                span.set_attribute(
-                    SpanAttributes.LLM_RESPONSE_MODEL, response_obj.get("model")
-                )
+                span.set_attribute(SpanAttributes.LLM_RESPONSE_MODEL, response_obj.get("model"))
                 usage = response_obj.get("usage")
                 if usage:
                     span.set_attribute(
@@ -138,11 +130,7 @@ class TraceloopLogger:
                         choice.get("message").get("content"),
                     )
 
-            if (
-                level == "ERROR"
-                and status_message is not None
-                and isinstance(status_message, str)
-            ):
+            if level == "ERROR" and status_message is not None and isinstance(status_message, str):
                 span.record_exception(Exception(status_message))
                 span.set_status(Status(StatusCode.ERROR, status_message))
 

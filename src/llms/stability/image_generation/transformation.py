@@ -9,7 +9,6 @@ API Reference: https://platform.stability.ai/docs/api-reference
 from typing import TYPE_CHECKING, Any, List, Optional
 
 import httpx
-
 from litellm.llms.base_llm.image_generation.transformation import (
     BaseImageGenerationConfig,
 )
@@ -45,9 +44,7 @@ class StabilityImageGenerationConfig(BaseImageGenerationConfig):
 
     DEFAULT_BASE_URL: str = "https://api.stability.ai"
 
-    def get_supported_openai_params(
-        self, model: str
-    ) -> List[OpenAIImageGenerationOptionalParams]:
+    def get_supported_openai_params(self, model: str) -> List[OpenAIImageGenerationOptionalParams]:
         """
         Return list of OpenAI params supported by Stability AI.
 
@@ -80,9 +77,7 @@ class StabilityImageGenerationConfig(BaseImageGenerationConfig):
                 if k in supported_params:
                     # Map size to aspect_ratio
                     if k == "size" and v in OPENAI_SIZE_TO_STABILITY_ASPECT_RATIO:
-                        optional_params["aspect_ratio"] = (
-                            OPENAI_SIZE_TO_STABILITY_ASPECT_RATIO[v]
-                        )
+                        optional_params["aspect_ratio"] = OPENAI_SIZE_TO_STABILITY_ASPECT_RATIO[v]
                     elif k == "n":
                         # Store n for later, but don't pass to Stability
                         optional_params["_n"] = v
@@ -131,11 +126,7 @@ class StabilityImageGenerationConfig(BaseImageGenerationConfig):
         """
         Get the complete URL for the Stability AI API request.
         """
-        base_url: str = (
-            api_base
-            or get_secret_str("STABILITY_API_BASE")
-            or self.DEFAULT_BASE_URL
-        )
+        base_url: str = api_base or get_secret_str("STABILITY_API_BASE") or self.DEFAULT_BASE_URL
         base_url = base_url.rstrip("/")
 
         endpoint = self._get_model_endpoint(model)

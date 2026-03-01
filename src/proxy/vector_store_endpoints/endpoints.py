@@ -1,8 +1,7 @@
 from typing import Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
-
 import litellm
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from litellm.integrations.vector_store_integrations.vector_store_pre_call_hook import (
     LiteLLM_ManagedVectorStore,
 )
@@ -34,14 +33,10 @@ def _update_request_data_with_litellm_managed_vector_store_registry(
         )
         if vector_store_to_run is not None:
             if "custom_llm_provider" in vector_store_to_run:
-                data["custom_llm_provider"] = vector_store_to_run.get(
-                    "custom_llm_provider"
-                )
+                data["custom_llm_provider"] = vector_store_to_run.get("custom_llm_provider")
 
             if "litellm_credential_name" in vector_store_to_run:
-                data["litellm_credential_name"] = vector_store_to_run.get(
-                    "litellm_credential_name"
-                )
+                data["litellm_credential_name"] = vector_store_to_run.get("litellm_credential_name")
 
             if "litellm_params" in vector_store_to_run:
                 litellm_params = vector_store_to_run.get("litellm_params", {}) or {}
@@ -211,10 +206,8 @@ async def index_create(
             detail=CommonProxyErrors.db_not_connected_error.value,
         )
     ## 1. check if index already exists
-    existing_index = (
-        await prisma_client.db.litellm_managedvectorstoreindextable.find_unique(
-            where={"index_name": index_create_request.index_name}
-        )
+    existing_index = await prisma_client.db.litellm_managedvectorstoreindextable.find_unique(
+        where={"index_name": index_create_request.index_name}
     )
 
     ## 2. set created_by and updated_by

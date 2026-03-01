@@ -6,9 +6,8 @@ Simplified handler leveraging existing LiteLLM Bedrock infrastructure.
 
 from typing import Any, Dict
 
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_logger
 from litellm.llms.bedrock.count_tokens.transformation import BedrockCountTokensConfig
 from litellm.llms.custom_httpx.http_handler import get_async_httpx_client
@@ -63,9 +62,7 @@ class BedrockCountTokensHandler(BedrockCountTokensConfig):
             verbose_logger.debug(f"Transformed request: {bedrock_request}")
 
             # Get endpoint URL using simplified function
-            endpoint_url = self.get_bedrock_count_tokens_endpoint(
-                resolved_model, aws_region_name
-            )
+            endpoint_url = self.get_bedrock_count_tokens_endpoint(resolved_model, aws_region_name)
 
             verbose_logger.debug(f"Making request to: {endpoint_url}")
 
@@ -83,11 +80,11 @@ class BedrockCountTokensHandler(BedrockCountTokensConfig):
             async_client = get_async_httpx_client(llm_provider=litellm.LlmProviders.BEDROCK)
 
             response = await async_client.post(
-                    endpoint_url,
-                    headers=signed_headers,
-                    data=signed_body,
-                    timeout=30.0,
-                )
+                endpoint_url,
+                headers=signed_headers,
+                data=signed_body,
+                timeout=30.0,
+            )
 
             verbose_logger.debug(f"Response status: {response.status_code}")
 
@@ -104,9 +101,7 @@ class BedrockCountTokensHandler(BedrockCountTokensConfig):
             verbose_logger.debug(f"Bedrock response: {bedrock_response}")
 
             # Transform response back to expected format
-            final_response = self.transform_bedrock_response_to_anthropic(
-                bedrock_response
-            )
+            final_response = self.transform_bedrock_response_to_anthropic(bedrock_response)
 
             verbose_logger.debug(f"Final response: {final_response}")
 

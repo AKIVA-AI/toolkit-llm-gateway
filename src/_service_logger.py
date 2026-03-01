@@ -12,9 +12,8 @@ from .integrations.prometheus_services import PrometheusServicesLogger
 from .types.services import ServiceLoggerPayload, ServiceTypes
 
 if TYPE_CHECKING:
-    from opentelemetry.trace import Span as _Span
-
     from litellm.proxy._types import UserAPIKeyAuth
+    from opentelemetry.trace import Span as _Span
 
     Span = Union[_Span, Any]
     OTELClass = OpenTelemetry
@@ -132,9 +131,7 @@ class ServiceLogging(CustomLogger):
         for callback in litellm.service_callback:
             if callback == "prometheus_system":
                 await self.init_prometheus_services_logger_if_none()
-                await self.prometheusServicesLogger.async_service_success_hook(
-                    payload=payload
-                )
+                await self.prometheusServicesLogger.async_service_success_hook(payload=payload)
             elif callback == "datadog" or isinstance(callback, DataDogLogger):
                 await self.init_datadog_logger_if_none()
                 await self.dd_logger.async_service_success_hook(

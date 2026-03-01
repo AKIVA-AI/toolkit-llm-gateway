@@ -1,11 +1,9 @@
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union, cast, get_type_hints
 
 import httpx
-from openai.types.responses import ResponseReasoningItem
-from pydantic import BaseModel
-
 import litellm
 from litellm._logging import verbose_logger
+from litellm.litellm_core_utils.core_helpers import process_response_headers
 from litellm.litellm_core_utils.llm_response_utils.convert_dict_to_response import (
     _safe_convert_created_field,
 )
@@ -15,7 +13,9 @@ from litellm.types.llms.openai import *
 from litellm.types.responses.main import *
 from litellm.types.router import GenericLiteLLMParams
 from litellm.types.utils import LlmProviders
-from litellm.litellm_core_utils.core_helpers import process_response_headers
+from openai.types.responses import ResponseReasoningItem
+from pydantic import BaseModel
+
 from ..common_utils import OpenAIError
 
 if TYPE_CHECKING:
@@ -145,8 +145,7 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
                 filtered_item = {
                     k: v
                     for k, v in item.items()
-                    if v is not None
-                    or k not in {"status", "content", "encrypted_content"}
+                    if v is not None or k not in {"status", "content", "encrypted_content"}
                 }
                 return filtered_item
         return item
@@ -168,9 +167,7 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
                 raw_response_json["created_at"]
             )
         except Exception:
-            raise OpenAIError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise OpenAIError(message=raw_response.text, status_code=raw_response.status_code)
         raw_response_headers = dict(raw_response.headers)
         processed_headers = process_response_headers(raw_response_headers)
         try:
@@ -180,7 +177,7 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
                 f"Error constructing ResponsesAPIResponse: {raw_response_json}, using model_construct"
             )
             response = ResponsesAPIResponse.model_construct(**raw_response_json)
-        
+
         response._hidden_params["additional_headers"] = processed_headers
         response._hidden_params["headers"] = raw_response_headers
         return response
@@ -235,9 +232,7 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
         # Convert the dictionary to a properly typed ResponsesAPIStreamingResponse
         verbose_logger.debug("Raw OpenAI Chunk=%s", parsed_chunk)
         event_type = str(parsed_chunk.get("type"))
-        event_pydantic_model = OpenAIResponsesAPIConfig.get_event_model_class(
-            event_type=event_type
-        )
+        event_pydantic_model = OpenAIResponsesAPIConfig.get_event_model_class(event_type=event_type)
         # Defensive: Some OpenAI-compatible providers may send `error.code: null`.
         # Pydantic will raise a ValidationError when it expects a string but gets None.
         # Coalesce a None `error.code` to a stable default string so streaming
@@ -332,9 +327,7 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
                 ):
                     return True
             except Exception as e:
-                verbose_logger.debug(
-                    f"Error getting model info in OpenAIResponsesAPIConfig: {e}"
-                )
+                verbose_logger.debug(f"Error getting model info in OpenAIResponsesAPIConfig: {e}")
         return False
 
     #########################################################
@@ -368,9 +361,7 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise OpenAIError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise OpenAIError(message=raw_response.text, status_code=raw_response.status_code)
         return DeleteResponseResult(**raw_response_json)
 
     #########################################################
@@ -400,20 +391,18 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
     ) -> ResponsesAPIResponse:
         """
         Transform the get response API response into a ResponsesAPIResponse
-        """        
+        """
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise OpenAIError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise OpenAIError(message=raw_response.text, status_code=raw_response.status_code)
         raw_response_headers = dict(raw_response.headers)
         processed_headers = process_response_headers(raw_response_headers)
-        
+
         response = ResponsesAPIResponse(**raw_response_json)
         response._hidden_params["additional_headers"] = processed_headers
         response._hidden_params["headers"] = raw_response_headers
-        
+
         return response
 
     #########################################################
@@ -453,9 +442,7 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
         try:
             return raw_response.json()
         except Exception:
-            raise OpenAIError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise OpenAIError(message=raw_response.text, status_code=raw_response.status_code)
 
     #########################################################
     ########## CANCEL RESPONSE API TRANSFORMATION ##########
@@ -488,14 +475,12 @@ class OpenAIResponsesAPIConfig(BaseResponsesAPIConfig):
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise OpenAIError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise OpenAIError(message=raw_response.text, status_code=raw_response.status_code)
         raw_response_headers = dict(raw_response.headers)
         processed_headers = process_response_headers(raw_response_headers)
-        
+
         response = ResponsesAPIResponse(**raw_response_json)
         response._hidden_params["additional_headers"] = processed_headers
         response._hidden_params["headers"] = raw_response_headers
-        
+
         return response

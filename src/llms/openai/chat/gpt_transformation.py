@@ -18,7 +18,6 @@ from typing import (
 )
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.llm_response_utils.convert_dict_to_response import (
     _extract_reasoning_content,
@@ -219,9 +218,7 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
     def contains_pdf_url(self, content_item: ChatCompletionFileObjectFile) -> bool:
         potential_pdf_url_starts = ["https://", "http://", "www."]
         file_id = content_item.get("file_id")
-        if file_id and any(
-            file_id.startswith(start) for start in potential_pdf_url_starts
-        ):
+        if file_id and any(file_id.startswith(start) for start in potential_pdf_url_starts):
             return True
         return False
 
@@ -282,9 +279,7 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
             file_obj = content_item["file"]
             new_file_obj = ChatCompletionFileObjectFile(
                 **{  # type: ignore
-                    k: v
-                    for k, v in file_obj.items()
-                    if k not in litellm_specific_params
+                    k: v for k, v in file_obj.items() if k not in litellm_specific_params
                 }
             )
             content_item["file"] = new_file_obj
@@ -329,7 +324,7 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
     @overload
     def _transform_messages(
         self, messages: List[AllMessageValues], model: str, is_async: Literal[True]
-    ) -> Coroutine[Any, Any, List[AllMessageValues]]: 
+    ) -> Coroutine[Any, Any, List[AllMessageValues]]:
         ...
 
     @overload
@@ -353,19 +348,13 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
                 message_content = message.get("content")
                 message_role = message.get("role")
 
-                if (
-                    message_role == "user"
-                    and message_content
-                    and isinstance(message_content, list)
-                ):
+                if message_role == "user" and message_content and isinstance(message_content, list):
                     message_content_types = cast(
                         List[OpenAIMessageContentListBlock], message_content
                     )
                     for i, content_item in enumerate(message_content_types):
-                        message_content_types[i] = (
-                            await self._async_transform_content_item(
-                                cast(OpenAIMessageContentListBlock, content_item),
-                            )
+                        message_content_types[i] = await self._async_transform_content_item(
+                            cast(OpenAIMessageContentListBlock, content_item),
                         )
             return messages
 
@@ -375,11 +364,7 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
             for message in messages:
                 message_content = message.get("content")
                 message_role = message.get("role")
-                if (
-                    message_role == "user"
-                    and message_content
-                    and isinstance(message_content, list)
-                ):
+                if message_role == "user" and message_content and isinstance(message_content, list):
                     message_content_types = cast(
                         List[OpenAIMessageContentListBlock], message_content
                     )
@@ -452,12 +437,10 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
         transformed_messages = await self._transform_messages(
             messages=messages, model=model, is_async=True
         )
-        transformed_messages, tools = (
-            self.remove_cache_control_flag_from_messages_and_tools(
-                model=model,
-                messages=transformed_messages,
-                tools=optional_params.get("tools", []),
-            )
+        transformed_messages, tools = self.remove_cache_control_flag_from_messages_and_tools(
+            model=model,
+            messages=transformed_messages,
+            tools=optional_params.get("tools", []),
         )
         if tools is not None and len(tools) > 0:
             optional_params["tools"] = tools
@@ -469,9 +452,7 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
             }
         else:
             ## allow for any object specific behaviour to be handled
-            return self.transform_request(
-                model, messages, optional_params, litellm_params, headers
-            )
+            return self.transform_request(model, messages, optional_params, litellm_params, headers)
 
     def _passed_in_tools(self, optional_params: dict) -> bool:
         return optional_params.get("tools", None) is not None
@@ -528,16 +509,12 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
                 for _tc in tool_calls:
                     _openai_tc = ChatCompletionMessageToolCall(**_tc)  # type: ignore
                     _openai_tool_calls.append(_openai_tc)
-                fixed_tool_calls = _handle_invalid_parallel_tool_calls(
-                    _openai_tool_calls
-                )
+                fixed_tool_calls = _handle_invalid_parallel_tool_calls(_openai_tool_calls)
 
                 if fixed_tool_calls is not None:
                     new_tool_calls = fixed_tool_calls
             elif (
-                optional_params is not None
-                and message_content
-                and isinstance(message_content, str)
+                optional_params is not None and message_content and isinstance(message_content, str)
             ):
                 new_tool_call = self._check_and_fix_if_content_is_tool_call(
                     message_content, optional_params
@@ -731,12 +708,7 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
 
     @staticmethod
     def get_api_key(api_key: Optional[str] = None) -> Optional[str]:
-        return (
-            api_key
-            or litellm.api_key
-            or litellm.openai_key
-            or get_secret_str("OPENAI_API_KEY")
-        )
+        return api_key or litellm.api_key or litellm.openai_key or get_secret_str("OPENAI_API_KEY")
 
     @staticmethod
     def get_api_base(api_base: Optional[str] = None) -> Optional[str]:

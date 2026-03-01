@@ -2,7 +2,6 @@ import time  # type: ignore
 from typing import Callable
 
 import httpx
-
 from litellm.litellm_core_utils.prompt_templates.factory import (
     custom_prompt,
     prompt_factory,
@@ -76,9 +75,7 @@ def completion(
     if llm:
         outputs = llm.generate(prompt, sampling_params)
     else:
-        raise VLLMError(
-            status_code=0, message="Need to pass in a model name to initialize vllm"
-        )
+        raise VLLMError(status_code=0, message="Need to pass in a model name to initialize vllm")
 
     ## COMPLETION CALL
     if "stream" in optional_params and optional_params["stream"] is True:
@@ -110,9 +107,7 @@ def completion(
         return model_response
 
 
-def batch_completions(
-    model: str, messages: list, optional_params=None, custom_prompt_dict={}
-):
+def batch_completions(model: str, messages: list, optional_params=None, custom_prompt_dict={}):
     """
     Example usage:
     import litellm
@@ -164,9 +159,7 @@ def batch_completions(
     if llm:
         outputs = llm.generate(prompts, sampling_params)
     else:
-        raise VLLMError(
-            status_code=0, message="Need to pass in a model name to initialize vllm"
-        )
+        raise VLLMError(status_code=0, message="Need to pass in a model name to initialize vllm")
 
     final_outputs = []
     for output in outputs:

@@ -1,19 +1,12 @@
-import json
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel
 from typing_extensions import (
-    Protocol,
     Required,
-    Self,
     TypedDict,
-    TypeGuard,
-    get_origin,
-    override,
-    runtime_checkable,
 )
 
-from .openai import ChatCompletionToolCallChunk, ChatCompletionUsageBlock
+from .openai import ChatCompletionUsageBlock
 
 
 class GenericStreamingChunk(TypedDict, total=False):
@@ -43,9 +36,7 @@ class DatabricksReasoningContent(TypedDict, total=False):
     citations: Optional[List[Dict[str, Any]]]
 
 
-AllDatabricksContentListValues = Union[
-    DatabricksTextContent, DatabricksReasoningContent
-]
+AllDatabricksContentListValues = Union[DatabricksTextContent, DatabricksReasoningContent]
 
 AllDatabricksContentValues = Union[str, List[AllDatabricksContentListValues]]
 

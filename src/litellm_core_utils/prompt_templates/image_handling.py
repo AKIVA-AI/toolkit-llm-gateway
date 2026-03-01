@@ -4,9 +4,8 @@ Helper functions to handle images passed in messages
 
 import base64
 
-from httpx import Response
-
 import litellm
+from httpx import Response
 from litellm import verbose_logger
 from litellm.caching.caching import InMemoryCache
 

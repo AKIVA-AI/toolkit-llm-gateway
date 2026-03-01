@@ -119,9 +119,7 @@ class RealTimeStreaming:
         try:
             while True:
                 try:
-                    raw_response = await self.backend_ws.recv(
-                        decode=False
-                    )  # improves performance
+                    raw_response = await self.backend_ws.recv(decode=False)  # improves performance
                 except TypeError:
                     raw_response = await self.backend_ws.recv()  # type: ignore[assignment]
 
@@ -142,14 +140,10 @@ class RealTimeStreaming:
                     )
 
                     transformed_response = returned_object["response"]
-                    self.current_output_item_id = returned_object[
-                        "current_output_item_id"
-                    ]
+                    self.current_output_item_id = returned_object["current_output_item_id"]
                     self.current_response_id = returned_object["current_response_id"]
                     self.current_delta_chunks = returned_object["current_delta_chunks"]
-                    self.current_conversation_id = returned_object[
-                        "current_conversation_id"
-                    ]
+                    self.current_conversation_id = returned_object["current_conversation_id"]
                     self.current_item_chunks = returned_object["current_item_chunks"]
                     self.current_delta_type = returned_object["current_delta_type"]
                     self.session_configuration_request = returned_object[
@@ -173,9 +167,7 @@ class RealTimeStreaming:
                     await self.websocket.send_text(raw_response)
 
         except websockets.exceptions.ConnectionClosed as e:  # type: ignore
-            verbose_logger.exception(
-                f"Connection closed in backend to client send messages - {e}"
-            )
+            verbose_logger.exception(f"Connection closed in backend to client send messages - {e}")
         except Exception as e:
             verbose_logger.exception(f"Error in backend to client send messages: {e}")
         finally:
@@ -190,9 +182,7 @@ class RealTimeStreaming:
                 self.store_input(message=message)
                 ## FORWARD TO BACKEND
                 if self.provider_config:
-                    message = self.provider_config.transform_realtime_request(
-                        message, self.model
-                    )
+                    message = self.provider_config.transform_realtime_request(message, self.model)
 
                     for msg in message:
                         await self.backend_ws.send(msg)

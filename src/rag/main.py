@@ -15,7 +15,6 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, Coroutine, Dict, Optional, Tuple, Type, Union
 
 import httpx
-
 import litellm
 from litellm.rag.ingestion.base_ingestion import BaseRAGIngestion
 from litellm.rag.ingestion.bedrock_ingestion import BedrockRAGIngestion

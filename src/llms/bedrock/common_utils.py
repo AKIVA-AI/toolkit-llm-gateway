@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from litellm.types.llms.bedrock import BedrockCreateBatchRequest
 
 import httpx
-
 import litellm
 from litellm.llms.base_llm.anthropic_messages.transformation import (
     BaseAnthropicMessagesConfig,
@@ -34,7 +33,7 @@ _get_model_info = None
 def get_cached_model_info():
     """
     Lazy import and cache get_model_info to avoid circular imports.
-    
+
     This function is used by bedrock transformation classes that need get_model_info
     but cannot import it at module level due to circular import issues.
     The function is cached after first use to avoid performance impact.
@@ -42,6 +41,7 @@ def get_cached_model_info():
     global _get_model_info
     if _get_model_info is None:
         from litellm import get_model_info
+
         _get_model_info = get_model_info
     return _get_model_info
 
@@ -256,7 +256,7 @@ def init_bedrock_client(
             "sts",
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
-            verify=ssl_verify
+            verify=ssl_verify,
         )
 
         sts_response = sts_client.assume_role(
@@ -353,9 +353,7 @@ def get_bedrock_tool_name(response_tool_name: str) -> str:
     """
 
     if response_tool_name in litellm.bedrock_tool_name_mappings.cache_dict:
-        response_tool_name = litellm.bedrock_tool_name_mappings.cache_dict[
-            response_tool_name
-        ]
+        response_tool_name = litellm.bedrock_tool_name_mappings.cache_dict[response_tool_name]
     return response_tool_name
 
 
@@ -445,10 +443,7 @@ class BedrockModelInfo(BaseLLMModelInfo):
             0
         ]  # in model cost map we store regional information like `/us-west-2/bedrock-model`
 
-        if (
-            potential_region
-            in BedrockModelInfo._supported_cross_region_inference_region()
-        ):
+        if potential_region in BedrockModelInfo._supported_cross_region_inference_region():
             return model.split(".", 1)[1]
         elif (
             alt_potential_region in BedrockModelInfo.all_global_regions
@@ -468,12 +463,23 @@ class BedrockModelInfo(BaseLLMModelInfo):
     @staticmethod
     def get_bedrock_route(
         model: str,
-    ) -> Literal["converse", "invoke", "converse_like", "agent", "agentcore", "async_invoke", "openai"]:
+    ) -> Literal[
+        "converse", "invoke", "converse_like", "agent", "agentcore", "async_invoke", "openai"
+    ]:
         """
         Get the bedrock route for the given model.
         """
         route_mappings: Dict[
-            str, Literal["invoke", "converse_like", "converse", "agent", "agentcore", "async_invoke", "openai"]
+            str,
+            Literal[
+                "invoke",
+                "converse_like",
+                "converse",
+                "agent",
+                "agentcore",
+                "async_invoke",
+                "openai",
+            ],
         ] = {
             "invoke/": "invoke",
             "converse_like/": "converse_like",
@@ -581,17 +587,15 @@ class BedrockModelInfo(BaseLLMModelInfo):
 def get_bedrock_chat_config(model: str):
     """
     Helper function to get the appropriate Bedrock chat config based on model and route.
-    
+
     Args:
         model: The model name/identifier
-        
+
     Returns:
         The appropriate Bedrock config class instance
     """
     bedrock_route = BedrockModelInfo.get_bedrock_route(model)
-    bedrock_invoke_provider = litellm.BedrockLLM.get_bedrock_invoke_provider(
-        model=model
-    )
+    bedrock_invoke_provider = litellm.BedrockLLM.get_bedrock_invoke_provider(model=model)
     base_model = BedrockModelInfo.get_base_model(model)
 
     # Handle explicit routes first
@@ -603,21 +607,20 @@ def get_bedrock_chat_config(model: str):
         from litellm.llms.bedrock.chat.invoke_agent.transformation import (
             AmazonInvokeAgentConfig,
         )
+
         return AmazonInvokeAgentConfig()
     elif bedrock_route == "agentcore":
         from litellm.llms.bedrock.chat.agentcore.transformation import (
             AmazonAgentCoreConfig,
         )
+
         return AmazonAgentCoreConfig()
 
     # Handle provider-specific configs
     if bedrock_invoke_provider == "amazon":
         return litellm.AmazonTitanConfig()
     elif bedrock_invoke_provider == "anthropic":
-        if (
-            base_model
-            in litellm.AmazonAnthropicConfig.get_legacy_anthropic_model_names()
-        ):
+        if base_model in litellm.AmazonAnthropicConfig.get_legacy_anthropic_model_names():
             return litellm.AmazonAnthropicConfig()
         else:
             return litellm.AmazonAnthropicClaudeConfig()
@@ -661,21 +664,15 @@ class BedrockEventStreamDecoderBase:
             from botocore.model import ServiceModel
 
             loader = Loader()
-            bedrock_service_dict = loader.load_service_model(
-                "bedrock-runtime", "service-2"
-            )
+            bedrock_service_dict = loader.load_service_model("bedrock-runtime", "service-2")
             bedrock_service_model = ServiceModel(bedrock_service_dict)
-            self._response_stream_shape_cache = bedrock_service_model.shape_for(
-                "ResponseStream"
-            )
+            self._response_stream_shape_cache = bedrock_service_model.shape_for("ResponseStream")
 
         return self._response_stream_shape_cache
 
     def _parse_message_from_event(self, event) -> Optional[str]:
         response_dict = event.to_response_dict()
-        parsed_response = self.parser.parse(
-            response_dict, self.get_response_stream_shape()
-        )
+        parsed_response = self.parser.parse(response_dict, self.get_response_stream_shape())
 
         if response_dict["status_code"] != 200:
             decoded_body = response_dict["body"].decode()
@@ -690,9 +687,7 @@ class BedrockEventStreamDecoderBase:
             raise BedrockError(
                 status_code=response_dict["status_code"],
                 message=(
-                    json.dumps(error_message)
-                    if isinstance(error_message, dict)
-                    else error_message
+                    json.dumps(error_message) if isinstance(error_message, dict) else error_message
                 ),
             )
         if "chunk" in parsed_response:
@@ -778,9 +773,7 @@ class CommonBatchFilesUtils:
 
         return s3_parts[0], s3_parts[1]  # bucket, key
 
-    def extract_model_from_s3_file_path(
-        self, s3_uri: str, optional_params: dict
-    ) -> str:
+    def extract_model_from_s3_file_path(self, s3_uri: str, optional_params: dict) -> str:
         """
         Extract model ID from S3 file path.
 
@@ -789,9 +782,7 @@ class CommonBatchFilesUtils:
         """
         # Check if model is provided in optional_params first
         if "model" in optional_params and optional_params["model"]:
-            return self.get_bedrock_model_id_from_litellm_model(
-                optional_params["model"]
-            )
+            return self.get_bedrock_model_id_from_litellm_model(optional_params["model"])
 
         # Extract model from S3 URI path
         # Expected format: s3://bucket/litellm-bedrock-files-{model}-{uuid}.jsonl
@@ -885,9 +876,7 @@ class CommonBatchFilesUtils:
 
         return (
             dict(prepped.headers),
-            request_data.encode("utf-8")
-            if isinstance(request_data, str)
-            else request_data,
+            request_data.encode("utf-8") if isinstance(request_data, str) else request_data,
         )
 
     def generate_unique_job_name(self, model: str, prefix: str = "litellm") -> str:
@@ -958,6 +947,4 @@ class CommonBatchFilesUtils:
         """
         Get Bedrock-specific error class.
         """
-        return BedrockError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return BedrockError(status_code=status_code, message=error_message, headers=headers)

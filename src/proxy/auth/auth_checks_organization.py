@@ -5,7 +5,6 @@ Auth Checks for Organizations
 from typing import Dict, List, Optional, Tuple
 
 from fastapi import status
-
 from litellm.proxy._types import *
 
 
@@ -101,9 +100,7 @@ def organization_role_based_access_check(
                     code=status.HTTP_401_UNAUTHORIZED,
                 )
 
-            _user_role_in_passed_org = _user_organization_role_mapping.get(
-                passed_organization_id
-            )
+            _user_role_in_passed_org = _user_organization_role_mapping.get(passed_organization_id)
             if _user_role_in_passed_org != LitellmUserRoles.ORG_ADMIN.value:
                 raise ProxyException(
                     message=f"You do not have the required role to call {route}. Your role is {_user_role_in_passed_org} in Organization {passed_organization_id}",

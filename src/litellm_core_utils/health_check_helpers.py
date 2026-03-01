@@ -34,9 +34,7 @@ class HealthCheckHelpers:
                 f"Unable to health check wildcard model for provider {custom_llm_provider}. Add a model on your config.yaml or contribute here - https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json"
             )
         if len(cheapest_models) > 1:
-            fallback_models = cheapest_models[
-                1:
-            ]  # Pick the last 2 models from the shuffled list
+            fallback_models = cheapest_models[1:]  # Pick the last 2 models from the shuffled list
         else:
             fallback_models = None
         model_params["model"] = cheapest_models[0]
@@ -107,7 +105,7 @@ class HealthCheckHelpers:
         Callable,
     ]:
         """
-        Returns a dictionary of mode handlers for health check calls. 
+        Returns a dictionary of mode handlers for health check calls.
 
         Mode Handlers are Callables that need to be run for execution of the health check call.
 
@@ -145,8 +143,7 @@ class HealthCheckHelpers:
                     **_filter_model_params(model_params=model_params),
                     **(
                         {"voice": "alloy"}
-                        if "voice"
-                        not in _filter_model_params(model_params=model_params)
+                        if "voice" not in _filter_model_params(model_params=model_params)
                         else {}
                     ),
                 },

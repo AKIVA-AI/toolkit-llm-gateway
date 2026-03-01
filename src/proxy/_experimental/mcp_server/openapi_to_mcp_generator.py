@@ -6,7 +6,6 @@ import json
 from typing import Any, Dict, Optional
 
 import httpx
-
 from litellm._logging import verbose_logger
 from litellm.proxy._experimental.mcp_server.tool_registry import (
     global_mcp_tool_registry,
@@ -208,9 +207,7 @@ def register_tools_from_openapi(spec: Dict[str, Any], base_url: str):
                 operation = path_item[method]
 
                 # Generate tool name
-                operation_id = operation.get(
-                    "operationId", f"{method}_{path.replace('/', '_')}"
-                )
+                operation_id = operation.get("operationId", f"{method}_{path.replace('/', '_')}")
                 tool_name = operation_id.replace(" ", "_").lower()
 
                 # Get description

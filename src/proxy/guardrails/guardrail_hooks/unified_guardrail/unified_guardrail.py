@@ -63,10 +63,7 @@ class UnifiedLLMGuardrails(CustomLogger):
             return data
 
         event_type: GuardrailEventHooks = GuardrailEventHooks.pre_call
-        if (
-            guardrail_to_apply.should_run_guardrail(data=data, event_type=event_type)
-            is not True
-        ):
+        if guardrail_to_apply.should_run_guardrail(data=data, event_type=event_type) is not True:
             verbose_proxy_logger.debug(
                 "UnifiedLLMGuardrails: Pre-call scanning disabled for %s",
                 guardrail_to_apply.guardrail_name,
@@ -74,15 +71,11 @@ class UnifiedLLMGuardrails(CustomLogger):
             return data
 
         if endpoint_guardrail_translation_mappings is None:
-            endpoint_guardrail_translation_mappings = (
-                load_guardrail_translation_mappings()
-            )
+            endpoint_guardrail_translation_mappings = load_guardrail_translation_mappings()
         if CallTypes(call_type) not in endpoint_guardrail_translation_mappings:
             return data
 
-        endpoint_translation = endpoint_guardrail_translation_mappings[
-            CallTypes(call_type)
-        ]()
+        endpoint_translation = endpoint_guardrail_translation_mappings[CallTypes(call_type)]()
 
         data = await endpoint_translation.process_input_messages(
             data=data,
@@ -114,10 +107,7 @@ class UnifiedLLMGuardrails(CustomLogger):
             return data
 
         event_type: GuardrailEventHooks = GuardrailEventHooks.during_call
-        if (
-            guardrail_to_apply.should_run_guardrail(data=data, event_type=event_type)
-            is not True
-        ):
+        if guardrail_to_apply.should_run_guardrail(data=data, event_type=event_type) is not True:
             verbose_proxy_logger.debug(
                 "UnifiedLLMGuardrails: Pre-call scanning disabled for %s",
                 guardrail_to_apply.guardrail_name,
@@ -125,15 +115,11 @@ class UnifiedLLMGuardrails(CustomLogger):
             return data
 
         if endpoint_guardrail_translation_mappings is None:
-            endpoint_guardrail_translation_mappings = (
-                load_guardrail_translation_mappings()
-            )
+            endpoint_guardrail_translation_mappings = load_guardrail_translation_mappings()
         if CallTypes(call_type) not in endpoint_guardrail_translation_mappings:
             return data
 
-        endpoint_translation = endpoint_guardrail_translation_mappings[
-            CallTypes(call_type)
-        ]()
+        endpoint_translation = endpoint_guardrail_translation_mappings[CallTypes(call_type)]()
 
         return await endpoint_translation.process_input_messages(
             data=data,
@@ -173,9 +159,7 @@ class UnifiedLLMGuardrails(CustomLogger):
         ):
             return
 
-        verbose_proxy_logger.debug(
-            "async_post_call_success_hook response: %s", response
-        )
+        verbose_proxy_logger.debug("async_post_call_success_hook response: %s", response)
 
         call_type: Optional[CallTypesLiteral] = None
         if user_api_key_dict.request_route is not None:
@@ -189,16 +173,12 @@ class UnifiedLLMGuardrails(CustomLogger):
             return response
 
         if endpoint_guardrail_translation_mappings is None:
-            endpoint_guardrail_translation_mappings = (
-                load_guardrail_translation_mappings()
-            )
+            endpoint_guardrail_translation_mappings = load_guardrail_translation_mappings()
 
         if CallTypes(call_type) not in endpoint_guardrail_translation_mappings:
             return response
 
-        endpoint_translation = endpoint_guardrail_translation_mappings[
-            CallTypes(call_type)
-        ]()
+        endpoint_translation = endpoint_guardrail_translation_mappings[CallTypes(call_type)]()
 
         response = await endpoint_translation.process_output_response(
             response=response,  # type: ignore
@@ -234,23 +214,17 @@ class UnifiedLLMGuardrails(CustomLogger):
 
         global endpoint_guardrail_translation_mappings
 
-        guardrail_to_apply: CustomGuardrail = request_data.pop(
-            "guardrail_to_apply", None
-        )
+        guardrail_to_apply: CustomGuardrail = request_data.pop("guardrail_to_apply", None)
 
         # Get sampling rate from guardrail config or optional_params, default to 5
         sampling_rate = 5
         if guardrail_to_apply is not None:
             # Check guardrail config first
             guardrail_config = getattr(guardrail_to_apply, "guardrail_config", {})
-            sampling_rate = guardrail_config.get(
-                "streaming_sampling_rate", sampling_rate
-            )
+            sampling_rate = guardrail_config.get("streaming_sampling_rate", sampling_rate)
 
         # Also check optional_params as fallback
-        sampling_rate = self.optional_params.get(
-            "streaming_sampling_rate", sampling_rate
-        )
+        sampling_rate = self.optional_params.get("streaming_sampling_rate", sampling_rate)
 
         if guardrail_to_apply is None:
             async for item in response:
@@ -259,9 +233,7 @@ class UnifiedLLMGuardrails(CustomLogger):
 
         event_type: GuardrailEventHooks = GuardrailEventHooks.post_call
         if (
-            guardrail_to_apply.should_run_guardrail(
-                data=request_data, event_type=event_type
-            )
+            guardrail_to_apply.should_run_guardrail(data=request_data, event_type=event_type)
             is not True
         ):
             verbose_proxy_logger.debug(
@@ -274,9 +246,7 @@ class UnifiedLLMGuardrails(CustomLogger):
 
         # Initialize translation mappings if needed
         if endpoint_guardrail_translation_mappings is None:
-            endpoint_guardrail_translation_mappings = (
-                load_guardrail_translation_mappings()
-            )
+            endpoint_guardrail_translation_mappings = load_guardrail_translation_mappings()
 
         # Infer call type from first chunk
         call_type = None
@@ -320,13 +290,11 @@ class UnifiedLLMGuardrails(CustomLogger):
                     CallTypes(call_type)
                 ]()
 
-                processed_items = (
-                    await endpoint_translation.process_output_streaming_response(
-                        responses_so_far=responses_so_far,
-                        guardrail_to_apply=guardrail_to_apply,
-                        litellm_logging_obj=request_data.get("litellm_logging_obj"),
-                        user_api_key_dict=user_api_key_dict,
-                    )
+                processed_items = await endpoint_translation.process_output_streaming_response(
+                    responses_so_far=responses_so_far,
+                    guardrail_to_apply=guardrail_to_apply,
+                    litellm_logging_obj=request_data.get("litellm_logging_obj"),
+                    user_api_key_dict=user_api_key_dict,
                 )
 
                 last_item = processed_items[-1]

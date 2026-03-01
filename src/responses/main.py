@@ -16,8 +16,6 @@ from typing import (
 )
 
 import httpx
-from pydantic import BaseModel
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.constants import request_timeout
@@ -41,6 +39,7 @@ from litellm.types.llms.openai import (
     ToolChoice,
     ToolParam,
 )
+from pydantic import BaseModel
 
 # Handle ResponseText import with fallback
 if TYPE_CHECKING:
@@ -169,7 +168,9 @@ async def aresponses_api_with_mcp(
 
     # Process MCP tools through the complete pipeline (fetch + filter + deduplicate + transform)
     # Extract user_api_key_auth from litellm_metadata (where it's added by add_user_api_key_auth_to_request_metadata)
-    user_api_key_auth = kwargs.get("user_api_key_auth") or kwargs.get("litellm_metadata", {}).get("user_api_key_auth")
+    user_api_key_auth = kwargs.get("user_api_key_auth") or kwargs.get("litellm_metadata", {}).get(
+        "user_api_key_auth"
+    )
 
     # Get original MCP tools (for events) and OpenAI tools (for LLM) by reusing existing methods
     (
@@ -179,9 +180,7 @@ async def aresponses_api_with_mcp(
         user_api_key_auth=user_api_key_auth,
         mcp_tools_with_litellm_proxy=mcp_tools_with_litellm_proxy,
     )
-    openai_tools = LiteLLM_Proxy_MCP_Handler._transform_mcp_tools_to_openai(
-        original_mcp_tools
-    )
+    openai_tools = LiteLLM_Proxy_MCP_Handler._transform_mcp_tools_to_openai(original_mcp_tools)
 
     # Combine with other tools
     all_tools = openai_tools + other_tools if (openai_tools or other_tools) else None
@@ -269,18 +268,12 @@ async def aresponses_api_with_mcp(
     # Auto-Execute Tools Handling
     # If auto-execute tools is True, then we need to execute the tool calls
     #########################################################
-    if should_auto_execute and isinstance(
-        response, ResponsesAPIResponse
-    ):  # type: ignore
-        tool_calls = LiteLLM_Proxy_MCP_Handler._extract_tool_calls_from_response(
-            response=response
-        )
+    if should_auto_execute and isinstance(response, ResponsesAPIResponse):  # type: ignore
+        tool_calls = LiteLLM_Proxy_MCP_Handler._extract_tool_calls_from_response(response=response)
 
         if tool_calls:
-            user_api_key_auth = kwargs.get("litellm_metadata", {}).get(
-                "user_api_key_auth"
-            )
-            
+            user_api_key_auth = kwargs.get("litellm_metadata", {}).get("user_api_key_auth")
+
             # Extract MCP auth headers from the request to pass to MCP server
             secret_fields: Optional[Dict[str, Any]] = kwargs.get("secret_fields")
             (
@@ -292,7 +285,7 @@ async def aresponses_api_with_mcp(
                 secret_fields=secret_fields,
                 tools=tools,
             )
-            
+
             tool_results = await LiteLLM_Proxy_MCP_Handler._execute_tool_calls(
                 tool_server_map=tool_server_map,
                 tool_calls=tool_calls,
@@ -309,19 +302,15 @@ async def aresponses_api_with_mcp(
                 )
 
                 # Prepare parameters for follow-up call (restores original stream setting)
-                follow_up_call_params = (
-                    LiteLLM_Proxy_MCP_Handler._prepare_follow_up_call_params(
-                        call_params=call_params, original_stream_setting=stream or False
-                    )
+                follow_up_call_params = LiteLLM_Proxy_MCP_Handler._prepare_follow_up_call_params(
+                    call_params=call_params, original_stream_setting=stream or False
                 )
 
                 # Create tool execution events for streaming if needed
                 tool_execution_events = []
                 if stream:
-                    tool_execution_events = (
-                        LiteLLM_Proxy_MCP_Handler._create_tool_execution_events(
-                            tool_calls=tool_calls, tool_results=tool_results
-                        )
+                    tool_execution_events = LiteLLM_Proxy_MCP_Handler._create_tool_execution_events(
+                        tool_calls=tool_calls, tool_results=tool_results
                     )
 
                 final_response = await LiteLLM_Proxy_MCP_Handler._make_follow_up_call(
@@ -337,8 +326,7 @@ async def aresponses_api_with_mcp(
                     stream
                     and tool_execution_events
                     and (
-                        hasattr(final_response, "__aiter__")
-                        or hasattr(final_response, "__iter__")
+                        hasattr(final_response, "__aiter__") or hasattr(final_response, "__iter__")
                     )
                 ):
                     from litellm.responses.mcp.mcp_streaming_iterator import (
@@ -361,12 +349,10 @@ async def aresponses_api_with_mcp(
                         user_api_key_auth=user_api_key_auth,
                         mcp_tools_with_litellm_proxy=mcp_tools_with_litellm_proxy,
                     )
-                    final_response = (
-                        LiteLLM_Proxy_MCP_Handler._add_mcp_output_elements_to_response(
-                            response=final_response,
-                            mcp_tools_fetched=mcp_tools_for_output,
-                            tool_results=tool_results,
-                        )
+                    final_response = LiteLLM_Proxy_MCP_Handler._add_mcp_output_elements_to_response(
+                        response=final_response,
+                        mcp_tools_fetched=mcp_tools_for_output,
+                        tool_results=tool_results,
                     )
                 return final_response
 
@@ -480,9 +466,7 @@ async def aresponses(
             )
 
         if response is None:
-            raise ValueError(
-                f"Got an unexpected None response from the Responses API: {response}"
-            )
+            raise ValueError(f"Got an unexpected None response from the Responses API: {response}")
 
         return response
     except Exception as e:
@@ -559,12 +543,8 @@ def responses(
         #########################################################
         # MOCK RESPONSE LOGIC
         #########################################################
-        if litellm_params.mock_response and isinstance(
-            litellm_params.mock_response, str
-        ):
-            return mock_responses_api_response(
-                mock_response=litellm_params.mock_response
-            )
+        if litellm_params.mock_response and isinstance(litellm_params.mock_response, str):
+            return mock_responses_api_response(mock_response=litellm_params.mock_response)
 
         (
             model,
@@ -577,13 +557,15 @@ def responses(
             api_base=litellm_params.api_base,
             api_key=litellm_params.api_key,
         )
-        
+
         #########################################################
         # Update input with provider-specific file IDs if managed files are used
         #########################################################
-        input = cast(Union[str, ResponseInputParam], update_responses_input_with_model_file_ids(input=input))
+        input = cast(
+            Union[str, ResponseInputParam], update_responses_input_with_model_file_ids(input=input)
+        )
         local_vars["input"] = input
-        
+
         #########################################################
         # Native MCP Responses API
         #########################################################
@@ -628,9 +610,7 @@ def responses(
         local_vars.update(kwargs)
         # Get ResponsesAPIOptionalRequestParams with only valid parameters
         response_api_optional_params: ResponsesAPIOptionalRequestParams = (
-            ResponsesAPIRequestUtils.get_requested_response_api_optional_param(
-                local_vars
-            )
+            ResponsesAPIRequestUtils.get_requested_response_api_optional_param(local_vars)
         )
 
         if responses_api_provider_config is None:
@@ -739,9 +719,7 @@ async def adelete_responses(
             )
         )
         response_id = decoded_response_id.get("response_id") or response_id
-        custom_llm_provider = (
-            decoded_response_id.get("custom_llm_provider") or custom_llm_provider
-        )
+        custom_llm_provider = decoded_response_id.get("custom_llm_provider") or custom_llm_provider
 
         func = partial(
             delete_responses,
@@ -808,9 +786,7 @@ def delete_responses(
             )
         )
         response_id = decoded_response_id.get("response_id") or response_id
-        custom_llm_provider = (
-            decoded_response_id.get("custom_llm_provider") or custom_llm_provider
-        )
+        custom_llm_provider = decoded_response_id.get("custom_llm_provider") or custom_llm_provider
 
         if custom_llm_provider is None:
             raise ValueError("custom_llm_provider is required but passed as None")
@@ -824,9 +800,7 @@ def delete_responses(
         )
 
         if responses_api_provider_config is None:
-            raise ValueError(
-                f"DELETE responses is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"DELETE responses is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
 
@@ -905,9 +879,7 @@ async def aget_responses(
             )
         )
         response_id = decoded_response_id.get("response_id") or response_id
-        custom_llm_provider = (
-            decoded_response_id.get("custom_llm_provider") or custom_llm_provider
-        )
+        custom_llm_provider = decoded_response_id.get("custom_llm_provider") or custom_llm_provider
 
         func = partial(
             get_responses,
@@ -988,9 +960,7 @@ def get_responses(
             )
         )
         response_id = decoded_response_id.get("response_id") or response_id
-        custom_llm_provider = (
-            decoded_response_id.get("custom_llm_provider") or custom_llm_provider
-        )
+        custom_llm_provider = decoded_response_id.get("custom_llm_provider") or custom_llm_provider
 
         if custom_llm_provider is None:
             raise ValueError("custom_llm_provider is required but passed as None")
@@ -1004,9 +974,7 @@ def get_responses(
         )
 
         if responses_api_provider_config is None:
-            raise ValueError(
-                f"GET responses is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"GET responses is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
 
@@ -1075,15 +1043,11 @@ async def alist_input_items(
         loop = asyncio.get_event_loop()
         kwargs["alist_input_items"] = True
 
-        decoded_response_id = (
-            ResponsesAPIRequestUtils._decode_responses_api_response_id(
-                response_id=response_id
-            )
+        decoded_response_id = ResponsesAPIRequestUtils._decode_responses_api_response_id(
+            response_id=response_id
         )
         response_id = decoded_response_id.get("response_id") or response_id
-        custom_llm_provider = (
-            decoded_response_id.get("custom_llm_provider") or custom_llm_provider
-        )
+        custom_llm_provider = decoded_response_id.get("custom_llm_provider") or custom_llm_provider
 
         func = partial(
             list_input_items,
@@ -1140,15 +1104,11 @@ def list_input_items(
 
         litellm_params = GenericLiteLLMParams(**kwargs)
 
-        decoded_response_id = (
-            ResponsesAPIRequestUtils._decode_responses_api_response_id(
-                response_id=response_id
-            )
+        decoded_response_id = ResponsesAPIRequestUtils._decode_responses_api_response_id(
+            response_id=response_id
         )
         response_id = decoded_response_id.get("response_id") or response_id
-        custom_llm_provider = (
-            decoded_response_id.get("custom_llm_provider") or custom_llm_provider
-        )
+        custom_llm_provider = decoded_response_id.get("custom_llm_provider") or custom_llm_provider
 
         if custom_llm_provider is None:
             raise ValueError("custom_llm_provider is required but passed as None")
@@ -1161,9 +1121,7 @@ def list_input_items(
         )
 
         if responses_api_provider_config is None:
-            raise ValueError(
-                f"list_input_items is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"list_input_items is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
 
@@ -1234,9 +1192,7 @@ async def acancel_responses(
             )
         )
         response_id = decoded_response_id.get("response_id") or response_id
-        custom_llm_provider = (
-            decoded_response_id.get("custom_llm_provider") or custom_llm_provider
-        )
+        custom_llm_provider = decoded_response_id.get("custom_llm_provider") or custom_llm_provider
 
         func = partial(
             cancel_responses,
@@ -1303,9 +1259,7 @@ def cancel_responses(
             )
         )
         response_id = decoded_response_id.get("response_id") or response_id
-        custom_llm_provider = (
-            decoded_response_id.get("custom_llm_provider") or custom_llm_provider
-        )
+        custom_llm_provider = decoded_response_id.get("custom_llm_provider") or custom_llm_provider
 
         if custom_llm_provider is None:
             raise ValueError("custom_llm_provider is required but passed as None")
@@ -1319,9 +1273,7 @@ def cancel_responses(
         )
 
         if responses_api_provider_config is None:
-            raise ValueError(
-                f"CANCEL responses is not supported for {custom_llm_provider}"
-            )
+            raise ValueError(f"CANCEL responses is not supported for {custom_llm_provider}")
 
         local_vars.update(kwargs)
 

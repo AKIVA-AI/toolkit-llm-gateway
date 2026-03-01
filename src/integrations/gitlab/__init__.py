@@ -1,14 +1,19 @@
-from typing import TYPE_CHECKING, Optional, Dict, Any
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 if TYPE_CHECKING:
-    from .gitlab_prompt_manager import GitLabPromptManager
-    from litellm.types.prompts.init_prompts import PromptLiteLLMParams, PromptSpec
     from litellm.integrations.custom_prompt_management import CustomPromptManagement
+    from litellm.types.prompts.init_prompts import PromptLiteLLMParams, PromptSpec
 
-from litellm.types.prompts.init_prompts import SupportedPromptIntegrations
+    from .gitlab_prompt_manager import GitLabPromptManager
+
 from litellm.integrations.custom_prompt_management import CustomPromptManagement
-from litellm.types.prompts.init_prompts import PromptSpec, PromptLiteLLMParams
-from .gitlab_prompt_manager import GitLabPromptManager, GitLabPromptCache
+from litellm.types.prompts.init_prompts import (
+    PromptLiteLLMParams,
+    PromptSpec,
+    SupportedPromptIntegrations,
+)
+
+from .gitlab_prompt_manager import GitLabPromptCache, GitLabPromptManager
 
 # Global instances
 global_gitlab_config: Optional[dict] = None
@@ -39,11 +44,8 @@ def prompt_initializer(
     gitlab_config = getattr(litellm_params, "gitlab_config", None)
     prompt_id = getattr(litellm_params, "prompt_id", None)
 
-
     if not gitlab_config:
-        raise ValueError(
-            "gitlab_config is required for gitlab prompt integration"
-        )
+        raise ValueError("gitlab_config is required for gitlab prompt integration")
 
     try:
         gitlab_prompt_manager = GitLabPromptManager(
@@ -55,9 +57,10 @@ def prompt_initializer(
     except Exception as e:
         raise e
 
+
 def _gitlab_prompt_initializer(
-        litellm_params: PromptLiteLLMParams,
-        prompt: PromptSpec,
+    litellm_params: PromptLiteLLMParams,
+    prompt: PromptSpec,
 ) -> CustomPromptManagement:
     """
     Build a GitLab-backed prompt manager for this prompt.

@@ -1,8 +1,7 @@
-from typing import Any, Dict, List, Literal, Optional, Union
-
-from typing_extensions import TypedDict
+from typing import Literal, Optional
 
 from litellm.types.utils import FileTypes
+from typing_extensions import TypedDict
 
 
 class ImageEditOptionalRequestParams(TypedDict, total=False):

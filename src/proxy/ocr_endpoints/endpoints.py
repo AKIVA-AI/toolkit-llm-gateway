@@ -3,7 +3,6 @@
 import orjson
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import ORJSONResponse
-
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import UserAPIKeyAuth, user_api_key_auth
 from litellm.proxy.common_request_processing import ProxyBaseLLMRequestProcessing
@@ -94,4 +93,3 @@ async def ocr(
             proxy_logging_obj=proxy_logging_obj,
             version=version,
         )
-

@@ -6,9 +6,8 @@
 import traceback
 from typing import Literal, Optional
 
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import DualCache, InMemoryCache, RedisCache
 from litellm.integrations.custom_logger import CustomLogger
@@ -25,9 +24,7 @@ class _PROXY_BatchRedisRequests(CustomLogger):
                 self.async_get_cache
             )  # map the litellm 'get_cache' function to our custom function
 
-    def print_verbose(
-        self, print_statement, debug_level: Literal["INFO", "DEBUG"] = "DEBUG"
-    ):
+    def print_verbose(self, print_statement, debug_level: Literal["INFO", "DEBUG"] = "DEBUG"):
         if debug_level == "DEBUG":
             verbose_proxy_logger.debug(print_statement)
         elif debug_level == "INFO":
@@ -66,9 +63,7 @@ class _PROXY_BatchRedisRequests(CustomLogger):
                 - Check if `litellm.Cache` is redis
                 - Get the relevant values
                 """
-                if litellm.cache.type is not None and isinstance(
-                    litellm.cache.cache, RedisCache
-                ):
+                if litellm.cache.type is not None and isinstance(litellm.cache.cache, RedisCache):
                     # Initialize an empty list to store the keys
                     keys = []
                     self.print_verbose(f"cache_key_name: {cache_key_name}")
@@ -81,10 +76,8 @@ class _PROXY_BatchRedisRequests(CustomLogger):
                     # Here you would sort or filter the keys as needed based on your strategy
                     self.print_verbose(f"redis keys: {keys}")
                     if len(keys) > 0:
-                        key_value_dict = (
-                            await litellm.cache.cache.async_batch_get_cache(
-                                key_list=keys
-                            )
+                        key_value_dict = await litellm.cache.cache.async_batch_get_cache(
+                            key_list=keys
                         )
 
             ## Add to cache
@@ -131,19 +124,13 @@ class _PROXY_BatchRedisRequests(CustomLogger):
                 max_age = cache_control_args.get(
                     "s-max-age", cache_control_args.get("s-maxage", float("inf"))
                 )
-                cached_result = self.in_memory_cache.get_cache(
-                    cache_key, *args, **kwargs
-                )
+                cached_result = self.in_memory_cache.get_cache(cache_key, *args, **kwargs)
                 if cached_result is None:
                     cached_result = await litellm.cache.cache.async_get_cache(
                         cache_key, *args, **kwargs
                     )
                     if cached_result is not None:
-                        await self.in_memory_cache.async_set_cache(
-                            cache_key, cached_result, ttl=60
-                        )
-                return litellm.cache._get_cache_logic(
-                    cached_result=cached_result, max_age=max_age
-                )
+                        await self.in_memory_cache.async_set_cache(cache_key, cached_result, ttl=60)
+                return litellm.cache._get_cache_logic(cached_result=cached_result, max_age=max_age)
         except Exception:
             return None

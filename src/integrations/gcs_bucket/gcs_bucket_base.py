@@ -72,10 +72,10 @@ class GCSBucketBase(CustomBatchLogger):
         from litellm import vertex_chat_completion
 
         # Get project_id from environment if available, otherwise None
-        # This helps support use of this library to auth to pull secrets 
+        # This helps support use of this library to auth to pull secrets
         # from Secret Manager.
         project_id = os.getenv("GOOGLE_SECRET_MANAGER_PROJECT_ID")
-        
+
         _auth_header, vertex_project = vertex_chat_completion._ensure_access_token(
             credentials=self.path_service_account_json,
             project_id=project_id,
@@ -133,9 +133,9 @@ class GCSBucketBase(CustomBatchLogger):
         if kwargs is None:
             kwargs = {}
 
-        standard_callback_dynamic_params: Optional[
-            StandardCallbackDynamicParams
-        ] = kwargs.get("standard_callback_dynamic_params", None)
+        standard_callback_dynamic_params: Optional[StandardCallbackDynamicParams] = kwargs.get(
+            "standard_callback_dynamic_params", None
+        )
 
         bucket_name: str
         path_service_account: Optional[str]
@@ -146,8 +146,7 @@ class GCSBucketBase(CustomBatchLogger):
             )
 
             _bucket_name: Optional[str] = (
-                standard_callback_dynamic_params.get("gcs_bucket_name", None)
-                or self.BUCKET_NAME
+                standard_callback_dynamic_params.get("gcs_bucket_name", None) or self.BUCKET_NAME
             )
             _path_service_account: Optional[str] = (
                 standard_callback_dynamic_params.get("gcs_path_service_account", None)
@@ -181,9 +180,7 @@ class GCSBucketBase(CustomBatchLogger):
             path_service_account=path_service_account,
         )
 
-    async def get_or_create_vertex_instance(
-        self, credentials: Optional[str]
-    ) -> VertexBase:
+    async def get_or_create_vertex_instance(self, credentials: Optional[str]) -> VertexBase:
         """
         This function is used to get the Vertex instance for the GCS Bucket Logger.
         It checks if the Vertex instance is already created and cached, if not it creates a new instance and caches it.
@@ -219,9 +216,7 @@ class GCSBucketBase(CustomBatchLogger):
         https://cloud.google.com/storage/docs/downloading-objects#download-object-json
         """
         try:
-            gcs_logging_config: GCSLoggingConfig = await self.get_gcs_logging_config(
-                kwargs=kwargs
-            )
+            gcs_logging_config: GCSLoggingConfig = await self.get_gcs_logging_config(kwargs=kwargs)
             headers = await self.construct_request_headers(
                 vertex_instance=gcs_logging_config["vertex_instance"],
                 service_account_json=gcs_logging_config["path_service_account"],
@@ -238,9 +233,7 @@ class GCSBucketBase(CustomBatchLogger):
             response = await self.async_httpx_client.get(url=url, headers=headers)
 
             if response.status_code != 200:
-                verbose_logger.error(
-                    "GCS object download error: %s", str(response.text)
-                )
+                verbose_logger.error("GCS object download error: %s", str(response.text))
                 return None
 
             verbose_logger.debug(
@@ -259,9 +252,7 @@ class GCSBucketBase(CustomBatchLogger):
         Delete an object from GCS.
         """
         try:
-            gcs_logging_config: GCSLoggingConfig = await self.get_gcs_logging_config(
-                kwargs=kwargs
-            )
+            gcs_logging_config: GCSLoggingConfig = await self.get_gcs_logging_config(kwargs=kwargs)
             headers = await self.construct_request_headers(
                 vertex_instance=gcs_logging_config["vertex_instance"],
                 service_account_json=gcs_logging_config["path_service_account"],

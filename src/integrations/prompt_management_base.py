@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
 
-from typing_extensions import TYPE_CHECKING, TypedDict
-
 from litellm.types.llms.openai import AllMessageValues
 from litellm.types.prompts.init_prompts import PromptSpec
 from litellm.types.utils import StandardCallbackDynamicParams
+from typing_extensions import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
     from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -143,16 +142,12 @@ class PromptManagementBase(ABC):
     ):
         completed_messages = prompt_template["completed_messages"] or messages
 
-        prompt_template_optional_params = (
-            prompt_template["prompt_template_optional_params"] or {}
-        )
+        prompt_template_optional_params = prompt_template["prompt_template_optional_params"] or {}
 
         updated_non_default_params = {
             **non_default_params,
             **(
-                prompt_template_optional_params
-                if not ignore_prompt_manager_optional_params
-                else {}
+                prompt_template_optional_params if not ignore_prompt_manager_optional_params else {}
             ),
         }
 

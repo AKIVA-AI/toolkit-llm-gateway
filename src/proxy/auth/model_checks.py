@@ -176,6 +176,7 @@ def get_complete_model_list(
     """
 
     unique_models = []
+
     def append_unique(models):
         for model in models:
             if model not in unique_models:
@@ -188,7 +189,7 @@ def get_complete_model_list(
     else:
         append_unique(proxy_model_list)
         if include_model_access_groups:
-            append_unique(list(model_access_groups.keys())) # TODO: keys order
+            append_unique(list(model_access_groups.keys()))  # TODO: keys order
 
         if user_model:
             append_unique([user_model])
@@ -233,9 +234,7 @@ def get_known_models_from_wildcard(
 
     # get all known provider models
 
-    wildcard_models = get_provider_models(
-        provider=provider, litellm_params=litellm_params
-    )
+    wildcard_models = get_provider_models(provider=provider, litellm_params=litellm_params)
 
     if wildcard_models is None:
         return []
@@ -243,14 +242,10 @@ def get_known_models_from_wildcard(
         ## CHECK IF PARTIAL FILTER e.g. `gemini-*`
         model_prefix = wildcard_suffix.replace("*", "")
 
-        is_partial_filter = any(
-            wc_model.startswith(model_prefix) for wc_model in wildcard_models
-        )
+        is_partial_filter = any(wc_model.startswith(model_prefix) for wc_model in wildcard_models)
         if is_partial_filter:
             filtered_wildcard_models = [
-                wc_model
-                for wc_model in wildcard_models
-                if wc_model.startswith(model_prefix)
+                wc_model for wc_model in wildcard_models if wc_model.startswith(model_prefix)
             ]
             wildcard_models = filtered_wildcard_models
         else:
@@ -274,9 +269,7 @@ def _get_wildcard_models(
     all_wildcard_models = []
     for model in unique_models:
         if _check_wildcard_routing(model=model):
-            if (
-                return_wildcard_routes
-            ):  # will add the wildcard route to the list eg: anthropic/*.
+            if return_wildcard_routes:  # will add the wildcard route to the list eg: anthropic/*.
                 all_wildcard_models.append(model)
 
             ## get litellm params from model

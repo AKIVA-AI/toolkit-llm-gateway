@@ -59,15 +59,12 @@ class CohereRerankHandler(BaseTranslation):
             data["query"] = guardrailed_texts[0] if guardrailed_texts else query
 
             verbose_proxy_logger.debug(
-                "Rerank: Applied guardrail to query. "
-                "Original length: %d, New length: %d",
+                "Rerank: Applied guardrail to query. " "Original length: %d, New length: %d",
                 len(query),
                 len(data["query"]),
             )
         else:
-            verbose_proxy_logger.debug(
-                "Rerank: No query to process or query is not a string"
-            )
+            verbose_proxy_logger.debug("Rerank: No query to process or query is not a string")
 
         return data
 

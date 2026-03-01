@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import httpx
-
 from litellm.llms.azure.common_utils import BaseAzureLLM
 from litellm.llms.base_llm.passthrough.transformation import BasePassthroughConfig
 from litellm.secret_managers.main import get_secret_str
@@ -58,9 +57,7 @@ class AzurePassthroughConfig(BasePassthroughConfig):
     ) -> dict:
         return BaseAzureLLM._base_validate_azure_environment(
             headers=headers,
-            litellm_params=GenericLiteLLMParams(
-                **{**litellm_params, "api_key": api_key}
-            ),
+            litellm_params=GenericLiteLLMParams(**{**litellm_params, "api_key": api_key}),
         )
 
     @staticmethod

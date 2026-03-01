@@ -3,9 +3,8 @@
 import os
 import traceback
 
-from pydantic import BaseModel
-
 import litellm
+from pydantic import BaseModel
 
 
 class PromptLayerLogger:
@@ -34,9 +33,7 @@ class PromptLayerLogger:
 
                 # Remove "pl_tags" from metadata
                 metadata = {
-                    k: v
-                    for k, v in kwargs["litellm_params"]["metadata"].items()
-                    if k != "pl_tags"
+                    k: v for k, v in kwargs["litellm_params"]["metadata"].items() if k != "pl_tags"
                 }
 
             print_verbose(

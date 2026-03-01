@@ -13,17 +13,16 @@ All /customer management endpoints
 from typing import List, Optional
 
 import fastapi
-from fastapi import APIRouter, Depends, HTTPException, Request
-
 import litellm
+from fastapi import APIRouter, Depends, HTTPException, Request
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
+from litellm.proxy.management_endpoints.common_daily_activity import get_daily_activity
 from litellm.proxy.utils import handle_exception_on_proxy
 from litellm.types.proxy.management_endpoints.common_daily_activity import (
     SpendAnalyticsPaginatedResponse,
 )
-from litellm.proxy.management_endpoints.common_daily_activity import get_daily_activity
 
 router = APIRouter()
 
@@ -125,9 +124,7 @@ async def unblock_user(data: BlockUsers):
     ):
         raise HTTPException(
             status_code=400,
-            detail={
-                "error": "Blocked user check was never set. This call has no effect."
-            },
+            detail={"error": "Blocked user check was never set. This call has no effect."},
         )
 
     if isinstance(litellm.blocked_user_list, list):
@@ -272,8 +269,7 @@ async def new_end_user(
                     data={
                         **_new_budget.model_dump(exclude_unset=True),
                         "created_by": user_api_key_dict.user_id or litellm_proxy_admin_name,  # type: ignore
-                        "updated_by": user_api_key_dict.user_id
-                        or litellm_proxy_admin_name,
+                        "updated_by": user_api_key_dict.user_id or litellm_proxy_admin_name,
                     }
                 )
             except Exception as e:
@@ -325,9 +321,7 @@ async def new_end_user(
     dependencies=[Depends(user_api_key_auth)],
 )
 async def end_user_info(
-    end_user_id: str = fastapi.Query(
-        description="End User ID in the request parameters"
-    ),
+    end_user_id: str = fastapi.Query(description="End User ID in the request parameters"),
 ):
     """
     Get information about an end-user. An `end_user` is a customer (external user) of the proxy.
@@ -362,7 +356,7 @@ async def end_user_info(
                 param="end_user_id",
             )
         return user_info.model_dump(exclude_none=True)
-    
+
     except Exception as e:
         verbose_proxy_logger.exception(
             "litellm.proxy.management_endpoints.customer_endpoints.end_user_info(): Exception occured - {}".format(
@@ -370,6 +364,7 @@ async def end_user_info(
             )
         )
         raise handle_exception_on_proxy(e)
+
 
 @router.post(
     "/customer/update",
@@ -447,9 +442,7 @@ async def update_end_user(
                 param="user_id",
             )
 
-        end_user_table_data_typed = LiteLLM_EndUserTable(
-            **end_user_table_data.model_dump()
-        )
+        end_user_table_data_typed = LiteLLM_EndUserTable(**end_user_table_data.model_dump())
 
         ## Get budget table data ##
         end_user_budget_table = end_user_table_data_typed.litellm_budget_table
@@ -471,29 +464,21 @@ async def update_end_user(
         if budget_table_data:
             if end_user_budget_table is None:
                 ## Create new budget ##
-                budget_table_data_record = (
-                    await prisma_client.db.litellm_budgettable.create(
-                        data={
-                            **budget_table_data,
-                            "created_by": user_api_key_dict.user_id
-                            or litellm_proxy_admin_name,
-                            "updated_by": user_api_key_dict.user_id
-                            or litellm_proxy_admin_name,
-                        },
-                        include={"end_users": True},
-                    )
+                budget_table_data_record = await prisma_client.db.litellm_budgettable.create(
+                    data={
+                        **budget_table_data,
+                        "created_by": user_api_key_dict.user_id or litellm_proxy_admin_name,
+                        "updated_by": user_api_key_dict.user_id or litellm_proxy_admin_name,
+                    },
+                    include={"end_users": True},
                 )
 
-                update_end_user_table_data[
-                    "budget_id"
-                ] = budget_table_data_record.budget_id
+                update_end_user_table_data["budget_id"] = budget_table_data_record.budget_id
             else:
                 ## Update existing budget ##
-                budget_table_data_record = (
-                    await prisma_client.db.litellm_budgettable.update(
-                        where={"budget_id": end_user_budget_table.budget_id},
-                        data=budget_table_data,
-                    )
+                budget_table_data_record = await prisma_client.db.litellm_budgettable.update(
+                    where={"budget_id": end_user_budget_table.budget_id},
+                    data=budget_table_data,
                 )
 
         ## Update user table, with update params + new budget id (if set) ##
@@ -519,9 +504,7 @@ async def update_end_user(
 
     except Exception as e:
         verbose_proxy_logger.exception(
-            "litellm.proxy.proxy_server.update_end_user(): Exception occured - {}".format(
-                str(e)
-            )
+            "litellm.proxy.proxy_server.update_end_user(): Exception occured - {}".format(str(e))
         )
         raise handle_exception_on_proxy(e)
 
@@ -566,11 +549,7 @@ async def delete_end_user(
             raise Exception("Not connected to DB!")
 
         verbose_proxy_logger.debug("/customer/delete: Received data = %s", data)
-        if (
-            data.user_ids is not None
-            and isinstance(data.user_ids, list)
-            and len(data.user_ids) > 0
-        ):
+        if data.user_ids is not None and isinstance(data.user_ids, list) and len(data.user_ids) > 0:
             # First check if all users exist
             existing_users = await prisma_client.db.litellm_endusertable.find_many(
                 where={"user_id": {"in": data.user_ids}}
@@ -599,8 +578,7 @@ async def delete_end_user(
             )
             return {
                 "deleted_customers": response,
-                "message": "Successfully deleted customers with ids: "
-                + str(data.user_ids),
+                "message": "Successfully deleted customers with ids: " + str(data.user_ids),
             }
         else:
             raise ValueError(f"user_id is required, passed user_id = {data.user_ids}")
@@ -608,11 +586,10 @@ async def delete_end_user(
         # update based on remaining passed in values
     except Exception as e:
         verbose_proxy_logger.error(
-            "litellm.proxy.proxy_server.delete_end_user(): Exception occured - {}".format(
-                str(e)
-            )
+            "litellm.proxy.proxy_server.delete_end_user(): Exception occured - {}".format(str(e))
         )
         raise handle_exception_on_proxy(e)
+
 
 @router.get(
     "/customer/list",
@@ -670,7 +647,7 @@ async def list_end_user(
         for item in response:
             returned_response.append(LiteLLM_EndUserTable(**item.model_dump()))
         return returned_response
-    
+
     except Exception as e:
         verbose_proxy_logger.exception(
             "litellm.proxy.management_endpoints.customer_endpoints.list_end_user(): Exception occured - {}".format(
@@ -678,6 +655,7 @@ async def list_end_user(
             )
         )
         raise handle_exception_on_proxy(e)
+
 
 @router.get(
     "/customer/daily/activity",
@@ -702,7 +680,6 @@ async def get_customer_daily_activity(
     exclude_end_user_ids: Optional[str] = None,
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
 ):
-
     """
     Get daily activity for specific organizations or all accessible organizations.
     """
@@ -724,18 +701,12 @@ async def get_customer_daily_activity(
             exclude_end_user_ids.split(",") if exclude_end_user_ids else None
         )
 
-    
     # Fetch organization aliases for metadata
     where_condition = {}
     if end_user_ids_list:
         where_condition["user_id"] = {"in": list(end_user_ids_list)}
-    end_user_aliases = await prisma_client.db.litellm_endusertable.find_many(
-        where=where_condition
-    )
-    end_user_alias_metadata = {
-        e.user_id: {"alias": e.alias}
-        for e in end_user_aliases
-    }
+    end_user_aliases = await prisma_client.db.litellm_endusertable.find_many(where=where_condition)
+    end_user_alias_metadata = {e.user_id: {"alias": e.alias} for e in end_user_aliases}
 
     # Query daily activity for organizations
     return await get_daily_activity(

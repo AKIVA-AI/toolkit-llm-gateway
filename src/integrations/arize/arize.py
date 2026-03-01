@@ -16,9 +16,8 @@ from litellm.types.services import ServiceLoggerPayload
 from litellm.types.utils import StandardCallbackDynamicParams
 
 if TYPE_CHECKING:
-    from opentelemetry.trace import Span as _Span
-
     from litellm.types.integrations.arize import Protocol as _Protocol
+    from opentelemetry.trace import Span as _Span
 
     Protocol = _Protocol
     Span = Union[_Span, Any]
@@ -170,8 +169,6 @@ class ArizeLogger(OpenTelemetry):
         # `api_key` handling
         #########################################################
         if standard_callback_dynamic_params.get("arize_api_key"):
-            dynamic_headers["api_key"] = standard_callback_dynamic_params.get(
-                "arize_api_key"
-            )
+            dynamic_headers["api_key"] = standard_callback_dynamic_params.get("arize_api_key")
 
         return dynamic_headers

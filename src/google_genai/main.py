@@ -4,8 +4,6 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, Optional, Union
 
 import httpx
-from pydantic import BaseModel, ConfigDict
-
 import litellm
 from litellm.constants import request_timeout
 
@@ -18,6 +16,7 @@ from litellm.llms.base_llm.google_genai.transformation import (
 from litellm.llms.custom_httpx.llm_http_handler import BaseLLMHTTPHandler
 from litellm.types.router import GenericLiteLLMParams
 from litellm.utils import ProviderConfigManager, client
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     from litellm.types.google_genai.main import (
@@ -102,9 +101,7 @@ class GenerateContentHelper:
         Returns:
             GenerateContentSetupResult containing all setup information
         """
-        litellm_logging_obj: Optional[LiteLLMLoggingObj] = kwargs.get(
-            "litellm_logging_obj"
-        )
+        litellm_logging_obj: Optional[LiteLLMLoggingObj] = kwargs.get("litellm_logging_obj")
         litellm_call_id: Optional[str] = kwargs.get("litellm_call_id", None)
 
         # get llm provider logic
@@ -131,11 +128,11 @@ class GenerateContentHelper:
         )
 
         # get provider config
-        generate_content_provider_config: Optional[
-            BaseGoogleGenAIGenerateContentConfig
-        ] = ProviderConfigManager.get_provider_google_genai_generate_content_config(
-            model=model,
-            provider=litellm.LlmProviders(custom_llm_provider),
+        generate_content_provider_config: Optional[BaseGoogleGenAIGenerateContentConfig] = (
+            ProviderConfigManager.get_provider_google_genai_generate_content_config(
+                model=model,
+                provider=litellm.LlmProviders(custom_llm_provider),
+            )
         )
 
         if generate_content_provider_config is None:
@@ -166,14 +163,12 @@ class GenerateContentHelper:
         )
         # Extract systemInstruction from kwargs to pass to transform
         system_instruction = kwargs.get("systemInstruction") or kwargs.get("system_instruction")
-        request_body = (
-            generate_content_provider_config.transform_generate_content_request(
-                model=model,
-                contents=contents,
-                tools=tools,
-                generate_content_config_dict=generate_content_config_dict,
-                system_instruction=system_instruction,
-            )
+        request_body = generate_content_provider_config.transform_generate_content_request(
+            model=model,
+            contents=contents,
+            tools=tools,
+            generate_content_config_dict=generate_content_config_dict,
+            system_instruction=system_instruction,
         )
 
         # Pre Call logging
@@ -297,9 +292,7 @@ def generate_content(
             config = kwargs.pop("generationConfig")
         # Check for mock response first
         litellm_params = GenericLiteLLMParams(**kwargs)
-        if litellm_params.mock_response and isinstance(
-            litellm_params.mock_response, str
-        ):
+        if litellm_params.mock_response and isinstance(litellm_params.mock_response, str):
             return GenerateContentHelper.mock_generate_content_response(
                 mock_response=litellm_params.mock_response
             )
@@ -408,16 +401,14 @@ async def agenerate_content_stream(
         # Check if we should use the adapter (when provider config is None)
         if setup_result.generate_content_provider_config is None:
             # Use the adapter to convert to completion format
-            return (
-                await GenerateContentToCompletionHandler.async_generate_content_handler(
-                    model=model,
-                    contents=contents,  # type: ignore
-                    config=setup_result.generate_content_config_dict,
-                    litellm_params=setup_result.litellm_params,
-                    tools=tools,
-                    stream=True,
-                    **kwargs,
-                )
+            return await GenerateContentToCompletionHandler.async_generate_content_handler(
+                model=model,
+                contents=contents,  # type: ignore
+                config=setup_result.generate_content_config_dict,
+                litellm_params=setup_result.litellm_params,
+                tools=tools,
+                stream=True,
+                **kwargs,
             )
 
         # Call the handler with async enabled and streaming

@@ -5,7 +5,6 @@ import types
 from typing import Callable, Optional
 
 import httpx
-
 import litellm
 from litellm.utils import Choices, Message, ModelResponse, Usage
 
@@ -167,9 +166,7 @@ def completion(
             choices_list.append(choice_obj)
         model_response.choices = choices_list  # type: ignore
     except Exception:
-        raise PalmError(
-            message=traceback.format_exc(), status_code=response.status_code
-        )
+        raise PalmError(message=traceback.format_exc(), status_code=response.status_code)
 
     try:
         completion_response = model_response["choices"][0]["message"].get("content")

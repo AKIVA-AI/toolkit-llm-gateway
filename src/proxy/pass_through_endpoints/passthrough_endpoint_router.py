@@ -17,9 +17,7 @@ class PassthroughEndpointRouter:
 
     def __init__(self):
         self.credentials: Dict[str, str] = {}
-        self.deployment_key_to_vertex_credentials: Dict[
-            str, VertexPassThroughCredentials
-        ] = {}
+        self.deployment_key_to_vertex_credentials: Dict[str, VertexPassThroughCredentials] = {}
         self.default_vertex_config: Optional[VertexPassThroughCredentials] = None
 
     def set_pass_through_credentials(
@@ -65,10 +63,8 @@ class PassthroughEndpointRouter:
             verbose_router_logger.debug(
                 f"No credentials found for {credential_name}, looking for env variable"
             )
-            _env_variable_name = (
-                self._get_default_env_variable_name_passthrough_endpoint(
-                    custom_llm_provider=custom_llm_provider,
-                )
+            _env_variable_name = self._get_default_env_variable_name_passthrough_endpoint(
+                custom_llm_provider=custom_llm_provider,
             )
             return get_secret_str(_env_variable_name)
 
@@ -125,18 +121,14 @@ class PassthroughEndpointRouter:
             location=location,
         )
         if deployment_key is None:
-            verbose_router_logger.debug(
-                "No deployment key found for project-id, location"
-            )
+            verbose_router_logger.debug("No deployment key found for project-id, location")
             return
         vertex_pass_through_credentials = VertexPassThroughCredentials(
             vertex_project=project_id,
             vertex_location=location,
             vertex_credentials=vertex_credentials,
         )
-        self.deployment_key_to_vertex_credentials[deployment_key] = (
-            vertex_pass_through_credentials
-        )
+        self.deployment_key_to_vertex_credentials[deployment_key] = vertex_pass_through_credentials
 
     def _get_deployment_key(
         self, project_id: Optional[str], location: Optional[str]

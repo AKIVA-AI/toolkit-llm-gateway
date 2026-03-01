@@ -6,9 +6,8 @@ import os
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Union
 
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm import ModelResponse, Router
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import DualCache
@@ -92,13 +91,8 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
     ) -> float:
         """Get the weight for a given priority from litellm.priority_reservation"""
         weight: float = litellm.priority_reservation_settings.default_priority
-        if (
-            litellm.priority_reservation is None
-            or priority not in litellm.priority_reservation
-        ):
-            verbose_proxy_logger.debug(
-                "Priority Reservation not set for the given priority."
-            )
+        if litellm.priority_reservation is None or priority not in litellm.priority_reservation:
+            verbose_proxy_logger.debug("Priority Reservation not set for the given priority.")
         elif priority is not None and litellm.priority_reservation is not None:
             if os.getenv("LITELLM_LICENSE", None) is None:
                 verbose_proxy_logger.error(
@@ -114,30 +108,28 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
     ) -> Optional[str]:
         """
         Get priority from user_api_key_dict.
-        
+
         Checks team metadata first (takes precedence), then falls back to key metadata.
-        
+
         Args:
             user_api_key_dict: User authentication info
-            
+
         Returns:
             Priority string if found, None otherwise
         """
         priority: Optional[str] = None
-        
+
         # Check team metadata first (takes precedence)
         if user_api_key_dict.team_metadata is not None:
             priority = user_api_key_dict.team_metadata.get("priority", None)
-        
+
         # Fall back to key metadata
         if priority is None:
             priority = user_api_key_dict.metadata.get("priority", None)
-            
+
         return priority
 
-    def _normalize_priority_weights(
-        self, model_info: ModelGroupInfo
-    ) -> Dict[str, float]:
+    def _normalize_priority_weights(self, model_info: ModelGroupInfo) -> Dict[str, float]:
         """
         Normalize priority weights if they sum to > 1.0
 
@@ -234,9 +226,7 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
                 )
 
                 # Query Redis directly for current counter value (skip local cache for consistency)
-                counter_value = await self._get_saturation_value_from_cache(
-                    counter_key=counter_key
-                )
+                counter_value = await self._get_saturation_value_from_cache(counter_key=counter_key)
 
                 if counter_value is not None:
                     current_requests = int(counter_value)
@@ -256,9 +246,7 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
                     rate_limit_type="tokens",
                 )
 
-                counter_value = await self._get_saturation_value_from_cache(
-                    counter_key=counter_key
-                )
+                counter_value = await self._get_saturation_value_from_cache(counter_key=counter_key)
 
                 if counter_value is not None:
                     current_tokens = float(counter_value)
@@ -270,16 +258,12 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
                         f"({tpm_saturation:.1%})"
                     )
 
-            verbose_proxy_logger.debug(
-                f"Model {model} overall saturation: {max_saturation:.1%}"
-            )
+            verbose_proxy_logger.debug(f"Model {model} overall saturation: {max_saturation:.1%}")
 
             return max_saturation
 
         except Exception as e:
-            verbose_proxy_logger.error(
-                f"Error checking saturation for {model}: {str(e)}"
-            )
+            verbose_proxy_logger.error(f"Error checking saturation for {model}: {str(e)}")
             # Fail open: assume not saturated on error
             return 0.0
 
@@ -300,8 +284,8 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
         descriptors: List[RateLimitDescriptor] = []
 
         # Get model group info
-        model_group_info: Optional[ModelGroupInfo] = (
-            self.llm_router.get_model_group_info(model_group=model)
+        model_group_info: Optional[ModelGroupInfo] = self.llm_router.get_model_group_info(
+            model_group=model
         )
         if model_group_info is None:
             return descriptors
@@ -361,14 +345,10 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
             value=model,
             rate_limit={
                 "requests_per_unit": (
-                    model_group_info.rpm * high_limit_multiplier
-                    if model_group_info.rpm
-                    else None
+                    model_group_info.rpm * high_limit_multiplier if model_group_info.rpm else None
                 ),
                 "tokens_per_unit": (
-                    model_group_info.tpm * high_limit_multiplier
-                    if model_group_info.tpm
-                    else None
+                    model_group_info.tpm * high_limit_multiplier if model_group_info.tpm else None
                 ),
                 "window_size": self.v3_limiter.window_size,
             },
@@ -415,9 +395,7 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
         """
         import json
 
-        saturation_threshold = (
-            litellm.priority_reservation_settings.saturation_threshold
-        )
+        saturation_threshold = litellm.priority_reservation_settings.saturation_threshold
         should_enforce_priority = saturation >= saturation_threshold
 
         # Build ALL descriptors upfront
@@ -447,9 +425,7 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
             read_only=True,  # CRITICAL: Don't increment counters yet
         )
 
-        verbose_proxy_logger.debug(
-            f"Read-only check: {json.dumps(check_response, indent=2)}"
-        )
+        verbose_proxy_logger.debug(f"Read-only check: {json.dumps(check_response, indent=2)}")
 
         # PHASE 2: Decide which limits to enforce
         if check_response["overall_code"] == "OVER_LIMIT":
@@ -572,27 +548,21 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
             return None
 
         model = data["model"]
-        priority = self._get_priority_from_user_api_key_dict(
-            user_api_key_dict=user_api_key_dict
-        )
+        priority = self._get_priority_from_user_api_key_dict(user_api_key_dict=user_api_key_dict)
 
         # Get model configuration
-        model_group_info: Optional[ModelGroupInfo] = (
-            self.llm_router.get_model_group_info(model_group=model)
+        model_group_info: Optional[ModelGroupInfo] = self.llm_router.get_model_group_info(
+            model_group=model
         )
         if model_group_info is None:
-            verbose_proxy_logger.debug(
-                f"No model group info for {model}, allowing request"
-            )
+            verbose_proxy_logger.debug(f"No model group info for {model}, allowing request")
             return None
 
         try:
             # STEP 1: Check current saturation level
             saturation = await self._check_model_saturation(model, model_group_info)
 
-            saturation_threshold = (
-                litellm.priority_reservation_settings.saturation_threshold
-            )
+            saturation_threshold = litellm.priority_reservation_settings.saturation_threshold
 
             verbose_proxy_logger.debug(
                 f"[Dynamic Rate Limiter] Model={model}, Saturation={saturation:.1%}, "
@@ -616,9 +586,7 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
         except HTTPException:
             raise
         except Exception as e:
-            verbose_proxy_logger.error(
-                f"Error in dynamic rate limiter: {str(e)}, allowing request"
-            )
+            verbose_proxy_logger.error(f"Error in dynamic rate limiter: {str(e)}, allowing request")
             # Fail open on unexpected errors
             return None
 
@@ -645,10 +613,7 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
 
                 # Get existing additional headers
                 additional_headers = (
-                    getattr(response, "_hidden_params", {}).get(
-                        "additional_headers", {}
-                    )
-                    or {}
+                    getattr(response, "_hidden_params", {}).get("additional_headers", {}) or {}
                 )
 
                 # Add priority information
@@ -686,9 +651,7 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
         from litellm.types.utils import Usage
 
         try:
-            verbose_proxy_logger.debug(
-                "INSIDE dynamic rate limiter ASYNC SUCCESS LOGGING"
-            )
+            verbose_proxy_logger.debug("INSIDE dynamic rate limiter ASYNC SUCCESS LOGGING")
 
             litellm_parent_otel_span = _get_parent_otel_span_from_kwargs(kwargs)
 
@@ -703,7 +666,9 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
 
             # Get priority from user_api_key_auth_metadata in standard_logging_metadata
             # This is where user_api_key_dict.metadata is stored during pre-call
-            user_api_key_auth_metadata = standard_logging_metadata.get("user_api_key_auth_metadata") or {}
+            user_api_key_auth_metadata = (
+                standard_logging_metadata.get("user_api_key_auth_metadata") or {}
+            )
             key_priority: Optional[str] = user_api_key_auth_metadata.get("priority")
 
             # Get total tokens from response
@@ -782,6 +747,4 @@ class _PROXY_DynamicRateLimitHandlerV3(CustomLogger):
                 )
 
         except Exception as e:
-            verbose_proxy_logger.exception(
-                f"Error in dynamic rate limiter success event: {str(e)}"
-            )
+            verbose_proxy_logger.exception(f"Error in dynamic rate limiter success event: {str(e)}")

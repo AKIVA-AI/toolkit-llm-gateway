@@ -5,7 +5,7 @@ Common helpers / utils across al OpenAI endpoints
 import hashlib
 import json
 import ssl
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
 import httpx
 import openai
@@ -43,9 +43,7 @@ class OpenAIError(BaseLLMException):
         if response:
             self.response = response
         else:
-            self.response = httpx.Response(
-                status_code=status_code, request=self.request
-            )
+            self.response = httpx.Response(status_code=status_code, request=self.request)
         super().__init__(
             status_code=status_code,
             message=self.message,
@@ -79,11 +77,7 @@ def drop_params_from_unprocessable_entity_error(
         error_body = error_message
     else:
         error_body = e.body
-    if (
-        error_body is not None
-        and isinstance(error_body, dict)
-        and error_body.get("message")
-    ):
+    if error_body is not None and isinstance(error_body, dict) and error_body.get("message"):
         message = error_body.get("message", {})
         if isinstance(message, str):
             try:
@@ -147,9 +141,7 @@ class BaseOpenAILLM:
         """Creates a cache key for the OpenAI client based on the client initialization parameters"""
         hashed_api_key = None
         if client_initialization_params.get("api_key") is not None:
-            hash_object = hashlib.sha256(
-                client_initialization_params.get("api_key", "").encode()
-            )
+            hash_object = hashlib.sha256(client_initialization_params.get("api_key", "").encode())
             # Hexadecimal representation of the hash
             hashed_api_key = hash_object.hexdigest()
 
@@ -166,9 +158,7 @@ class BaseOpenAILLM:
             "api_base",
         ]
         openai_client_fields = (
-            BaseOpenAILLM.get_openai_client_initialization_param_fields(
-                client_type=client_type
-            )
+            BaseOpenAILLM.get_openai_client_initialization_param_fields(client_type=client_type)
             + LITELLM_CLIENT_SPECIFIC_PARAMS
         )
 
@@ -209,9 +199,7 @@ class BaseOpenAILLM:
         return httpx.AsyncClient(
             verify=ssl_config,
             transport=AsyncHTTPHandler._create_async_transport(
-                ssl_context=ssl_config
-                if isinstance(ssl_config, ssl.SSLContext)
-                else None,
+                ssl_context=ssl_config if isinstance(ssl_config, ssl.SSLContext) else None,
                 ssl_verify=ssl_config if isinstance(ssl_config, bool) else None,
                 shared_session=shared_session,
             ),

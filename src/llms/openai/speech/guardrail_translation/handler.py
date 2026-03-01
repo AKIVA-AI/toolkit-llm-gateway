@@ -44,9 +44,7 @@ class OpenAITextToSpeechHandler(BaseTranslation):
         """
         input_text = data.get("input")
         if input_text is None:
-            verbose_proxy_logger.debug(
-                "OpenAI Text-to-Speech: No input text found in request data"
-            )
+            verbose_proxy_logger.debug("OpenAI Text-to-Speech: No input text found in request data")
             return data
 
         if isinstance(input_text, str):

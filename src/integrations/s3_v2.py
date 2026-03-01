@@ -78,7 +78,7 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
                 s3_path=s3_path,
                 s3_use_team_prefix=s3_use_team_prefix,
                 s3_strip_base64_files=s3_strip_base64_files,
-                s3_use_key_prefix=s3_use_key_prefix
+                s3_use_key_prefix=s3_use_key_prefix,
             )
             verbose_logger.debug(f"s3 logger using endpoint url {s3_endpoint_url}")
 
@@ -89,7 +89,7 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
             )
             self.async_httpx_client = get_async_httpx_client(
                 llm_provider=httpxSpecialProvider.LoggingCallback,
-                params={"ssl_verify": self.s3_verify}
+                params={"ssl_verify": self.s3_verify},
             )
 
             asyncio.create_task(self.periodic_flush())
@@ -145,37 +145,30 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
             if isinstance(value, str) and value.startswith("os.environ/"):
                 litellm.s3_callback_params[key] = litellm.get_secret(value)
 
-        self.s3_bucket_name = (
-            litellm.s3_callback_params.get("s3_bucket_name") or s3_bucket_name
-        )
-        self.s3_region_name = (
-            litellm.s3_callback_params.get("s3_region_name") or s3_region_name
-        )
-        self.s3_api_version = (
-            litellm.s3_callback_params.get("s3_api_version") or s3_api_version
-        )
+        self.s3_bucket_name = litellm.s3_callback_params.get("s3_bucket_name") or s3_bucket_name
+        self.s3_region_name = litellm.s3_callback_params.get("s3_region_name") or s3_region_name
+        self.s3_api_version = litellm.s3_callback_params.get("s3_api_version") or s3_api_version
         self.s3_use_ssl = (
-            litellm.s3_callback_params.get("s3_use_ssl", True) if litellm.s3_callback_params.get("s3_use_ssl") is not None else s3_use_ssl
+            litellm.s3_callback_params.get("s3_use_ssl", True)
+            if litellm.s3_callback_params.get("s3_use_ssl") is not None
+            else s3_use_ssl
         )
         self.s3_verify = (
-            litellm.s3_callback_params.get("s3_verify") if litellm.s3_callback_params.get("s3_verify") is not None else s3_verify
+            litellm.s3_callback_params.get("s3_verify")
+            if litellm.s3_callback_params.get("s3_verify") is not None
+            else s3_verify
         )
-        self.s3_endpoint_url = (
-            litellm.s3_callback_params.get("s3_endpoint_url") or s3_endpoint_url
-        )
+        self.s3_endpoint_url = litellm.s3_callback_params.get("s3_endpoint_url") or s3_endpoint_url
         self.s3_aws_access_key_id = (
-            litellm.s3_callback_params.get("s3_aws_access_key_id")
-            or s3_aws_access_key_id
+            litellm.s3_callback_params.get("s3_aws_access_key_id") or s3_aws_access_key_id
         )
 
         self.s3_aws_secret_access_key = (
-            litellm.s3_callback_params.get("s3_aws_secret_access_key")
-            or s3_aws_secret_access_key
+            litellm.s3_callback_params.get("s3_aws_secret_access_key") or s3_aws_secret_access_key
         )
 
         self.s3_aws_session_token = (
-            litellm.s3_callback_params.get("s3_aws_session_token")
-            or s3_aws_session_token
+            litellm.s3_callback_params.get("s3_aws_session_token") or s3_aws_session_token
         )
 
         self.s3_aws_session_name = (
@@ -191,8 +184,7 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
         )
 
         self.s3_aws_web_identity_token = (
-            litellm.s3_callback_params.get("s3_aws_web_identity_token")
-            or s3_aws_web_identity_token
+            litellm.s3_callback_params.get("s3_aws_web_identity_token") or s3_aws_web_identity_token
         )
 
         self.s3_aws_sts_endpoint = (
@@ -203,13 +195,11 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
         self.s3_path = litellm.s3_callback_params.get("s3_path") or s3_path
         # done reading litellm.s3_callback_params
         self.s3_use_team_prefix = (
-            bool(litellm.s3_callback_params.get("s3_use_team_prefix", False))
-            or s3_use_team_prefix
+            bool(litellm.s3_callback_params.get("s3_use_team_prefix", False)) or s3_use_team_prefix
         )
 
         self.s3_use_key_prefix = (
-                bool(litellm.s3_callback_params.get("s3_use_key_prefix", False))
-                or s3_use_key_prefix
+            bool(litellm.s3_callback_params.get("s3_use_key_prefix", False)) or s3_use_key_prefix
         )
 
         self.s3_strip_base64_files = (
@@ -238,9 +228,7 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
 
     async def _async_log_event_base(self, kwargs, response_obj, start_time, end_time):
         try:
-            verbose_logger.debug(
-                f"s3 Logging - Enters logging function for model {kwargs}"
-            )
+            verbose_logger.debug(f"s3 Logging - Enters logging function for model {kwargs}")
 
             s3_batch_logging_element = self.create_s3_batch_logging_element(
                 start_time=start_time,
@@ -250,9 +238,7 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
             if s3_batch_logging_element is None:
                 raise ValueError("s3_batch_logging_element is None")
 
-            verbose_logger.debug(
-                "\ns3 Logger - Logging payload = %s", s3_batch_logging_element
-            )
+            verbose_logger.debug("\ns3 Logger - Logging payload = %s", s3_batch_logging_element)
 
             self.log_queue.append(s3_batch_logging_element)
             verbose_logger.debug(
@@ -264,9 +250,7 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
             verbose_logger.exception(f"s3 Layer Error - {str(e)}")
             self.handle_callback_failure(callback_name="S3Logger")
 
-    async def async_upload_data_to_s3(
-        self, batch_logging_element: s3BatchLoggingElement
-    ):
+    async def async_upload_data_to_s3(self, batch_logging_element: s3BatchLoggingElement):
         try:
             import hashlib
 
@@ -294,9 +278,7 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
             verbose_logger.debug(
                 f"s3_v2 logger - uploading data to s3 - {batch_logging_element.s3_object_key}"
             )
-            verbose_logger.debug(
-                f"s3_v2 logger - s3_verify setting: {self.s3_verify}"
-            )
+            verbose_logger.debug(f"s3_v2 logger - s3_verify setting: {self.s3_verify}")
 
             # Prepare the URL
             url = f"https://{self.s3_bucket_name}.s3.{self.s3_region_name}.amazonaws.com/{batch_logging_element.s3_object_key}"
@@ -392,29 +374,34 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
             return None
 
         if self.s3_strip_base64_files:
-            standard_logging_payload = self._strip_base64_from_messages_sync(standard_logging_payload)
+            standard_logging_payload = self._strip_base64_from_messages_sync(
+                standard_logging_payload
+            )
 
         # Base prefix (default empty)
         prefix_components = []
         if self.s3_use_team_prefix:
-            team_alias = standard_logging_payload.get("metadata", {}).get("user_api_key_team_alias", None)
+            team_alias = standard_logging_payload.get("metadata", {}).get(
+                "user_api_key_team_alias", None
+            )
             if team_alias:
                 prefix_components.append(team_alias)
         if self.s3_use_key_prefix:
-            user_api_key_alias = standard_logging_payload.get("metadata", {}).get("user_api_key_alias", None)
+            user_api_key_alias = standard_logging_payload.get("metadata", {}).get(
+                "user_api_key_alias", None
+            )
             if user_api_key_alias:
                 prefix_components.append(user_api_key_alias)
-
 
         # Construct full prefix path
         prefix_path = "/".join(prefix_components)
         if prefix_path:
             prefix_path += "/"
 
-        s3_file_name = (
-            litellm.utils.get_logging_id(start_time, standard_logging_payload) or ""
+        s3_file_name = litellm.utils.get_logging_id(start_time, standard_logging_payload) or ""
+        verbose_logger.debug(
+            f"Creating s3 file with prefix_components={prefix_components},prefix_path={prefix_path} and {s3_file_name}"
         )
-        verbose_logger.debug(f"Creating s3 file with prefix_components={prefix_components},prefix_path={prefix_path} and {s3_file_name}")
         s3_object_key = get_s3_object_key(
             s3_path=cast(Optional[str], self.s3_path) or "",
             prefix=prefix_path,
@@ -542,21 +529,13 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
                 aws_sts_endpoint=self.s3_aws_sts_endpoint,
             )
 
-            verbose_logger.debug(
-                f"s3_v2 logger - downloading data from s3 - {s3_object_key}"
-            )
+            verbose_logger.debug(f"s3_v2 logger - downloading data from s3 - {s3_object_key}")
 
             # Prepare the URL
             url = f"https://{self.s3_bucket_name}.s3.{self.s3_region_name}.amazonaws.com/{s3_object_key}"
 
             if self.s3_endpoint_url and self.s3_bucket_name:
-                url = (
-                    self.s3_endpoint_url
-                    + "/"
-                    + self.s3_bucket_name
-                    + "/"
-                    + s3_object_key
-                )
+                url = self.s3_endpoint_url + "/" + self.s3_bucket_name + "/" + s3_object_key
 
             # Prepare the request for GET operation
             # For GET requests, we need x-amz-content-sha256 with hash of empty string
@@ -582,9 +561,7 @@ class S3Logger(CustomBatchLogger, BaseAWSLLM):
             response = await self.async_httpx_client.get(url, headers=signed_headers)
 
             if response.status_code != 200:
-                verbose_logger.exception(
-                    "S3 object not found, saw response=", response.text
-                )
+                verbose_logger.exception("S3 object not found, saw response=", response.text)
                 return None
 
             # Parse JSON response

@@ -5,8 +5,10 @@ Calls done in OpenAI/openai.py as DataRobot is openai-compatible.
 """
 
 from typing import Optional, Tuple
-from litellm.secret_managers.main import get_secret_str
 from urllib.parse import urlparse, urlunparse
+
+from litellm.secret_managers.main import get_secret_str
+
 from ...openai_like.chat.transformation import OpenAILikeChatConfig
 
 LLMGW_PATH = "/genai/llmgw/chat/completions"
@@ -42,9 +44,7 @@ class DataRobotConfig(OpenAILikeChatConfig):
             path += f"/api/v2/{LLMGW_PATH}"
         elif "api/v2/deployments" in path:  # Dedicated deployment, leave it
             pass
-        elif (
-            "api/v2" in path and LLMGW_PATH not in path
-        ):  # Standard ENDPOINT path, add LLMGW
+        elif "api/v2" in path and LLMGW_PATH not in path:  # Standard ENDPOINT path, add LLMGW
             path += LLMGW_PATH
 
         # Ensure the url ends with a trailing slash

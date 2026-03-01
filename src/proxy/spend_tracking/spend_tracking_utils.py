@@ -1,12 +1,9 @@
 import hashlib
 import json
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from datetime import datetime as dt
-from datetime import timezone
 from typing import Any, List, Literal, Optional, cast
-
-from pydantic import BaseModel
 
 import litellm
 from litellm._logging import verbose_proxy_logger
@@ -24,6 +21,7 @@ from litellm.types.utils import (
     VectorStoreSearchResponse,
 )
 from litellm.utils import get_end_user_id_for_cost_tracking
+from pydantic import BaseModel
 
 
 def _is_master_key(api_key: str, _master_key: Optional[str]) -> bool:
@@ -48,9 +46,7 @@ def _get_spend_logs_metadata(
     applied_guardrails: Optional[List[str]] = None,
     batch_models: Optional[List[str]] = None,
     mcp_tool_call_metadata: Optional[StandardLoggingMCPToolCall] = None,
-    vector_store_request_metadata: Optional[
-        List[StandardLoggingVectorStoreRequest]
-    ] = None,
+    vector_store_request_metadata: Optional[List[StandardLoggingVectorStoreRequest]] = None,
     guardrail_information: Optional[List[StandardLoggingGuardrailInformation]] = None,
     usage_object: Optional[dict] = None,
     model_map_information: Optional[StandardLoggingModelInformation] = None,
@@ -80,8 +76,7 @@ def _get_spend_logs_metadata(
             cold_storage_object_key=cold_storage_object_key,
         )
     verbose_proxy_logger.debug(
-        "getting payload for SpendLogs, available keys in metadata: "
-        + str(list(metadata.keys()))
+        "getting payload for SpendLogs, available keys in metadata: " + str(list(metadata.keys()))
     )
 
     # Filter the metadata dictionary to include only the specified keys
@@ -129,9 +124,7 @@ def generate_hash_from_response(response_obj: Any) -> str:
         return hashlib.md5(str(response_obj).encode()).hexdigest()
 
 
-def get_spend_logs_id(
-    call_type: str, response_obj: dict, kwargs: dict
-) -> Optional[str]:
+def get_spend_logs_id(call_type: str, response_obj: dict, kwargs: dict) -> Optional[str]:
     if call_type == "aretrieve_batch" or call_type == "acreate_file":
         # Generate a hash from the response object
         id: Optional[str] = generate_hash_from_response(response_obj)
@@ -249,12 +242,8 @@ def get_logging_payload(  # noqa: PLR0915
     standard_logging_completion_tokens: int = 0
     standard_logging_total_tokens: int = 0
     if standard_logging_payload is not None:
-        standard_logging_prompt_tokens = standard_logging_payload.get(
-            "prompt_tokens", 0
-        )
-        standard_logging_completion_tokens = standard_logging_payload.get(
-            "completion_tokens", 0
-        )
+        standard_logging_prompt_tokens = standard_logging_payload.get("prompt_tokens", 0)
+        standard_logging_completion_tokens = standard_logging_payload.get("completion_tokens", 0)
         standard_logging_total_tokens = standard_logging_payload.get("total_tokens", 0)
     if api_key is not None and isinstance(api_key, str):
         if api_key.startswith("sk-"):
@@ -269,20 +258,14 @@ def get_logging_payload(  # noqa: PLR0915
     if (
         standard_logging_payload is not None
     ):  # [TODO] migrate completely to sl payload. currently missing pass-through endpoint data
-        api_key = (
-            api_key
-            or standard_logging_payload["metadata"].get("user_api_key_hash")
-            or ""
-        )
+        api_key = api_key or standard_logging_payload["metadata"].get("user_api_key_hash") or ""
         end_user_id = end_user_id or standard_logging_payload["metadata"].get(
             "user_api_key_end_user_id"
         )
     # BUG FIX: Don't overwrite api_key when standard_logging_payload is None
     # The api_key was already extracted from metadata (line 243) and hashed (lines 256-259)
     request_tags = (
-        json.dumps(metadata.get("tags", []))
-        if isinstance(metadata.get("tags", []), list)
-        else "[]"
+        json.dumps(metadata.get("tags", [])) if isinstance(metadata.get("tags", []), list) else "[]"
     )
     if (
         standard_logging_payload is not None
@@ -317,9 +300,7 @@ def get_logging_payload(  # noqa: PLR0915
             else None
         ),
         vector_store_request_metadata=(
-            standard_logging_payload["metadata"].get(
-                "vector_store_request_metadata", None
-            )
+            standard_logging_payload["metadata"].get("vector_store_request_metadata", None)
             if standard_logging_payload is not None
             else None
         ),
@@ -368,9 +349,7 @@ def get_logging_payload(  # noqa: PLR0915
         "mcp_tool_call_metadata"
     )
     if mcp_tool_call_metadata is not None:
-        mcp_namespaced_tool_name = mcp_tool_call_metadata.get(
-            "namespaced_tool_name", None
-        )
+        mcp_namespaced_tool_name = mcp_tool_call_metadata.get("namespaced_tool_name", None)
 
     # Extract agent_id for A2A requests (set directly on model_call_details)
     agent_id: Optional[str] = kwargs.get("agent_id")
@@ -393,9 +372,7 @@ def get_logging_payload(  # noqa: PLR0915
             spend=kwargs.get("response_cost", 0),
             total_tokens=usage.get("total_tokens", standard_logging_total_tokens),
             prompt_tokens=usage.get("prompt_tokens", standard_logging_prompt_tokens),
-            completion_tokens=usage.get(
-                "completion_tokens", standard_logging_completion_tokens
-            ),
+            completion_tokens=usage.get("completion_tokens", standard_logging_completion_tokens),
             request_tags=request_tags,
             end_user=end_user_id or "",
             api_base=litellm_params.get("api_base", ""),
@@ -430,12 +407,10 @@ def get_logging_payload(  # noqa: PLR0915
 
         # Explicitly clear large intermediate objects to reduce memory pressure
         del response_obj_dict, usage, clean_metadata, additional_usage_values
-        
+
         return payload
     except Exception as e:
-        verbose_proxy_logger.exception(
-            "Error creating spendlogs object - {}".format(str(e))
-        )
+        verbose_proxy_logger.exception("Error creating spendlogs object - {}".format(str(e)))
         raise e
 
 
@@ -622,9 +597,7 @@ def _get_proxy_server_request_for_spend_logs_payload(
     Only store if _should_store_prompts_and_responses_in_spend_logs() is True
     """
     if _should_store_prompts_and_responses_in_spend_logs():
-        _proxy_server_request = cast(
-            Optional[dict], litellm_params.get("proxy_server_request", {})
-        )
+        _proxy_server_request = cast(Optional[dict], litellm_params.get("proxy_server_request", {}))
         if _proxy_server_request is not None:
             _request_body = _proxy_server_request.get("body", {}) or {}
             _request_body = _sanitize_request_body_for_spend_logs_payload(_request_body)
@@ -647,8 +620,7 @@ def _get_vector_store_request_for_spend_logs_payload(
         return None
     for vector_store_request in vector_store_request_metadata:
         vector_store_search_response: VectorStoreSearchResponse = (
-            vector_store_request.get("vector_store_search_response")
-            or VectorStoreSearchResponse()
+            vector_store_request.get("vector_store_search_response") or VectorStoreSearchResponse()
         )
         response_data = vector_store_search_response.get("data", []) or []
         for response_item in response_data:

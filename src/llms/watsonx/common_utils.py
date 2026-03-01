@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional, Union, cast
 
 import httpx
-
 import litellm
 from litellm import verbose_logger
 from litellm.caching import InMemoryCache
@@ -26,9 +25,7 @@ iam_token_cache = InMemoryCache()
 
 
 def get_watsonx_iam_url():
-    return (
-        get_secret_str("WATSONX_IAM_URL") or "https://iam.cloud.ibm.com/identity/token"
-    )
+    return get_secret_str("WATSONX_IAM_URL") or "https://iam.cloud.ibm.com/identity/token"
 
 
 def generate_iam_token(api_key=None, **params) -> str:
@@ -57,9 +54,7 @@ def generate_iam_token(api_key=None, **params) -> str:
             headers,
             data,
         )
-        response = litellm.module_level_client.post(
-            url=iam_token_url, data=data, headers=headers
-        )
+        response = litellm.module_level_client.post(url=iam_token_url, data=data, headers=headers)
         response.raise_for_status()
         json_data = response.json()
 
@@ -291,9 +286,7 @@ class IBMWatsonXMixin:
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[Dict, httpx.Headers]
     ) -> BaseLLMException:
-        return WatsonXAIError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return WatsonXAIError(status_code=status_code, message=error_message, headers=headers)
 
     @staticmethod
     def get_watsonx_credentials(
@@ -330,9 +323,7 @@ class IBMWatsonXMixin:
 
         if wx_credentials is not None:
             api_base = wx_credentials.get("url", api_base)
-            api_key = wx_credentials.get(
-                "apikey", wx_credentials.get("api_key", api_key)
-            )
+            api_key = wx_credentials.get("apikey", wx_credentials.get("api_key", api_key))
             token = wx_credentials.get(
                 "token",
                 wx_credentials.get(

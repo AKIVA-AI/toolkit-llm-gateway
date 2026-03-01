@@ -57,7 +57,6 @@ def simple_shuffle(
             )
             return deployment or deployment[0]
 
-
     ############## No RPM/TPM passed, we do a random pick #################
     item = random.choice(healthy_deployments)
     return item or item[0]

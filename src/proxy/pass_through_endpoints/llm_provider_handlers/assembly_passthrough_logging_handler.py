@@ -6,8 +6,6 @@ from typing import Literal, Optional
 from urllib.parse import urlparse
 
 import httpx
-from typing_extensions import TypedDict
-
 import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -22,6 +20,7 @@ from litellm.types.passthrough_endpoints.assembly_ai import (
 from litellm.types.passthrough_endpoints.pass_through_endpoints import (
     PassthroughStandardLoggingPayload,
 )
+from typing_extensions import TypedDict
 
 
 class AssemblyAITranscriptResponse(TypedDict, total=False):
@@ -98,18 +97,14 @@ class AssemblyAIPassthroughLoggingHandler:
         from ..pass_through_endpoints import pass_through_endpoint_logging
 
         model = response_body.get("speech_model", "")
-        verbose_proxy_logger.debug(
-            "response body %s", json.dumps(response_body, indent=4)
-        )
+        verbose_proxy_logger.debug("response body %s", json.dumps(response_body, indent=4))
         kwargs["model"] = model
         kwargs["custom_llm_provider"] = "assemblyai"
         response_cost: Optional[float] = None
 
         transcript_id = response_body.get("id")
         if transcript_id is None:
-            raise ValueError(
-                "Transcript ID is required to log the cost of the transcription"
-            )
+            raise ValueError("Transcript ID is required to log the cost of the transcription")
         transcript_response = self._poll_assembly_for_transcript_response(
             transcript_id=transcript_id, url_route=url_route
         )
@@ -154,9 +149,7 @@ class AssemblyAIPassthroughLoggingHandler:
         asyncio.run(
             pass_through_endpoint_logging._handle_logging(
                 logging_obj=logging_obj,
-                standard_logging_response_object=self._get_response_to_log(
-                    transcript_response
-                ),
+                standard_logging_response_object=self._get_response_to_log(transcript_response),
                 result=result,
                 start_time=start_time,
                 end_time=end_time,
@@ -193,9 +186,7 @@ class AssemblyAIPassthroughLoggingHandler:
         )
 
         _base_url = (
-            self.assembly_ai_eu_base_url
-            if request_region == "eu"
-            else self.assembly_ai_base_url
+            self.assembly_ai_eu_base_url if request_region == "eu" else self.assembly_ai_base_url
         )
         _api_key = passthrough_endpoint_router.get_credentials(
             custom_llm_provider="assemblyai",
@@ -228,9 +219,7 @@ class AssemblyAIPassthroughLoggingHandler:
         """
         Poll the status of the transcript until it is completed or timeout (30 minutes)
         """
-        for _ in range(
-            self.max_polling_attempts
-        ):  # 180 attempts * 10s = 30 minutes max
+        for _ in range(self.max_polling_attempts):  # 180 attempts * 10s = 30 minutes max
             transcript = self._get_assembly_transcript(
                 request_region=AssemblyAIPassthroughLoggingHandler._get_assembly_region_from_url(
                     url=url_route
@@ -239,10 +228,7 @@ class AssemblyAIPassthroughLoggingHandler:
             )
             if transcript is None:
                 return None
-            if (
-                transcript.get("status") == "completed"
-                or transcript.get("status") == "error"
-            ):
+            if transcript.get("status") == "completed" or transcript.get("status") == "error":
                 return AssemblyAITranscriptResponse(**transcript)
             time.sleep(self.polling_interval)
         return None

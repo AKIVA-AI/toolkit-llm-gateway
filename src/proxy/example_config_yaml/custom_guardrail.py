@@ -1,11 +1,10 @@
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Optional, Union
 
 import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import DualCache
 from litellm.integrations.custom_guardrail import CustomGuardrail
 from litellm.proxy._types import UserAPIKeyAuth
-from litellm.proxy.guardrails.guardrail_helpers import should_proceed_based_on_metadata
 from litellm.types.utils import CallTypesLiteral
 
 
@@ -42,9 +41,7 @@ class myCustomGuardrail(CustomGuardrail):
                         _content = _content.replace("litellm", "********")
                         message["content"] = _content
 
-        verbose_proxy_logger.debug(
-            "async_pre_call_hook: Message after masking %s", _messages
-        )
+        verbose_proxy_logger.debug("async_pre_call_hook: Message after masking %s", _messages)
 
         return data
 

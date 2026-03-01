@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from .bitbucket_prompt_manager import BitBucketPromptManager
-    from litellm.types.prompts.init_prompts import PromptLiteLLMParams, PromptSpec
     from litellm.integrations.custom_prompt_management import CustomPromptManagement
+    from litellm.types.prompts.init_prompts import PromptLiteLLMParams, PromptSpec
+
+    from .bitbucket_prompt_manager import BitBucketPromptManager
 
 from litellm.types.prompts.init_prompts import SupportedPromptIntegrations
 
@@ -39,9 +40,7 @@ def prompt_initializer(
     prompt_id = getattr(litellm_params, "prompt_id", None)
 
     if not bitbucket_config:
-        raise ValueError(
-            "bitbucket_config is required for BitBucket prompt integration"
-        )
+        raise ValueError("bitbucket_config is required for BitBucket prompt integration")
 
     try:
         bitbucket_prompt_manager = BitBucketPromptManager(

@@ -15,9 +15,8 @@ from typing import (
     cast,
 )
 
-import tiktoken
-
 import litellm
+import tiktoken
 from litellm import verbose_logger
 from litellm.constants import (
     DEFAULT_IMAGE_HEIGHT,
@@ -129,10 +128,7 @@ def resize_image_high_res(
     max_long_side = MAX_LONG_SIDE_FOR_IMAGE_HIGH_RES
 
     # Return early if no resizing is needed
-    if (
-        width <= MAX_SHORT_SIDE_FOR_IMAGE_HIGH_RES
-        and height <= MAX_SHORT_SIDE_FOR_IMAGE_HIGH_RES
-    ):
+    if width <= MAX_SHORT_SIDE_FOR_IMAGE_HIGH_RES and height <= MAX_SHORT_SIDE_FOR_IMAGE_HIGH_RES:
         return width, height
 
     # Determine the longer and shorter sides
@@ -296,9 +292,7 @@ def calculate_img_tokens(
         width, height = get_image_dimensions(
             data=data,
         )
-        resized_width, resized_height = resize_image_high_res(
-            width=width, height=height
-        )
+        resized_width, resized_height = resize_image_high_res(width=width, height=height)
         tiles_needed_high_res = calculate_tiles_needed(
             resized_width=resized_width, resized_height=resized_height
         )
@@ -338,9 +332,7 @@ class _MessageCountParams:
             self.tokens_per_message = 3
             self.tokens_per_name = 1
         else:
-            print_verbose(
-                f"Warning: unknown model {model}. Using default token params."
-            )
+            print_verbose(f"Warning: unknown model {model}. Using default token params.")
             self.tokens_per_message = 3
             self.tokens_per_name = 1
         self.count_function = _get_count_function(model, custom_tokenizer)
@@ -385,9 +377,7 @@ def token_counter(
     if litellm.disable_token_counter is True:
         return 0
 
-    verbose_logger.debug(
-        f"messages in token_counter: {messages}, text in token_counter: {text}"
-    )
+    verbose_logger.debug(f"messages in token_counter: {messages}, text in token_counter: {text}")
     if text is not None and messages is not None:
         raise ValueError("text and messages cannot both be set")
     if use_default_image_token_count is None:
@@ -404,9 +394,7 @@ def token_counter(
         num_tokens = count_function(text_to_count)
 
     elif messages is not None:
-        new_messages = cast(
-            List[AllMessageValues], convert_list_message_to_dict(messages)
-        )
+        new_messages = cast(List[AllMessageValues], convert_list_message_to_dict(messages))
         params = _MessageCountParams(model, custom_tokenizer)
         num_tokens = _count_messages(
             params, new_messages, use_default_image_token_count, default_token_count
@@ -452,9 +440,7 @@ def _count_messages(
                 if isinstance(value, List):
                     for tool_call in value:
                         if "function" in tool_call:
-                            function_arguments = tool_call["function"].get(
-                                "arguments", []
-                            )
+                            function_arguments = tool_call["function"].get("arguments", [])
                             num_tokens += params.count_function(str(function_arguments))
                         else:
                             raise ValueError(
@@ -586,9 +572,7 @@ def _count_image_tokens(
     if isinstance(image_url, dict):
         detail = image_url.get("detail", "auto")
         if detail not in ["low", "high", "auto"]:
-            raise ValueError(
-                f"Invalid detail value: {detail}. Expected 'low', 'high', or 'auto'."
-            )
+            raise ValueError(f"Invalid detail value: {detail}. Expected 'low', 'high', or 'auto'.")
         url = image_url.get("url")
         if not url:
             raise ValueError("Missing required key 'url' in image_url dict.")
@@ -631,13 +615,9 @@ def _validate_anthropic_content(content: Mapping[str, Any]) -> type:
     if expected_cls is None:
         raise ValueError(f"Unknown Anthropic content type: '{content_type}'")
 
-    missing = [
-        k for k in getattr(expected_cls, "__required_keys__", set()) if k not in content
-    ]
+    missing = [k for k in getattr(expected_cls, "__required_keys__", set()) if k not in content]
     if missing:
-        raise ValueError(
-            f"Missing required fields in {content_type} block: {', '.join(missing)}"
-        )
+        raise ValueError(f"Missing required fields in {content_type} block: {', '.join(missing)}")
 
     return expected_cls
 
@@ -709,9 +689,7 @@ def _count_content_list(
                 num_tokens += count_function(c.get("text", ""))
             elif c["type"] == "image_url":
                 image_url = c.get("image_url")
-                num_tokens += _count_image_tokens(
-                    image_url, use_default_image_token_count
-                )
+                num_tokens += _count_image_tokens(image_url, use_default_image_token_count)
             elif c["type"] in ("tool_use", "tool_result"):
                 num_tokens += _count_anthropic_content(
                     c,

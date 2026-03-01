@@ -4,8 +4,6 @@ import json
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import httpx
-from pydantic import BaseModel
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.litellm_core_utils.litellm_logging import Logging as LitellmLogging
@@ -25,6 +23,7 @@ from litellm.llms.custom_httpx.http_handler import (
     get_async_httpx_client,
 )
 from litellm.types.utils import ImageResponse
+from pydantic import BaseModel
 
 from ..base_aws_llm import BaseAWSLLM
 from ..common_utils import BedrockError
@@ -103,9 +102,7 @@ class BedrockImageGeneration(BaseAWSLLM):
                 prompt=prompt,
                 model_response=model_response,
                 client=(
-                    client
-                    if client is not None and isinstance(client, AsyncHTTPHandler)
-                    else None
+                    client if client is not None and isinstance(client, AsyncHTTPHandler) else None
                 ),
             )
 
@@ -270,7 +267,9 @@ class BedrockImageGeneration(BaseAWSLLM):
             dict: The request body to use for the Bedrock Image Generation API
         """
         config_class = self.get_config_class(model=model)
-        request_body = config_class.transform_request_body(text=prompt, optional_params=optional_params)
+        request_body = config_class.transform_request_body(
+            text=prompt, optional_params=optional_params
+        )
         return dict(request_body)
 
     def _transform_response_dict_to_openai_response(

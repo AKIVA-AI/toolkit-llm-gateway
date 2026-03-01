@@ -44,9 +44,7 @@ def get_optional_params_add_message(
     }
 
     non_default_params = {
-        k: v
-        for k, v in passed_params.items()
-        if (k in default_params and v != default_params[k])
+        k: v for k, v in passed_params.items() if (k in default_params and v != default_params[k])
     }
     optional_params = {}
 
@@ -75,8 +73,10 @@ def get_optional_params_add_message(
             litellm.AzureOpenAIAssistantsAPIConfig().get_supported_openai_create_message_params()
         )
         _check_valid_arg(supported_params=supported_params)
-        optional_params = litellm.AzureOpenAIAssistantsAPIConfig().map_openai_params_create_message_params(
-            non_default_params=non_default_params, optional_params=optional_params
+        optional_params = (
+            litellm.AzureOpenAIAssistantsAPIConfig().map_openai_params_create_message_params(
+                non_default_params=non_default_params, optional_params=optional_params
+            )
         )
     for k in passed_params.keys():
         if k not in default_params.keys():
@@ -111,9 +111,7 @@ def get_optional_params_image_gen(
     }
 
     non_default_params = {
-        k: v
-        for k, v in passed_params.items()
-        if (k in default_params and v != default_params[k])
+        k: v for k, v in passed_params.items() if (k in default_params and v != default_params[k])
     }
     optional_params = {}
 

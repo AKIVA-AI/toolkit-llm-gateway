@@ -2,9 +2,8 @@ from io import BufferedReader
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 
 import httpx
-from httpx._types import RequestFiles
-
 import litellm
+from httpx._types import RequestFiles
 from litellm.images.utils import ImageEditRequestUtils
 from litellm.llms.base_llm.image_edit.transformation import BaseImageEditConfig
 from litellm.secret_managers.main import get_secret_str
@@ -104,16 +103,12 @@ class OpenAIImageEditConfig(BaseImageEditConfig):
         #########################################################
         _image_list = request_dict.get("image")
         _mask = request_dict.get("mask")
-        data_without_files = {
-            k: v for k, v in request_dict.items() if k not in ["image", "mask"]
-        }
+        data_without_files = {k: v for k, v in request_dict.items() if k not in ["image", "mask"]}
         files_list: List[Tuple[str, Any]] = []
 
         # Handle image parameter
         if _image_list is not None:
-            image_list = (
-                [_image_list] if not isinstance(_image_list, list) else _image_list
-            )
+            image_list = [_image_list] if not isinstance(_image_list, list) else _image_list
 
             for _image in image_list:
                 if _image is not None:
@@ -129,9 +124,7 @@ class OpenAIImageEditConfig(BaseImageEditConfig):
                 _mask = _mask[0] if _mask else None
 
             if _mask is not None:
-                mask_content_type: str = ImageEditRequestUtils.get_image_content_type(
-                    _mask
-                )
+                mask_content_type: str = ImageEditRequestUtils.get_image_content_type(_mask)
                 if isinstance(_mask, BufferedReader):
                     files_list.append(("mask", (_mask.name, _mask, mask_content_type)))
                 else:
@@ -149,9 +142,7 @@ class OpenAIImageEditConfig(BaseImageEditConfig):
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise OpenAIError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise OpenAIError(message=raw_response.text, status_code=raw_response.status_code)
         return ImageResponse(**raw_response_json)
 
     def validate_environment(
@@ -161,10 +152,7 @@ class OpenAIImageEditConfig(BaseImageEditConfig):
         api_key: Optional[str] = None,
     ) -> dict:
         api_key = (
-            api_key
-            or litellm.api_key
-            or litellm.openai_key
-            or get_secret_str("OPENAI_API_KEY")
+            api_key or litellm.api_key or litellm.openai_key or get_secret_str("OPENAI_API_KEY")
         )
         headers.update(
             {

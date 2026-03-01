@@ -18,7 +18,6 @@ from typing import (
 )
 
 import httpx  # type: ignore
-
 import litellm
 import litellm.litellm_core_utils
 import litellm.types
@@ -131,9 +130,7 @@ def make_sync_call(
         client = litellm.module_level_client  # re-use a module level client
 
     try:
-        response = client.post(
-            api_base, headers=headers, data=data, stream=True, timeout=timeout
-        )
+        response = client.post(api_base, headers=headers, data=data, stream=True, timeout=timeout)
     except httpx.HTTPStatusError as e:
         error_headers = getattr(e, "headers", None)
         error_response = getattr(e, "response", None)
@@ -483,9 +480,7 @@ class AnthropicChatCompletion(BaseLLM):
 
 
 class ModelResponseIterator:
-    def __init__(
-        self, streaming_response, sync_stream: bool, json_mode: Optional[bool] = False
-    ):
+    def __init__(self, streaming_response, sync_stream: bool, json_mode: Optional[bool] = False):
         self.streaming_response = streaming_response
         self.response_iterator = self.streaming_response
         self.content_blocks: List[ContentBlockDelta] = []
@@ -579,10 +574,7 @@ class ModelResponseIterator:
                 )
         elif "citation" in content_block["delta"]:
             provider_specific_fields["citation"] = content_block["delta"]["citation"]
-        elif (
-            "thinking" in content_block["delta"]
-            or "signature" in content_block["delta"]
-        ):
+        elif "thinking" in content_block["delta"] or "signature" in content_block["delta"]:
             thinking_blocks = [
                 ChatCompletionThinkingBlock(
                     type="thinking",
@@ -654,11 +646,7 @@ class ModelResponseIterator:
             provider_specific_fields: Dict[str, Any] = {}
             reasoning_content: Optional[str] = None
             thinking_blocks: Optional[
-                List[
-                    Union[
-                        ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock
-                    ]
-                ]
+                List[Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]]
             ] = None
 
             # Always use index=0 for OpenAI choice format (fixes multi-choice errors)
@@ -718,9 +706,7 @@ class ModelResponseIterator:
                         ),
                         index=self.tool_index,
                     )
-                elif (
-                    content_block_start["content_block"]["type"] == "redacted_thinking"
-                ):
+                elif content_block_start["content_block"]["type"] == "redacted_thinking":
                     (
                         thinking_blocks,
                         provider_specific_fields,
@@ -728,19 +714,12 @@ class ModelResponseIterator:
                         content_block_start=content_block_start,
                         provider_specific_fields=provider_specific_fields,
                     )
-                elif (
-                    content_block_start["content_block"]["type"]
-                    == "web_search_tool_result"
-                ):
+                elif content_block_start["content_block"]["type"] == "web_search_tool_result":
                     # Capture web_search_tool_result for multi-turn reconstruction
                     # The full content comes in content_block_start, not in deltas
                     # See: https://github.com/BerriAI/litellm/issues/17737
-                    self.web_search_results.append(
-                        content_block_start["content_block"]
-                    )
-                    provider_specific_fields["web_search_results"] = (
-                        self.web_search_results
-                    )
+                    self.web_search_results.append(content_block_start["content_block"])
+                    provider_specific_fields["web_search_results"] = self.web_search_results
             elif type_chunk == "content_block_stop":
                 ContentBlockStop(**chunk)  # type: ignore
                 # check if tool call content block - only for tool_use and server_tool_use blocks
@@ -812,13 +791,9 @@ class ModelResponseIterator:
                             content=text,
                             tool_calls=[tool_use] if tool_use is not None else None,
                             provider_specific_fields=(
-                                provider_specific_fields
-                                if provider_specific_fields
-                                else None
+                                provider_specific_fields if provider_specific_fields else None
                             ),
-                            thinking_blocks=(
-                                thinking_blocks if thinking_blocks else None
-                            ),
+                            thinking_blocks=(thinking_blocks if thinking_blocks else None),
                             reasoning_content=reasoning_content,
                         ),
                         finish_reason=finish_reason,
@@ -870,9 +845,7 @@ class ModelResponseIterator:
 
         # Convert tool to content if we're tracking a response_format tool
         if self.is_response_format_tool:
-            message = AnthropicConfig._convert_tool_response_to_message(
-                tool_calls=[tool_use]
-            )
+            message = AnthropicConfig._convert_tool_response_to_message(tool_calls=[tool_use])
             if message is not None:
                 text = message.content or ""
                 tool_use = None
@@ -902,9 +875,7 @@ class ModelResponseIterator:
         usage = self._handle_usage(anthropic_usage_chunk=message_delta["usage"])
         return finish_reason, usage
 
-    def _handle_accumulated_json_chunk(
-        self, data_str: str
-    ) -> Optional[ModelResponseStream]:
+    def _handle_accumulated_json_chunk(self, data_str: str) -> Optional[ModelResponseStream]:
         """
         Handle partial JSON chunks by accumulating them until valid JSON is received.
 

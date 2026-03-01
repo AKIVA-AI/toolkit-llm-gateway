@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 
 import httpx
-
 import litellm
 from litellm.llms.base_llm.vector_store.transformation import BaseVectorStoreConfig
 from litellm.secret_managers.main import get_secret_str
@@ -30,9 +29,7 @@ class OpenAIVectorStoreConfig(BaseVectorStoreConfig):
     ASSISTANTS_HEADER_KEY = "OpenAI-Beta"
     ASSISTANTS_HEADER_VALUE = "assistants=v2"
 
-    def get_auth_credentials(
-        self, litellm_params: dict
-    ) -> BaseVectorStoreAuthCredentials:
+    def get_auth_credentials(self, litellm_params: dict) -> BaseVectorStoreAuthCredentials:
         api_key = litellm_params.get("api_key")
         if api_key is None:
             raise ValueError("api_key is required")
@@ -111,15 +108,9 @@ class OpenAIVectorStoreConfig(BaseVectorStoreConfig):
         typed_request_body = VectorStoreSearchRequest(
             query=query,
             filters=vector_store_search_optional_params.get("filters", None),
-            max_num_results=vector_store_search_optional_params.get(
-                "max_num_results", None
-            ),
-            ranking_options=vector_store_search_optional_params.get(
-                "ranking_options", None
-            ),
-            rewrite_query=vector_store_search_optional_params.get(
-                "rewrite_query", None
-            ),
+            max_num_results=vector_store_search_optional_params.get("max_num_results", None),
+            ranking_options=vector_store_search_optional_params.get("ranking_options", None),
+            rewrite_query=vector_store_search_optional_params.get("rewrite_query", None),
         )
 
         dict_request_body = cast(dict, typed_request_body)
@@ -150,12 +141,8 @@ class OpenAIVectorStoreConfig(BaseVectorStoreConfig):
         typed_request_body = VectorStoreCreateRequest(
             name=vector_store_create_optional_params.get("name", None),
             file_ids=vector_store_create_optional_params.get("file_ids", None),
-            expires_after=vector_store_create_optional_params.get(
-                "expires_after", None
-            ),
-            chunking_strategy=vector_store_create_optional_params.get(
-                "chunking_strategy", None
-            ),
+            expires_after=vector_store_create_optional_params.get("expires_after", None),
+            chunking_strategy=vector_store_create_optional_params.get("chunking_strategy", None),
             metadata=metadata_payload,
         )
 

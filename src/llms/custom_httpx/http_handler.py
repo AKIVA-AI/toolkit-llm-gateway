@@ -17,11 +17,10 @@ from typing import (
 
 import certifi
 import httpx
+import litellm
 from aiohttp import ClientSession, TCPConnector
 from httpx import USE_CLIENT_DEFAULT, AsyncHTTPTransport, HTTPTransport
 from httpx._types import RequestFiles
-
-import litellm
 from litellm._logging import verbose_logger
 from litellm.constants import (
     _DEFAULT_TTL_FOR_HTTPX_CLIENTS,
@@ -101,9 +100,7 @@ def _prepare_request_data_and_content(
 # Cache for SSL contexts to avoid creating duplicate contexts with the same configuration
 # Key: tuple of (cafile, ssl_security_level, ssl_ecdh_curve)
 # Value: ssl.SSLContext
-_ssl_context_cache: Dict[
-    Tuple[Optional[str], Optional[str], Optional[str]], ssl.SSLContext
-] = {}
+_ssl_context_cache: Dict[Tuple[Optional[str], Optional[str], Optional[str]], ssl.SSLContext] = {}
 
 
 def _create_ssl_context(
@@ -191,9 +188,7 @@ def get_ssl_configuration(
     # Get ssl_verify from environment or litellm settings if not provided
     if ssl_verify is None:
         ssl_verify = os.getenv("SSL_VERIFY", litellm.ssl_verify)
-        ssl_verify_bool = (
-            str_to_bool(ssl_verify) if isinstance(ssl_verify, str) else ssl_verify
-        )
+        ssl_verify_bool = str_to_bool(ssl_verify) if isinstance(ssl_verify, str) else ssl_verify
         if ssl_verify_bool is not None:
             ssl_verify = ssl_verify_bool
 
@@ -260,9 +255,7 @@ def mask_sensitive_info(error_message):
         else:
             # Replace the key with redacted value, keeping other parameters
             masked_message = (
-                error_message[: key_index + 4]
-                + "[REDACTED_API_KEY]"
-                + error_message[next_param:]
+                error_message[: key_index + 4] + "[REDACTED_API_KEY]" + error_message[next_param:]
             )
 
         return masked_message
@@ -271,9 +264,7 @@ def mask_sensitive_info(error_message):
 
 
 class MaskedHTTPStatusError(httpx.HTTPStatusError):
-    def __init__(
-        self, original_error, message: Optional[str] = None, text: Optional[str] = None
-    ):
+    def __init__(self, original_error, message: Optional[str] = None, text: Optional[str] = None):
         # Create a new error with the masked URL
         masked_url = mask_sensitive_info(str(original_error.request.url))
         # Create a new error that looks like the original, but with a masked URL
@@ -369,9 +360,7 @@ class AsyncHTTPHandler:
         follow_redirects: Optional[bool] = None,
     ):
         # Set follow_redirects to UseClientDefault if None
-        _follow_redirects = (
-            follow_redirects if follow_redirects is not None else USE_CLIENT_DEFAULT
-        )
+        _follow_redirects = follow_redirects if follow_redirects is not None else USE_CLIENT_DEFAULT
 
         params = params or {}
         params.update(HTTPHandler.extract_query_params(url))
@@ -401,9 +390,7 @@ class AsyncHTTPHandler:
                 timeout = self.timeout
 
             # Prepare data/content parameters to prevent httpx DeprecationWarning (memory leak fix)
-            request_data, request_content = _prepare_request_data_and_content(
-                data, content
-            )
+            request_data, request_content = _prepare_request_data_and_content(data, content)
 
             req = self.client.build_request(
                 "POST",
@@ -421,9 +408,7 @@ class AsyncHTTPHandler:
             return response
         except (httpx.RemoteProtocolError, httpx.ConnectError):
             # Retry the request with a new session if there is a connection error
-            new_client = self.create_client(
-                timeout=timeout, event_hooks=self.event_hooks
-            )
+            new_client = self.create_client(timeout=timeout, event_hooks=self.event_hooks)
             try:
                 return await self.single_connection_post_request(
                     url=url,
@@ -481,9 +466,7 @@ class AsyncHTTPHandler:
                 timeout = self.timeout
 
             # Prepare data/content parameters to prevent httpx DeprecationWarning (memory leak fix)
-            request_data, request_content = _prepare_request_data_and_content(
-                data, content
-            )
+            request_data, request_content = _prepare_request_data_and_content(data, content)
 
             req = self.client.build_request(
                 "PUT", url, data=request_data, json=json, params=params, headers=headers, timeout=timeout, content=request_content  # type: ignore
@@ -493,9 +476,7 @@ class AsyncHTTPHandler:
             return response
         except (httpx.RemoteProtocolError, httpx.ConnectError):
             # Retry the request with a new session if there is a connection error
-            new_client = self.create_client(
-                timeout=timeout, event_hooks=self.event_hooks
-            )
+            new_client = self.create_client(timeout=timeout, event_hooks=self.event_hooks)
             try:
                 return await self.single_connection_post_request(
                     url=url,
@@ -547,9 +528,7 @@ class AsyncHTTPHandler:
                 timeout = self.timeout
 
             # Prepare data/content parameters to prevent httpx DeprecationWarning (memory leak fix)
-            request_data, request_content = _prepare_request_data_and_content(
-                data, content
-            )
+            request_data, request_content = _prepare_request_data_and_content(data, content)
 
             req = self.client.build_request(
                 "PATCH", url, data=request_data, json=json, params=params, headers=headers, timeout=timeout, content=request_content  # type: ignore
@@ -559,9 +538,7 @@ class AsyncHTTPHandler:
             return response
         except (httpx.RemoteProtocolError, httpx.ConnectError):
             # Retry the request with a new session if there is a connection error
-            new_client = self.create_client(
-                timeout=timeout, event_hooks=self.event_hooks
-            )
+            new_client = self.create_client(timeout=timeout, event_hooks=self.event_hooks)
             try:
                 return await self.single_connection_post_request(
                     url=url,
@@ -613,9 +590,7 @@ class AsyncHTTPHandler:
                 timeout = self.timeout
 
             # Prepare data/content parameters to prevent httpx DeprecationWarning (memory leak fix)
-            request_data, request_content = _prepare_request_data_and_content(
-                data, content
-            )
+            request_data, request_content = _prepare_request_data_and_content(data, content)
 
             req = self.client.build_request(
                 "DELETE", url, data=request_data, json=json, params=params, headers=headers, timeout=timeout, content=request_content  # type: ignore
@@ -625,9 +600,7 @@ class AsyncHTTPHandler:
             return response
         except (httpx.RemoteProtocolError, httpx.ConnectError):
             # Retry the request with a new session if there is a connection error
-            new_client = self.create_client(
-                timeout=timeout, event_hooks=self.event_hooks
-            )
+            new_client = self.create_client(timeout=timeout, event_hooks=self.event_hooks)
             try:
                 return await self.single_connection_post_request(
                     url=url,
@@ -810,9 +783,7 @@ class AsyncHTTPHandler:
             return LiteLLMAiohttpTransport(client=shared_session)
 
         # Create new session only if none provided or existing one is invalid
-        verbose_logger.debug(
-            "NEW SESSION: Creating new ClientSession (no shared session provided)"
-        )
+        verbose_logger.debug("NEW SESSION: Creating new ClientSession (no shared session provided)")
         transport_connector_kwargs = {
             "keepalive_timeout": AIOHTTP_KEEPALIVE_TIMEOUT,
             "ttl_dns_cache": AIOHTTP_TTL_DNS_CACHE,
@@ -822,9 +793,7 @@ class AsyncHTTPHandler:
         if AIOHTTP_CONNECTOR_LIMIT > 0:
             transport_connector_kwargs["limit"] = AIOHTTP_CONNECTOR_LIMIT
         if AIOHTTP_CONNECTOR_LIMIT_PER_HOST > 0:
-            transport_connector_kwargs["limit_per_host"] = (
-                AIOHTTP_CONNECTOR_LIMIT_PER_HOST
-            )
+            transport_connector_kwargs["limit_per_host"] = AIOHTTP_CONNECTOR_LIMIT_PER_HOST
 
         return LiteLLMAiohttpTransport(
             client=lambda: ClientSession(
@@ -895,9 +864,7 @@ class HTTPHandler:
         follow_redirects: Optional[bool] = None,
     ):
         # Set follow_redirects to UseClientDefault if None
-        _follow_redirects = (
-            follow_redirects if follow_redirects is not None else USE_CLIENT_DEFAULT
-        )
+        _follow_redirects = follow_redirects if follow_redirects is not None else USE_CLIENT_DEFAULT
         params = params or {}
         params.update(self.extract_query_params(url))
 
@@ -937,9 +904,7 @@ class HTTPHandler:
     ):
         try:
             # Prepare data/content parameters to prevent httpx DeprecationWarning (memory leak fix)
-            request_data, request_content = _prepare_request_data_and_content(
-                data, content
-            )
+            request_data, request_content = _prepare_request_data_and_content(data, content)
 
             if timeout is not None:
                 req = self.client.build_request(
@@ -993,9 +958,7 @@ class HTTPHandler:
     ):
         try:
             # Prepare data/content parameters to prevent httpx DeprecationWarning (memory leak fix)
-            request_data, request_content = _prepare_request_data_and_content(
-                data, content
-            )
+            request_data, request_content = _prepare_request_data_and_content(data, content)
 
             if timeout is not None:
                 req = self.client.build_request(
@@ -1042,9 +1005,7 @@ class HTTPHandler:
     ):
         try:
             # Prepare data/content parameters to prevent httpx DeprecationWarning (memory leak fix)
-            request_data, request_content = _prepare_request_data_and_content(
-                data, content
-            )
+            request_data, request_content = _prepare_request_data_and_content(data, content)
 
             if timeout is not None:
                 req = self.client.build_request(
@@ -1078,9 +1039,7 @@ class HTTPHandler:
     ):
         try:
             # Prepare data/content parameters to prevent httpx DeprecationWarning (memory leak fix)
-            request_data, request_content = _prepare_request_data_and_content(
-                data, content
-            )
+            request_data, request_content = _prepare_request_data_and_content(data, content)
 
             if timeout is not None:
                 req = self.client.build_request(

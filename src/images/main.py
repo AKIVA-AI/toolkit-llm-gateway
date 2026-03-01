@@ -4,9 +4,8 @@ from functools import partial
 from typing import Any, Coroutine, Dict, List, Literal, Optional, Union, cast, overload
 
 import httpx
-
 import litellm
-from litellm.utils import exception_type, get_litellm_params
+
 # client is imported from litellm as it's a decorator
 from litellm import client
 from litellm.constants import DEFAULT_IMAGE_ENDPOINT_MODEL
@@ -19,11 +18,10 @@ from litellm.llms.base_llm import BaseImageEditConfig, BaseImageGenerationConfig
 from litellm.llms.custom_httpx.http_handler import AsyncHTTPHandler, HTTPHandler
 from litellm.llms.custom_httpx.llm_http_handler import BaseLLMHTTPHandler
 from litellm.llms.custom_llm import CustomLLM
+from litellm.utils import exception_type, get_litellm_params
 
 #################### Initialize provider clients ####################
 llm_http_handler: BaseLLMHTTPHandler = BaseLLMHTTPHandler()
-from openai.types.audio.transcription_create_params import FileTypes  # type: ignore
-
 from litellm.main import (
     azure_chat_completions,
     base_llm_aiohttp_handler,
@@ -49,6 +47,7 @@ from litellm.utils import (
     get_llm_provider,
     get_optional_params_image_gen,
 )
+from openai.types.audio.transcription_create_params import FileTypes  # type: ignore
 
 from .utils import ImageEditRequestUtils
 
@@ -95,9 +94,7 @@ async def aimage_generation(*args, **kwargs) -> ImageResponse:
             response = await init_response  # type: ignore
 
         if response is None:
-            raise ValueError(
-                "Unable to get Image Response. Please pass a valid llm_provider."
-            )
+            raise ValueError("Unable to get Image Response. Please pass a valid llm_provider.")
 
         return response
     except Exception as e:
@@ -132,7 +129,7 @@ def image_generation(
     *,
     aimg_generation: Literal[True],
     **kwargs,
-) -> Coroutine[Any, Any, ImageResponse]: 
+) -> Coroutine[Any, Any, ImageResponse]:
     ...
 
 
@@ -156,7 +153,7 @@ def image_generation(
     *,
     aimg_generation: Literal[False] = False,
     **kwargs,
-) -> ImageResponse: 
+) -> ImageResponse:
     ...
 
 # fmt: on
@@ -244,11 +241,9 @@ def image_generation(  # noqa: PLR0915
             custom_llm_provider is not None
             and custom_llm_provider in LlmProviders._member_map_.values()
         ):
-            image_generation_config = (
-                ProviderConfigManager.get_provider_image_generation_config(
-                    model=base_model or model,
-                    provider=LlmProviders(custom_llm_provider),
-                )
+            image_generation_config = ProviderConfigManager.get_provider_image_generation_config(
+                model=base_model or model,
+                provider=LlmProviders(custom_llm_provider),
             )
 
         optional_params = get_optional_params_image_gen(
@@ -295,11 +290,7 @@ def image_generation(  # noqa: PLR0915
 
             api_base = api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")
 
-            api_version = (
-                api_version
-                or litellm.api_version
-                or get_secret_str("AZURE_API_VERSION")
-            )
+            api_version = api_version or litellm.api_version or get_secret_str("AZURE_API_VERSION")
 
             api_key = (
                 api_key
@@ -309,9 +300,9 @@ def image_generation(  # noqa: PLR0915
                 or get_secret_str("AZURE_API_KEY")
             )
 
-            azure_ad_token = optional_params.pop(
-                "azure_ad_token", None
-            ) or get_secret_str("AZURE_AD_TOKEN")
+            azure_ad_token = optional_params.pop("azure_ad_token", None) or get_secret_str(
+                "AZURE_AD_TOKEN"
+            )
 
             default_headers = {
                 "Content-Type": "application/json",
@@ -439,9 +430,7 @@ def image_generation(  # noqa: PLR0915
                 api_base=api_base,
                 api_key=api_key,
             )
-        elif (
-            custom_llm_provider in litellm._custom_providers
-        ):  # Assume custom LLM provider
+        elif custom_llm_provider in litellm._custom_providers:  # Assume custom LLM provider
             # Get the Custom Handler
             custom_handler: Optional[CustomLLM] = None
             for item in litellm.custom_provider_map:
@@ -449,9 +438,7 @@ def image_generation(  # noqa: PLR0915
                     custom_handler = item["custom_handler"]
 
             if custom_handler is None:
-                raise LiteLLMUnknownProvider(
-                    model=model, custom_llm_provider=custom_llm_provider
-                )
+                raise LiteLLMUnknownProvider(model=model, custom_llm_provider=custom_llm_provider)
 
             ## ROUTE LLM CALL ##
             if aimg_generation is True:
@@ -720,12 +707,10 @@ def image_edit(
         )
 
         # Get optional parameters for the responses API
-        image_edit_request_params: Dict = (
-            ImageEditRequestUtils.get_optional_params_image_edit(
-                model=model,
-                image_edit_provider_config=image_edit_provider_config,
-                image_edit_optional_params=image_edit_optional_params,
-            )
+        image_edit_request_params: Dict = ImageEditRequestUtils.get_optional_params_image_edit(
+            model=model,
+            image_edit_provider_config=image_edit_provider_config,
+            image_edit_optional_params=image_edit_optional_params,
         )
 
         # Pre Call logging

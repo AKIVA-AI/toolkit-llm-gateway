@@ -2,7 +2,6 @@ import re
 from typing import List, Optional
 
 from fastapi import HTTPException, Request, status
-
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import (
     CommonProxyErrors,
@@ -31,15 +30,11 @@ class RouteChecks:
             pass
 
         # Check if Virtual Key is allowed to call the route - Applies to all Roles
-        RouteChecks.is_virtual_key_allowed_to_call_route(
-            route=route, valid_token=valid_token
-        )
+        RouteChecks.is_virtual_key_allowed_to_call_route(route=route, valid_token=valid_token)
         return True
 
     @staticmethod
-    def is_virtual_key_allowed_to_call_route(
-        route: str, valid_token: UserAPIKeyAuth
-    ) -> bool:
+    def is_virtual_key_allowed_to_call_route(route: str, valid_token: UserAPIKeyAuth) -> bool:
         """
         Raises Exception if Virtual Key is not allowed to call the route
         """
@@ -54,9 +49,7 @@ class RouteChecks:
 
         # explicit check for allowed routes (exact match or prefix match)
         for allowed_route in valid_token.allowed_routes:
-            if RouteChecks._route_matches_allowed_route(
-                route=route, allowed_route=allowed_route
-            ):
+            if RouteChecks._route_matches_allowed_route(route=route, allowed_route=allowed_route):
                 return True
 
         ## check if 'allowed_route' is a field name in LiteLLMRoutes
@@ -87,14 +80,12 @@ class RouteChecks:
 
         # check if wildcard pattern is allowed
         for allowed_route in valid_token.allowed_routes:
-            if RouteChecks._route_matches_wildcard_pattern(
-                route=route, pattern=allowed_route
-            ):
+            if RouteChecks._route_matches_wildcard_pattern(route=route, pattern=allowed_route):
                 return True
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Virtual key is not allowed to call this route. Only allowed to call routes: {valid_token.allowed_routes}. Tried to call route: {route}"
+            detail=f"Virtual key is not allowed to call this route. Only allowed to call routes: {valid_token.allowed_routes}. Tried to call route: {route}",
         )
 
     @staticmethod
@@ -201,11 +192,8 @@ class RouteChecks:
                 _user_role=_user_role,
                 request_data=request_data,
             )
-        elif (
-            _user_role == LitellmUserRoles.INTERNAL_USER.value
-            and RouteChecks.check_route_access(
-                route=route, allowed_routes=LiteLLMRoutes.internal_user_routes.value
-            )
+        elif _user_role == LitellmUserRoles.INTERNAL_USER.value and RouteChecks.check_route_access(
+            route=route, allowed_routes=LiteLLMRoutes.internal_user_routes.value
         ):
             pass
         elif _user_is_org_admin(
@@ -228,9 +216,7 @@ class RouteChecks:
             pass
         elif route.startswith("/v1/mcp/") or route.startswith("/mcp-rest/"):
             pass  # authN/authZ handled by api itself
-        elif RouteChecks.check_passthrough_route_access(
-            route=route, user_api_key_dict=valid_token
-        ):
+        elif RouteChecks.check_passthrough_route_access(route=route, user_api_key_dict=valid_token):
             pass
         elif valid_token.allowed_routes is not None:
             # check if route is in allowed_routes (exact match or prefix match)
@@ -242,20 +228,14 @@ class RouteChecks:
                     route_allowed = True
                     break
 
-                if RouteChecks._route_matches_wildcard_pattern(
-                    route=route, pattern=allowed_route
-                ):
+                if RouteChecks._route_matches_wildcard_pattern(route=route, pattern=allowed_route):
                     route_allowed = True
                     break
 
             if not route_allowed:
-                RouteChecks._raise_admin_only_route_exception(
-                    user_obj=user_obj, route=route
-                )
+                RouteChecks._raise_admin_only_route_exception(user_obj=user_obj, route=route)
         else:
-            RouteChecks._raise_admin_only_route_exception(
-                user_obj=user_obj, route=route
-            )
+            RouteChecks._raise_admin_only_route_exception(user_obj=user_obj, route=route)
 
     @staticmethod
     def custom_admin_only_route_check(route: str):
@@ -298,7 +278,7 @@ class RouteChecks:
             route=route, allowed_routes=LiteLLMRoutes.mcp_routes.value
         ):
             return True
-        
+
         if RouteChecks.check_route_access(
             route=route, allowed_routes=LiteLLMRoutes.agent_routes.value
         ):
@@ -310,9 +290,7 @@ class RouteChecks:
             # Replace placeholders with regex pattern
             # placeholders are written as "/threads/{thread_id}"
             if "{" in openai_route:
-                if RouteChecks._route_matches_pattern(
-                    route=route, pattern=openai_route
-                ):
+                if RouteChecks._route_matches_pattern(route=route, pattern=openai_route):
                     return True
 
         if RouteChecks._is_azure_openai_route(route=route):
@@ -460,14 +438,10 @@ class RouteChecks:
         # e.g calling /anthropic/v1/messages is allowed if allowed_routes has /anthropic/*
         #########################################################
         wildcard_allowed_routes = [
-            route
-            for route in allowed_routes
-            if RouteChecks._is_wildcard_pattern(pattern=route)
+            route for route in allowed_routes if RouteChecks._is_wildcard_pattern(pattern=route)
         ]
         for allowed_route in wildcard_allowed_routes:
-            if RouteChecks._route_matches_wildcard_pattern(
-                route=route, pattern=allowed_route
-            ):
+            if RouteChecks._route_matches_wildcard_pattern(route=route, pattern=allowed_route):
                 return True
 
         #########################################################
@@ -485,9 +459,7 @@ class RouteChecks:
         return False
 
     @staticmethod
-    def check_passthrough_route_access(
-        route: str, user_api_key_dict: UserAPIKeyAuth
-    ) -> bool:
+    def check_passthrough_route_access(route: str, user_api_key_dict: UserAPIKeyAuth) -> bool:
         """
         Check if route is a passthrough route.
         Supports both exact match and prefix match.
@@ -515,9 +487,7 @@ class RouteChecks:
 
         # Check if route matches any allowed passthrough route (exact or prefix match)
         for allowed_route in allowed_passthrough_routes:
-            if RouteChecks._route_matches_allowed_route(
-                route=route, allowed_route=allowed_route
-            ):
+            if RouteChecks._route_matches_allowed_route(route=route, allowed_route=allowed_route):
                 return True
 
         return False

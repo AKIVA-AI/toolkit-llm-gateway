@@ -21,9 +21,7 @@ class AnthropicMessagesRequestUtils:
             AnthropicMessagesRequestOptionalParams instance with only the valid parameters
         """
         valid_keys = get_type_hints(AnthropicMessagesRequestOptionalParams).keys()
-        filtered_params = {
-            k: v for k, v in params.items() if k in valid_keys and v is not None
-        }
+        filtered_params = {k: v for k, v in params.items() if k in valid_keys and v is not None}
         return cast(AnthropicMessagesRequestOptionalParams, filtered_params)
 
 

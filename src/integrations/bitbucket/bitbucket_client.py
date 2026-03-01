@@ -106,9 +106,7 @@ class BitBucketClient:
             else:
                 raise Exception(f"Error fetching file '{file_path}': {e}")
 
-    def list_files(
-        self, directory_path: str = "", file_extension: str = ".prompt"
-    ) -> List[str]:
+    def list_files(self, directory_path: str = "", file_extension: str = ".prompt") -> List[str]:
         """
         List files in a directory with a specific extension.
 

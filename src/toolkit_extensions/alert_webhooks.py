@@ -3,32 +3,32 @@ Alert webhook system for Toolkit LLM Gateway
 
 Sends budget alerts to external systems via webhooks.
 """
+
 import hashlib
 import hmac
 import json
 import logging
 import time
 from datetime import datetime
-from typing import Dict, List, Optional, Any
 from enum import Enum
+from typing import Dict, List, Optional
+
 import httpx
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+
+from toolkit_extensions.budget_manager import get_budget_manager
+from toolkit_extensions.database.connection import Base, get_session
 
 logger = logging.getLogger(__name__)
-
-from sqlalchemy import Column, String, Integer, Text, DateTime, Boolean
-from sqlalchemy.orm import Session
-
-from toolkit_extensions.database.connection import Base, get_session
-from toolkit_extensions.database.models import BudgetAlert
-from toolkit_extensions.budget_manager import get_budget_manager
-
 
 # ---------------------------------------------------------------------------
 # Database Models & Enums
 # ---------------------------------------------------------------------------
 
+
 class WebhookProvider(str, Enum):
     """Webhook provider types"""
+
     GENERIC = "generic"
     SLACK = "slack"
     DISCORD = "discord"
@@ -37,30 +37,31 @@ class WebhookProvider(str, Enum):
 
 class WebhookConfig(Base):
     """Webhook configuration"""
+
     __tablename__ = "webhook_configs"
-    
+
     id = Column(String(36), primary_key=True)
     name = Column(String(255), nullable=False)
     provider = Column(String(50), nullable=False)
     url = Column(Text, nullable=False)
     secret = Column(String(255))  # For HMAC signing
     enabled = Column(Boolean, default=True)
-    
+
     # Filter criteria (JSON)
     alert_types = Column(Text)  # JSON array: ["threshold_warning", "budget_exceeded"]
     teams = Column(Text)  # JSON array: team names to filter
     users = Column(Text)  # JSON array: user emails to filter
-    
+
     # Retry configuration
     max_retries = Column(Integer, default=3)
     retry_delay = Column(Integer, default=60)  # seconds
-    
+
     # Stats
     success_count = Column(Integer, default=0)
     failure_count = Column(Integer, default=0)
     last_success = Column(DateTime)
     last_failure = Column(DateTime)
-    
+
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -68,18 +69,19 @@ class WebhookConfig(Base):
 
 class WebhookDelivery(Base):
     """Webhook delivery log"""
+
     __tablename__ = "webhook_deliveries"
-    
+
     id = Column(String(36), primary_key=True)
     webhook_id = Column(String(36), nullable=False, index=True)
     alert_id = Column(String(36), nullable=False, index=True)
-    
+
     # Request/response
     request_payload = Column(Text)
     response_status = Column(Integer)
     response_body = Column(Text)
     error_message = Column(Text)
-    
+
     # Delivery info
     attempt_number = Column(Integer, default=1)
     success = Column(Boolean, default=False)
@@ -89,6 +91,7 @@ class WebhookDelivery(Base):
 # ---------------------------------------------------------------------------
 # AlertWebhookManager - CRUD & Delivery Orchestration
 # ---------------------------------------------------------------------------
+
 
 class AlertWebhookManager:
     """
@@ -121,7 +124,7 @@ class AlertWebhookManager:
     ) -> str:
         """
         Register a new webhook endpoint.
-        
+
         Args:
             name: Webhook name (for identification)
             url: Webhook URL
@@ -132,14 +135,14 @@ class AlertWebhookManager:
             users: Filter by user emails (optional)
             max_retries: Maximum retry attempts
             enabled: Whether webhook is enabled
-        
+
         Returns:
             Webhook ID
         """
         import uuid
-        
+
         webhook_id = str(uuid.uuid4())
-        
+
         with get_session() as session:
             webhook = WebhookConfig(
                 id=webhook_id,
@@ -155,9 +158,9 @@ class AlertWebhookManager:
             )
             session.add(webhook)
             session.commit()
-        
+
         return webhook_id
-    
+
     def update_webhook(
         self,
         webhook_id: str,
@@ -174,7 +177,7 @@ class AlertWebhookManager:
             webhook = session.query(WebhookConfig).filter_by(id=webhook_id).first()
             if not webhook:
                 return False
-            
+
             if name is not None:
                 webhook.name = name
             if url is not None:
@@ -189,12 +192,12 @@ class AlertWebhookManager:
                 webhook.teams = json.dumps(teams)
             if users is not None:
                 webhook.users = json.dumps(users)
-            
+
             webhook.updated_at = datetime.utcnow()
             session.commit()
-        
+
         return True
-    
+
     def delete_webhook(self, webhook_id: str) -> bool:
         """Delete a webhook"""
         with get_session() as session:
@@ -203,18 +206,18 @@ class AlertWebhookManager:
                 return False
             session.delete(webhook)
             session.commit()
-        
+
         return True
-    
+
     def get_webhooks(self, enabled_only: bool = True) -> List[Dict]:
         """Get all configured webhooks"""
         with get_session() as session:
             query = session.query(WebhookConfig)
             if enabled_only:
                 query = query.filter_by(enabled=True)
-            
+
             webhooks = query.all()
-            
+
             return [
                 {
                     "id": w.id,
@@ -232,46 +235,46 @@ class AlertWebhookManager:
                 }
                 for w in webhooks
             ]
-    
+
     # -- Alert Delivery -------------------------------------------------------
 
     def deliver_pending_alerts(self) -> Dict[str, int]:
         """
         Deliver all pending alerts to configured webhooks.
-        
+
         Returns:
             Dict with success_count and failure_count
         """
         # Get unsent alerts
         alerts = self.budget_manager.get_unsent_alerts()
-        
+
         # Get active webhooks
         webhooks = self.get_webhooks(enabled_only=True)
-        
+
         success_count = 0
         failure_count = 0
-        
+
         for alert in alerts:
             # Filter webhooks that match this alert
             matching_webhooks = self._filter_webhooks_for_alert(webhooks, alert)
-            
+
             for webhook in matching_webhooks:
                 success = self._deliver_to_webhook(webhook, alert)
                 if success:
                     success_count += 1
                 else:
                     failure_count += 1
-            
+
             # Mark alert as sent (even if some deliveries failed)
             if matching_webhooks:
                 self.budget_manager.mark_alert_sent(alert["id"])
-        
+
         return {
             "success_count": success_count,
             "failure_count": failure_count,
             "alerts_processed": len(alerts),
         }
-    
+
     def _filter_webhooks_for_alert(
         self,
         webhooks: List[Dict],
@@ -279,29 +282,29 @@ class AlertWebhookManager:
     ) -> List[Dict]:
         """Filter webhooks that should receive this alert"""
         matching = []
-        
+
         for webhook in webhooks:
             # Check alert type filter
             if webhook["alert_types"]:
                 if alert["alert_type"] not in webhook["alert_types"]:
                     continue
-            
+
             # Check team filter
             if webhook["teams"]:
                 # TODO: Get budget team from alert
                 # For now, allow all
                 pass
-            
+
             # Check user filter
             if webhook["users"]:
                 # TODO: Get budget user from alert
                 # For now, allow all
                 pass
-            
+
             matching.append(webhook)
-        
+
         return matching
-    
+
     def _deliver_to_webhook(
         self,
         webhook: Dict,
@@ -310,24 +313,24 @@ class AlertWebhookManager:
     ) -> bool:
         """
         Deliver alert to webhook with retry logic.
-        
+
         Returns:
             True if delivery succeeded, False otherwise
         """
         import uuid
-        
+
         # Build payload based on provider
         payload = self._build_payload(webhook["provider"], alert)
-        
+
         # Sign payload if secret is configured
         headers = {"Content-Type": "application/json"}
         if webhook.get("secret"):
             signature = self._sign_payload(payload, webhook["secret"])
             headers["X-Akiva-Signature"] = signature
             headers["X-Akiva-Timestamp"] = str(int(time.time()))
-        
+
         delivery_id = str(uuid.uuid4())
-        
+
         try:
             # Send webhook
             response = httpx.post(
@@ -336,9 +339,9 @@ class AlertWebhookManager:
                 headers=headers,
                 timeout=30.0,
             )
-            
+
             success = response.status_code < 400
-            
+
             # Log delivery
             self._log_delivery(
                 delivery_id=delivery_id,
@@ -350,17 +353,17 @@ class AlertWebhookManager:
                 success=success,
                 attempt_number=attempt_number,
             )
-            
+
             # Update webhook stats
             self._update_webhook_stats(webhook["id"], success)
-            
+
             # Retry on failure
             if not success and attempt_number < 3:  # TODO: Use webhook.max_retries
                 time.sleep(5 * attempt_number)  # Exponential backoff
                 return self._deliver_to_webhook(webhook, alert, attempt_number + 1)
-            
+
             return success
-        
+
         except Exception as e:
             logger.error("Webhook delivery failed for %s: %s", webhook["id"], e, exc_info=True)
             # Log delivery failure
@@ -373,17 +376,17 @@ class AlertWebhookManager:
                 success=False,
                 attempt_number=attempt_number,
             )
-            
+
             # Update webhook stats
             self._update_webhook_stats(webhook["id"], False)
-            
+
             # Retry on exception
             if attempt_number < 3:
                 time.sleep(5 * attempt_number)
                 return self._deliver_to_webhook(webhook, alert, attempt_number + 1)
-            
+
             return False
-    
+
     # -- Provider-Specific Payload Builders -----------------------------------
 
     def _build_payload(self, provider: str, alert: Dict) -> Dict:
@@ -396,7 +399,7 @@ class AlertWebhookManager:
             return self._build_teams_payload(alert)
         else:
             return self._build_generic_payload(alert)
-    
+
     def _build_generic_payload(self, alert: Dict) -> Dict:
         """Build generic webhook payload"""
         return {
@@ -404,11 +407,11 @@ class AlertWebhookManager:
             "alert": alert,
             "timestamp": datetime.utcnow().isoformat(),
         }
-    
+
     def _build_slack_payload(self, alert: Dict) -> Dict:
         """Build Slack-compatible payload"""
         color = "danger" if alert["alert_type"] == "budget_exceeded" else "warning"
-        
+
         return {
             "attachments": [
                 {
@@ -436,11 +439,11 @@ class AlertWebhookManager:
                 }
             ]
         }
-    
+
     def _build_discord_payload(self, alert: Dict) -> Dict:
         """Build Discord-compatible payload"""
         color = 0xFF0000 if alert["alert_type"] == "budget_exceeded" else 0xFFA500
-        
+
         return {
             "embeds": [
                 {
@@ -463,18 +466,16 @@ class AlertWebhookManager:
                             "inline": True,
                         },
                     ],
-                    "footer": {
-                        "text": "Toolkit LLM Gateway"
-                    },
+                    "footer": {"text": "Toolkit LLM Gateway"},
                     "timestamp": datetime.utcnow().isoformat(),
                 }
             ]
         }
-    
+
     def _build_teams_payload(self, alert: Dict) -> Dict:
         """Build Microsoft Teams-compatible payload"""
         theme_color = "ff0000" if alert["alert_type"] == "budget_exceeded" else "ffa500"
-        
+
         return {
             "@type": "MessageCard",
             "@context": "http://schema.org/extensions",
@@ -501,19 +502,15 @@ class AlertWebhookManager:
                 }
             ],
         }
-    
+
     # -- Internal Helpers (signing, logging, stats) ---------------------------
 
     def _sign_payload(self, payload: Dict, secret: str) -> str:
         """Create HMAC signature for payload"""
         payload_bytes = json.dumps(payload, sort_keys=True).encode()
-        signature = hmac.new(
-            secret.encode(),
-            payload_bytes,
-            hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
         return signature
-    
+
     def _log_delivery(
         self,
         delivery_id: str,
@@ -541,7 +538,7 @@ class AlertWebhookManager:
             )
             session.add(delivery)
             session.commit()
-    
+
     def _update_webhook_stats(self, webhook_id: str, success: bool):
         """Update webhook success/failure stats"""
         with get_session() as session:
@@ -554,17 +551,19 @@ class AlertWebhookManager:
                     webhook.failure_count += 1
                     webhook.last_failure = datetime.utcnow()
                 session.commit()
-    
+
     def get_delivery_stats(self, webhook_id: str) -> Dict:
         """Get delivery statistics for a webhook"""
         with get_session() as session:
             webhook = session.query(WebhookConfig).filter_by(id=webhook_id).first()
             if not webhook:
                 return {}
-            
+
             total_deliveries = webhook.success_count + webhook.failure_count
-            success_rate = (webhook.success_count / total_deliveries * 100) if total_deliveries > 0 else 0
-            
+            success_rate = (
+                (webhook.success_count / total_deliveries * 100) if total_deliveries > 0 else 0
+            )
+
             return {
                 "webhook_id": webhook.id,
                 "name": webhook.name,
@@ -589,5 +588,3 @@ def get_alert_webhook_manager() -> AlertWebhookManager:
     if _alert_webhook_manager is None:
         _alert_webhook_manager = AlertWebhookManager()
     return _alert_webhook_manager
-
-

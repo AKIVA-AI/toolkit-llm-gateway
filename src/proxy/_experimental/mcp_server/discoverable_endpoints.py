@@ -4,7 +4,6 @@ from urllib.parse import urlencode, urlparse, urlunparse
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-
 from litellm.llms.custom_httpx.http_handler import (
     get_async_httpx_client,
     httpxSpecialProvider,
@@ -137,9 +136,7 @@ async def authorize_with_server(
     if mcp_server.auth_type != "oauth2":
         raise HTTPException(status_code=400, detail="MCP server is not OAuth2")
     if mcp_server.authorization_url is None:
-        raise HTTPException(
-            status_code=400, detail="MCP server authorization url is not set"
-        )
+        raise HTTPException(status_code=400, detail="MCP server authorization url is not set")
 
     parsed = urlparse(redirect_uri)
     base_url = urlunparse(parsed._replace(query=""))
@@ -191,9 +188,7 @@ async def exchange_token_with_server(
     token_data = {
         "grant_type": "authorization_code",
         "client_id": mcp_server.client_id if mcp_server.client_id else client_id,
-        "client_secret": mcp_server.client_secret
-        if mcp_server.client_secret
-        else client_secret,
+        "client_secret": mcp_server.client_secret if mcp_server.client_secret else client_secret,
         "code": code,
         "redirect_uri": f"{proxy_base_url}/callback",
     }
@@ -246,9 +241,7 @@ async def register_client_with_server(
         return dummy_return
 
     if mcp_server.authorization_url is None:
-        raise HTTPException(
-            status_code=400, detail="MCP server authorization url is not set"
-        )
+        raise HTTPException(status_code=400, detail="MCP server authorization url is not set")
 
     if mcp_server.registration_url is None:
         return dummy_return
@@ -265,9 +258,7 @@ async def register_client_with_server(
         "Accept": "application/json",
     }
 
-    async_client = get_async_httpx_client(
-        llm_provider=httpxSpecialProvider.Oauth2Register
-    )
+    async_client = get_async_httpx_client(llm_provider=httpxSpecialProvider.Oauth2Register)
     response = await async_client.post(
         mcp_server.registration_url,
         headers=headers,
@@ -383,18 +374,12 @@ async def callback(code: str, state: str):
 # ------------------------------
 @router.get("/.well-known/oauth-protected-resource/{mcp_server_name}/mcp")
 @router.get("/.well-known/oauth-protected-resource")
-async def oauth_protected_resource_mcp(
-    request: Request, mcp_server_name: Optional[str] = None
-):
+async def oauth_protected_resource_mcp(request: Request, mcp_server_name: Optional[str] = None):
     # Get the correct base URL considering X-Forwarded-* headers
     request_base_url = get_request_base_url(request)
     return {
         "authorization_servers": [
-            (
-                f"{request_base_url}/{mcp_server_name}"
-                if mcp_server_name
-                else f"{request_base_url}"
-            )
+            (f"{request_base_url}/{mcp_server_name}" if mcp_server_name else f"{request_base_url}")
         ],
         "resource": (
             f"{request_base_url}/{mcp_server_name}/mcp"
@@ -406,9 +391,7 @@ async def oauth_protected_resource_mcp(
 
 @router.get("/.well-known/oauth-authorization-server/{mcp_server_name}")
 @router.get("/.well-known/oauth-authorization-server")
-async def oauth_authorization_server_mcp(
-    request: Request, mcp_server_name: Optional[str] = None
-):
+async def oauth_authorization_server_mcp(request: Request, mcp_server_name: Optional[str] = None):
     # Get the correct base URL considering X-Forwarded-* headers
     request_base_url = get_request_base_url(request)
 
@@ -444,9 +427,7 @@ async def openid_configuration(request: Request):
 
 @router.get("/.well-known/oauth-authorization-server/{mcp_server_name}/mcp")
 @router.get("/.well-known/oauth-authorization-server")
-async def oauth_authorization_server_root(
-    request: Request, mcp_server_name: Optional[str] = None
-):
+async def oauth_authorization_server_root(request: Request, mcp_server_name: Optional[str] = None):
     return await oauth_authorization_server_mcp(request, mcp_server_name)
 
 

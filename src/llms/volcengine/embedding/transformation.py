@@ -3,13 +3,15 @@ Volcengine Embedding Transformation
 Transforms OpenAI embedding requests to Volcengine format
 """
 
-from typing import List, Optional, Union, Dict, Any
+from typing import Any, Dict, List, Optional, Union
+
 import httpx
+from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
+from litellm.llms.base_llm.chat.transformation import BaseLLMException
+from litellm.llms.base_llm.embedding.transformation import BaseEmbeddingConfig
 from litellm.types.llms.openai import AllEmbeddingInputValues, AllMessageValues
 from litellm.types.utils import EmbeddingResponse
-from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
-from litellm.llms.base_llm.embedding.transformation import BaseEmbeddingConfig
-from litellm.llms.base_llm.chat.transformation import BaseLLMException
+
 from ..common_utils import get_volcengine_base_url, get_volcengine_headers
 
 
@@ -59,7 +61,7 @@ class VolcEngineEmbeddingConfig(BaseEmbeddingConfig):
     ) -> str:
         """
         Get the complete URL for volcengine embedding API calls.
-        
+
         Args:
             api_base: Optional custom API base URL
             api_key: API key (not used for URL construction)
@@ -67,7 +69,7 @@ class VolcEngineEmbeddingConfig(BaseEmbeddingConfig):
             optional_params: Optional parameters (not used for URL construction)
             litellm_params: LiteLLM parameters (not used for URL construction)
             stream: Stream parameter (not used for URL construction)
-            
+
         Returns:
             Complete URL for the embedding API endpoint
         """
@@ -116,8 +118,6 @@ class VolcEngineEmbeddingConfig(BaseEmbeddingConfig):
                 raise ValueError(f"Unsupported parameter for Volcengine: {param}")
 
         return optional_params
-
-
 
     def transform_embedding_request(
         self,
@@ -175,7 +175,7 @@ class VolcEngineEmbeddingConfig(BaseEmbeddingConfig):
         # Add id if present
         if "id" in response_json:
             transformed_response["id"] = response_json["id"]
-        
+
         # Create EmbeddingResponse from transformed data
         return EmbeddingResponse(**transformed_response)
 
@@ -201,6 +201,7 @@ class VolcEngineEmbeddingConfig(BaseEmbeddingConfig):
     ) -> BaseLLMException:
         """Get error class for Volcengine errors"""
         from ..common_utils import VolcEngineError
+
         # Convert dict to httpx.Headers if needed
         if isinstance(headers, dict):
             headers = httpx.Headers(headers)

@@ -9,7 +9,6 @@ Nova + Invoke API Tutorial: https://docs.aws.amazon.com/nova/latest/userguide/us
 from typing import Any, List, Optional
 
 import httpx
-
 from litellm.litellm_core_utils.litellm_logging import Logging
 from litellm.types.llms.bedrock import BedrockInvokeNovaRequest
 from litellm.types.llms.openai import AllMessageValues
@@ -57,13 +56,9 @@ class AmazonInvokeNovaConfig(AmazonInvokeConfig, AmazonConverseConfig):
             litellm_params=litellm_params,
             headers=headers,
         )
-        _bedrock_invoke_nova_request = BedrockInvokeNovaRequest(
-            **_transformed_nova_request
-        )
+        _bedrock_invoke_nova_request = BedrockInvokeNovaRequest(**_transformed_nova_request)
         self._remove_empty_system_messages(_bedrock_invoke_nova_request)
-        bedrock_invoke_nova_request = self._filter_allowed_fields(
-            _bedrock_invoke_nova_request
-        )
+        bedrock_invoke_nova_request = self._filter_allowed_fields(_bedrock_invoke_nova_request)
         return bedrock_invoke_nova_request
 
     def transform_response(
@@ -95,16 +90,12 @@ class AmazonInvokeNovaConfig(AmazonInvokeConfig, AmazonConverseConfig):
             json_mode,
         )
 
-    def _filter_allowed_fields(
-        self, bedrock_invoke_nova_request: BedrockInvokeNovaRequest
-    ) -> dict:
+    def _filter_allowed_fields(self, bedrock_invoke_nova_request: BedrockInvokeNovaRequest) -> dict:
         """
         Filter out fields that are not allowed in the `BedrockInvokeNovaRequest` dataclass.
         """
         allowed_fields = set(BedrockInvokeNovaRequest.__annotations__.keys())
-        return {
-            k: v for k, v in bedrock_invoke_nova_request.items() if k in allowed_fields
-        }
+        return {k: v for k, v in bedrock_invoke_nova_request.items() if k in allowed_fields}
 
     def _remove_empty_system_messages(
         self, bedrock_invoke_nova_request: BedrockInvokeNovaRequest

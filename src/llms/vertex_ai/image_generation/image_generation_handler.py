@@ -2,8 +2,6 @@ import json
 from typing import Any, Dict, List, Optional
 
 import httpx
-from openai.types.image import Image
-
 import litellm
 from litellm.llms.custom_httpx.http_handler import (
     AsyncHTTPHandler,
@@ -13,6 +11,7 @@ from litellm.llms.custom_httpx.http_handler import (
 from litellm.llms.vertex_ai.gemini.vertex_and_google_ai_studio_gemini import VertexLLM
 from litellm.types.llms.vertex_ai import VERTEX_CREDENTIALS_TYPES
 from litellm.types.utils import ImageResponse
+from openai.types.image import Image
 
 
 class VertexImageGeneration(VertexLLM):
@@ -131,9 +130,7 @@ class VertexImageGeneration(VertexLLM):
             should_use_v1beta1_features=False,
             mode="image_generation",
         )
-        optional_params = optional_params or {
-            "sampleCount": 1
-        }  # default optional params
+        optional_params = optional_params or {"sampleCount": 1}  # default optional params
 
         # Transform optional params to camelCase format
         optional_params = self.transform_optional_params(optional_params)
@@ -165,9 +162,7 @@ class VertexImageGeneration(VertexLLM):
             raise Exception(f"Error: {response.status_code} {response.text}")
 
         json_response = response.json()
-        return self.process_image_generation_response(
-            json_response, model_response, model
-        )
+        return self.process_image_generation_response(json_response, model_response, model)
 
     async def aimage_generation(
         self,
@@ -271,9 +266,7 @@ class VertexImageGeneration(VertexLLM):
             raise Exception(f"Error: {response.status_code} {response.text}")
 
         json_response = response.json()
-        return self.process_image_generation_response(
-            json_response, model_response, model
-        )
+        return self.process_image_generation_response(json_response, model_response, model)
 
     def is_image_generation_response(self, json_response: Dict[str, Any]) -> bool:
         if "predictions" in json_response:

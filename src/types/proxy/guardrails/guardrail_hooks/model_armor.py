@@ -11,9 +11,7 @@ class ModelArmorGuardrailConfigModel(GuardrailConfigModel):
     template_id: Optional[str] = Field(
         default=None, description="The ID of your Model Armor template"
     )
-    project_id: Optional[str] = Field(
-        default=None, description="Google Cloud project ID"
-    )
+    project_id: Optional[str] = Field(default=None, description="Google Cloud project ID")
     location: Optional[str] = Field(
         default=None, description="Google Cloud location/region (e.g., us-central1)"
     )

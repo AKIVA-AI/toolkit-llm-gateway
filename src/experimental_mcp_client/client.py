@@ -8,22 +8,6 @@ from datetime import timedelta
 from typing import Awaitable, Callable, Dict, List, Optional, TypeVar, Union
 
 import httpx
-from mcp import ClientSession, ReadResourceResult, Resource, StdioServerParameters
-from mcp.client.sse import sse_client
-from mcp.client.stdio import stdio_client
-from mcp.client.streamable_http import streamablehttp_client
-from mcp.types import (
-    CallToolRequestParams as MCPCallToolRequestParams,
-    GetPromptRequestParams,
-    GetPromptResult,
-    Prompt,
-    ResourceTemplate,
-)
-from mcp.types import CallToolResult as MCPCallToolResult
-from mcp.types import TextContent
-from mcp.types import Tool as MCPTool
-from pydantic import AnyUrl
-
 from litellm._logging import verbose_logger
 from litellm.llms.custom_httpx.http_handler import get_ssl_configuration
 from litellm.types.llms.custom_http import VerifyTypes
@@ -34,6 +18,23 @@ from litellm.types.mcp import (
     MCPTransport,
     MCPTransportType,
 )
+from mcp import ClientSession, ReadResourceResult, Resource, StdioServerParameters
+from mcp.client.sse import sse_client
+from mcp.client.stdio import stdio_client
+from mcp.client.streamable_http import streamablehttp_client
+from mcp.types import (
+    CallToolRequestParams as MCPCallToolRequestParams,
+)
+from mcp.types import CallToolResult as MCPCallToolResult
+from mcp.types import (
+    GetPromptRequestParams,
+    GetPromptResult,
+    Prompt,
+    ResourceTemplate,
+    TextContent,
+)
+from mcp.types import Tool as MCPTool
+from pydantic import AnyUrl
 
 
 def to_basic_auth(auth_value: str) -> str:
@@ -104,9 +105,7 @@ class MCPClient:
             else:
                 headers = self._get_auth_headers()
                 httpx_client_factory = self._create_httpx_client_factory()
-                verbose_logger.debug(
-                    "litellm headers for streamablehttp_client: %s", headers
-                )
+                verbose_logger.debug("litellm headers for streamablehttp_client: %s", headers)
                 transport_ctx = streamablehttp_client(
                     url=self.server_url,
                     timeout=timedelta(seconds=self.timeout),
@@ -185,9 +184,7 @@ class MCPClient:
             # Get unified SSL configuration using the same logic as http_handler.py
             ssl_config = get_ssl_configuration(self.ssl_verify)
 
-            verbose_logger.debug(
-                f"MCP client using SSL configuration: {type(ssl_config).__name__}"
-            )
+            verbose_logger.debug(f"MCP client using SSL configuration: {type(ssl_config).__name__}")
 
             return httpx.AsyncClient(
                 headers=headers,
@@ -201,9 +198,7 @@ class MCPClient:
 
     async def list_tools(self) -> List[MCPTool]:
         """List available tools from the server."""
-        verbose_logger.debug(
-            f"MCP client listing tools from {self.server_url or 'stdio'}"
-        )
+        verbose_logger.debug(f"MCP client listing tools from {self.server_url or 'stdio'}")
 
         async def _list_tools_operation(session: ClientSession):
             return await session.list_tools()
@@ -299,9 +294,7 @@ class MCPClient:
 
     async def list_prompts(self) -> List[Prompt]:
         """List available prompts from the server."""
-        verbose_logger.debug(
-            f"MCP client listing tools from {self.server_url or 'stdio'}"
-        )
+        verbose_logger.debug(f"MCP client listing tools from {self.server_url or 'stdio'}")
 
         async def _list_prompts_operation(session: ClientSession):
             return await session.list_prompts()
@@ -389,9 +382,7 @@ class MCPClient:
 
     async def list_resources(self) -> list[Resource]:
         """List available resources from the server."""
-        verbose_logger.debug(
-            f"MCP client listing resources from {self.server_url or 'stdio'}"
-        )
+        verbose_logger.debug(f"MCP client listing resources from {self.server_url or 'stdio'}")
 
         async def _list_resources_operation(session: ClientSession):
             return await session.list_resources()
@@ -479,9 +470,7 @@ class MCPClient:
 
         try:
             read_resource_result = await self.run_with_session(_read_resource_operation)
-            verbose_logger.info(
-                f"MCP client read_resource '{url}' completed successfully"
-            )
+            verbose_logger.info(f"MCP client read_resource '{url}' completed successfully")
             return read_resource_result
         except asyncio.CancelledError:
             verbose_logger.warning("MCP client read_resource was cancelled")

@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm import stream_chunk_builder
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -56,14 +55,10 @@ class CoherePassthroughLoggingHandler(BasePassthroughLoggingHandler):
         all_openai_chunks = []
         for _chunk_str in all_chunks:
             try:
-                generic_chunk = (
-                    cohere_model_response_iterator.convert_str_chunk_to_generic_chunk(
-                        chunk=_chunk_str
-                    )
+                generic_chunk = cohere_model_response_iterator.convert_str_chunk_to_generic_chunk(
+                    chunk=_chunk_str
                 )
-                litellm_chunk = litellm_custom_stream_wrapper.chunk_creator(
-                    chunk=generic_chunk
-                )
+                litellm_chunk = litellm_custom_stream_wrapper.chunk_creator(chunk=generic_chunk)
                 if litellm_chunk is not None:
                     all_openai_chunks.append(litellm_chunk)
             except (StopIteration, StopAsyncIteration):
@@ -129,9 +124,9 @@ class CoherePassthroughLoggingHandler(BasePassthroughLoggingHandler):
                 kwargs["custom_llm_provider"] = "cohere"
 
                 # Extract user information for tracking
-                passthrough_logging_payload: Optional[
-                    PassthroughStandardLoggingPayload
-                ] = kwargs.get("passthrough_logging_payload")
+                passthrough_logging_payload: Optional[PassthroughStandardLoggingPayload] = (
+                    kwargs.get("passthrough_logging_payload")
+                )
                 if passthrough_logging_payload:
                     user = handler_instance._get_user_from_metadata(
                         passthrough_logging_payload=passthrough_logging_payload,
@@ -176,7 +171,7 @@ class CoherePassthroughLoggingHandler(BasePassthroughLoggingHandler):
                     request_body=request_body,
                     **kwargs,
                 )
-        
+
         # For non-embed routes (e.g., /v2/chat), fall back to chat handler
         return super().passthrough_chat_handler(
             httpx_response=httpx_response,

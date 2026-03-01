@@ -13,13 +13,11 @@ model/{model_id}/update - PATCH endpoint for model update.
 import asyncio
 import datetime
 import json
-from litellm._uuid import uuid
 from typing import Dict, List, Literal, Optional, Tuple, Union, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, ConfigDict, Field
-
 from litellm._logging import verbose_proxy_logger
+from litellm._uuid import uuid
 from litellm.constants import LITELLM_PROXY_ADMIN_NAME
 from litellm.proxy._types import (
     CommonProxyErrors,
@@ -54,6 +52,7 @@ from litellm.types.router import (
     updateDeployment,
 )
 from litellm.utils import get_utc_datetime
+from pydantic import BaseModel, ConfigDict, Field
 
 router = APIRouter()
 
@@ -61,21 +60,15 @@ router = APIRouter()
 class UpdatePublicModelGroupsRequest(BaseModel):
     """Request model for updating public model groups"""
 
-    model_groups: List[str] = Field(
-        description="List of model group names to make public"
-    )
+    model_groups: List[str] = Field(description="List of model group names to make public")
 
     model_config = ConfigDict(extra="forbid")
 
 
-async def get_db_model(
-    model_id: str, prisma_client: PrismaClient
-) -> Optional[Deployment]:
+async def get_db_model(model_id: str, prisma_client: PrismaClient) -> Optional[Deployment]:
     db_model = cast(
         Optional[BaseModel],
-        await prisma_client.db.litellm_proxymodeltable.find_unique(
-            where={"model_id": model_id}
-        ),
+        await prisma_client.db.litellm_proxymodeltable.find_unique(where={"model_id": model_id}),
     )
 
     if not db_model:
@@ -104,9 +97,7 @@ def update_db_model(
         # Encrypt any sensitive values
         encrypted_params = {
             k: encrypt_value_helper(v)
-            for k, v in updated_patch.litellm_params.model_dump(
-                exclude_none=True
-            ).items()
+            for k, v in updated_patch.litellm_params.model_dump(exclude_none=True).items()
         }
 
         merged_deployment_dict["litellm_params"].update(encrypted_params)  # type: ignore
@@ -123,9 +114,7 @@ def update_db_model(
 
     prisma_compatible_model_dict = PrismaCompatibleUpdateDBModel()
     if "model_name" in merged_deployment_dict:
-        prisma_compatible_model_dict["model_name"] = merged_deployment_dict[
-            "model_name"
-        ]
+        prisma_compatible_model_dict["model_name"] = merged_deployment_dict["model_name"]
 
     if "litellm_params" in merged_deployment_dict:
         prisma_compatible_model_dict["litellm_params"] = json.dumps(
@@ -228,9 +217,7 @@ async def patch_model(
         )
 
         # Add metadata about update
-        update_data["updated_by"] = (
-            user_api_key_dict.user_id or litellm_proxy_admin_name
-        )
+        update_data["updated_by"] = user_api_key_dict.user_id or litellm_proxy_admin_name
         update_data["updated_at"] = cast(str, get_utc_datetime())
 
         # Perform partial update
@@ -289,17 +276,13 @@ async def _add_model_to_db(
     _litellm_params_dict = model_params.litellm_params.dict(exclude_none=True)
     _original_litellm_model_name = model_params.litellm_params.model
     for k, v in _litellm_params_dict.items():
-        encrypted_value = encrypt_value_helper(
-            value=v, new_encryption_key=new_encryption_key
-        )
+        encrypted_value = encrypt_value_helper(value=v, new_encryption_key=new_encryption_key)
         model_params.litellm_params[k] = encrypted_value
     _data: dict = {
         "model_id": model_params.model_info.id,
         "model_name": model_params.model_name,
         "litellm_params": model_params.litellm_params.model_dump_json(exclude_none=True),  # type: ignore
-        "model_info": model_params.model_info.model_dump_json(  # type: ignore
-            exclude_none=True
-        ),
+        "model_info": model_params.model_info.model_dump_json(exclude_none=True),  # type: ignore
         "created_by": user_api_key_dict.user_id or LITELLM_PROXY_ADMIN_NAME,
         "updated_by": user_api_key_dict.user_id or LITELLM_PROXY_ADMIN_NAME,
     }
@@ -375,7 +358,7 @@ async def _update_team_model_in_db(
 ) -> PrismaCompatibleUpdateDBModel:
     """
     Handle team model updates with proper alias management.
-    
+
     If patch_data contains a team_id:
     - Creates unique internal model_name and team alias
     - Adds model to team object
@@ -383,36 +366,37 @@ async def _update_team_model_in_db(
     """
     # Validate team_id if present in patch_data
     from litellm.proxy.proxy_server import premium_user
-    
+
     await ModelManagementAuthChecks.allow_team_model_action(
         model_params=patch_data,
         user_api_key_dict=user_api_key_dict,
         prisma_client=prisma_client,
         premium_user=premium_user,
     )
-    
+
     patch_team_id = patch_data.model_info.team_id if patch_data.model_info else None
-    
+
     # No team_id in patch, proceed with standard update
     if patch_team_id is None:
         return update_db_model(db_model=db_model, updated_patch=patch_data)
-    
+
     # Determine public model name
     public_model_name = _get_public_model_name(
         patch_data=patch_data,
         db_model=db_model,
     )
-    
+
     # Ensure model_info exists and set team_public_model_name
     if patch_data.model_info is None:
         from litellm.types.router import ModelInfo
+
         patch_data.model_info = ModelInfo()
     patch_data.model_info.team_public_model_name = public_model_name
-    
+
     # Check if team assignment is new or changed
     db_team_id = db_model.model_info.team_id if db_model.model_info else None
     is_new_team_assignment = db_team_id != patch_team_id
-    
+
     if is_new_team_assignment:
         await _setup_new_team_model_assignment(
             team_id=patch_team_id,
@@ -428,7 +412,7 @@ async def _update_team_model_in_db(
             patch_data=patch_data,
             user_api_key_dict=user_api_key_dict,
         )
-    
+
     return update_db_model(db_model=db_model, updated_patch=patch_data)
 
 
@@ -439,10 +423,10 @@ def _get_public_model_name(
     """Determine the public model name from patch or existing model."""
     if patch_data.model_name:
         return patch_data.model_name
-    
+
     if db_model.model_info and db_model.model_info.team_public_model_name:
         return db_model.model_info.team_public_model_name
-    
+
     return db_model.model_name
 
 
@@ -455,7 +439,7 @@ async def _setup_new_team_model_assignment(
     """Set up a new team model with unique name, alias, and team membership."""
     unique_model_name = f"model_name_{team_id}_{uuid.uuid4()}"
     patch_data.model_name = unique_model_name
-    
+
     await update_team(
         data=UpdateTeamRequest(
             team_id=team_id,
@@ -464,7 +448,7 @@ async def _setup_new_team_model_assignment(
         user_api_key_dict=user_api_key_dict,
         http_request=Request(scope={"type": "http"}),
     )
-    
+
     await team_model_add(
         data=TeamModelAddRequest(
             team_id=team_id,
@@ -483,12 +467,8 @@ async def _update_existing_team_model_assignment(
     user_api_key_dict: UserAPIKeyAuth,
 ) -> None:
     """Update an existing team model if the public name changed."""
-    old_public_name = (
-        db_model.model_info.team_public_model_name
-        if db_model.model_info
-        else None
-    )
-    
+    old_public_name = db_model.model_info.team_public_model_name if db_model.model_info else None
+
     # Update alias only if public name changed
     if old_public_name and public_model_name != old_public_name:
         await update_team(
@@ -499,7 +479,7 @@ async def _update_existing_team_model_assignment(
             user_api_key_dict=user_api_key_dict,
             http_request=Request(scope={"type": "http"}),
         )
-    
+
     # Keep existing unique model_name
     patch_data.model_name = None
 
@@ -585,10 +565,7 @@ class ModelManagementAuthChecks:
         premium_user: bool,
     ) -> Literal[True]:
         ## Check team model auth
-        if (
-            model_params.model_info is not None
-            and model_params.model_info.team_id is not None
-        ):
+        if model_params.model_info is not None and model_params.model_info.team_id is not None:
             team_obj_row = await prisma_client.db.litellm_teamtable.find_unique(
                 where={"team_id": model_params.model_info.team_id}
             )
@@ -751,9 +728,7 @@ async def delete_model(
             )
 
     except Exception as e:
-        verbose_proxy_logger.exception(
-            f"Failed to delete model. Due to error - {str(e)}"
-        )
+        verbose_proxy_logger.exception(f"Failed to delete model. Due to error - {str(e)}")
         if isinstance(e, HTTPException):
             raise ProxyException(
                 message=getattr(e, "detail", f"Authentication Error({str(e)})"),
@@ -783,9 +758,7 @@ async def delete_team_model_alias(
     Returns:
     - List of team id + model alias pairs that were removed
     """
-    team_model_aliases = await prisma_client.db.litellm_modeltable.find_many(
-        include={"team": True}
-    )
+    team_model_aliases = await prisma_client.db.litellm_modeltable.find_many(include={"team": True})
     tasks = []
     removed_model_aliases = []
     for team_model_alias in team_model_aliases:
@@ -793,9 +766,7 @@ async def delete_team_model_alias(
         id = team_model_alias.id
 
         if public_model_name in model_aliases.values():
-            key = list(model_aliases.keys())[
-                list(model_aliases.values()).index(public_model_name)
-            ]
+            key = list(model_aliases.keys())[list(model_aliases.values()).index(public_model_name)]
             if team_model_alias.team is not None:
                 removed_model_aliases.append((team_model_alias.team.team_id, key))
             del model_aliases[key]
@@ -956,9 +927,7 @@ async def add_new_model(
 
     except Exception as e:
         verbose_proxy_logger.exception(
-            "litellm.proxy.proxy_server.add_new_model(): Exception occured - {}".format(
-                str(e)
-            )
+            "litellm.proxy.proxy_server.add_new_model(): Exception occured - {}".format(str(e))
         )
         if isinstance(e, HTTPException):
             raise ProxyException(
@@ -1019,17 +988,12 @@ async def update_model(
         if _model_id is None:
             raise Exception("model_info.id not provided")
 
-        _existing_litellm_params = (
-            await prisma_client.db.litellm_proxymodeltable.find_unique(
-                where={"model_id": _model_id}
-            )
+        _existing_litellm_params = await prisma_client.db.litellm_proxymodeltable.find_unique(
+            where={"model_id": _model_id}
         )
 
         if _existing_litellm_params is None:
-            if (
-                llm_router is not None
-                and llm_router.get_deployment(model_id=_model_id) is not None
-            ):
+            if llm_router is not None and llm_router.get_deployment(model_id=_model_id) is not None:
                 raise HTTPException(
                     status_code=400,
                     detail={
@@ -1049,16 +1013,12 @@ async def update_model(
 
         # update DB
         if store_model_in_db is True:
-            _existing_litellm_params_dict = dict(
-                _existing_litellm_params.litellm_params
-            )
+            _existing_litellm_params_dict = dict(_existing_litellm_params.litellm_params)
 
             if model_params.litellm_params is None:
                 raise Exception("litellm_params not provided")
 
-            _new_litellm_params_dict = model_params.litellm_params.dict(
-                exclude_none=True
-            )
+            _new_litellm_params_dict = model_params.litellm_params.dict(exclude_none=True)
 
             ### ENCRYPT PARAMS ###
             for k, v in _new_litellm_params_dict.items():
@@ -1114,9 +1074,7 @@ async def update_model(
             return model_response
     except Exception as e:
         verbose_proxy_logger.exception(
-            "litellm.proxy.proxy_server.update_model(): Exception occured - {}".format(
-                str(e)
-            )
+            "litellm.proxy.proxy_server.update_model(): Exception occured - {}".format(str(e))
         )
         if isinstance(e, HTTPException):
             raise ProxyException(
@@ -1325,21 +1283,18 @@ async def clear_cache():
     )
 
     if llm_router is None or prisma_client is None:
-        verbose_proxy_logger.debug(
-            "llm_router or prisma_client is None, skipping cache clear"
-        )
+        verbose_proxy_logger.debug("llm_router or prisma_client is None, skipping cache clear")
         return
-
 
     try:
         # Only clear DB models, preserve config models
         verbose_proxy_logger.debug("Clearing only DB models, preserving config models")
-        
+
         # Get current models and filter out DB models
         current_models = llm_router.model_list.copy()
         config_models = []
         db_model_ids = []
-        
+
         for model in current_models:
             model_info = model.get("model_info", {})
             if model_info.get("db_model", False):
@@ -1348,20 +1303,22 @@ async def clear_cache():
             else:
                 # This is a config model, preserve it
                 config_models.append(model)
-        
+
         # Clear only DB models
         for model_id in db_model_ids:
             llm_router.delete_deployment(id=model_id)
-        
+
         # Clear auto routers
         llm_router.auto_routers.clear()
-        
+
         # Reload only DB models
         await proxy_config.add_deployment(
             prisma_client=prisma_client, proxy_logging_obj=proxy_logging_obj
         )
-        
-        verbose_proxy_logger.debug(f"Cleared {len(db_model_ids)} DB models, preserved {len(config_models)} config models")
+
+        verbose_proxy_logger.debug(
+            f"Cleared {len(db_model_ids)} DB models, preserved {len(config_models)} config models"
+        )
     except Exception as e:
         verbose_proxy_logger.exception(
             f"Failed to clear cache and reload models. Due to error - {str(e)}"

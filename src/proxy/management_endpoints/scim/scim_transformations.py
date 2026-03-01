@@ -22,16 +22,12 @@ class ScimTransformations:
         from litellm.proxy.proxy_server import prisma_client
 
         if prisma_client is None:
-            raise HTTPException(
-                status_code=500, detail={"error": "No database connected"}
-            )
+            raise HTTPException(status_code=500, detail={"error": "No database connected"})
 
         # Get user's teams/groups
         groups = []
         for team_id in user.teams or []:
-            team = await prisma_client.db.litellm_teamtable.find_unique(
-                where={"team_id": team_id}
-            )
+            team = await prisma_client.db.litellm_teamtable.find_unique(where={"team_id": team_id})
             if team:
                 team_alias = getattr(team, "team_alias", team.team_id)
                 groups.append(SCIMUserGroup(value=team.team_id, display=team_alias))
@@ -114,9 +110,7 @@ class ScimTransformations:
         from litellm.proxy.proxy_server import prisma_client
 
         if prisma_client is None:
-            raise HTTPException(
-                status_code=500, detail={"error": "No database connected"}
-            )
+            raise HTTPException(status_code=500, detail={"error": "No database connected"})
 
         if isinstance(team, dict):
             team = LiteLLM_TeamTable(**team)
@@ -126,7 +120,7 @@ class ScimTransformations:
         for member in team.members_with_roles or []:
             if isinstance(member, dict):
                 member = Member(**member)
-            
+
             scim_members.append(
                 SCIMMember(
                     value=ScimTransformations._get_scim_member_value(member),
@@ -161,7 +155,7 @@ class ScimTransformations:
         elif hasattr(member, "user_id"):
             return member.user_id or ScimTransformations.DEFAULT_SCIM_MEMBER_VALUE
         return ScimTransformations.DEFAULT_SCIM_MEMBER_VALUE
-    
+
     @staticmethod
     def _get_scim_member_display(member: Member) -> str:
         """

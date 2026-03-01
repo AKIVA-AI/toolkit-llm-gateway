@@ -3,9 +3,10 @@
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from .generic_prompt_manager import GenericPromptManager
-    from litellm.types.prompts.init_prompts import PromptLiteLLMParams, PromptSpec
     from litellm.integrations.custom_prompt_management import CustomPromptManagement
+    from litellm.types.prompts.init_prompts import PromptLiteLLMParams, PromptSpec
+
+    from .generic_prompt_manager import GenericPromptManager
 
 from litellm.types.prompts.init_prompts import SupportedPromptIntegrations
 

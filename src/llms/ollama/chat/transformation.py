@@ -1,6 +1,5 @@
 import json
 import time
-from litellm._uuid import uuid
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -12,10 +11,9 @@ from typing import (
     cast,
 )
 
-from httpx._models import Headers, Response
-from pydantic import BaseModel
-
 import litellm
+from httpx._models import Headers, Response
+from litellm._uuid import uuid
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
     _extract_reasoning_content,
     convert_content_list_to_str,
@@ -34,6 +32,7 @@ from litellm.types.llms.openai import (
     ChatCompletionUsageBlock,
 )
 from litellm.types.utils import ModelResponse, ModelResponseStream
+from pydantic import BaseModel
 
 from ..common_utils import OllamaError
 
@@ -193,9 +192,7 @@ class OllamaChatConfig(BaseConfig):
             if param == "tools":
                 ## CHECK IF MODEL SUPPORTS TOOL CALLING ##
                 try:
-                    model_info = litellm.get_model_info(
-                        model=model, custom_llm_provider="ollama"
-                    )
+                    model_info = litellm.get_model_info(model=model, custom_llm_provider="ollama")
                     if model_info.get("supports_function_calling") is True:
                         optional_params["tools"] = value
                     else:
@@ -215,9 +212,7 @@ class OllamaChatConfig(BaseConfig):
             if param == "functions":
                 ## CHECK IF MODEL SUPPORTS TOOL CALLING ##
                 try:
-                    model_info = litellm.get_model_info(
-                        model=model, custom_llm_provider="ollama"
-                    )
+                    model_info = litellm.get_model_info(model=model, custom_llm_provider="ollama")
                     if model_info.get("supports_function_calling") is True:
                         optional_params["tools"] = value
                     else:
@@ -227,8 +222,8 @@ class OllamaChatConfig(BaseConfig):
                     litellm.add_function_to_prompt = (
                         True  # so that main.py adds the function call to the prompt
                     )
-                    optional_params["functions_unsupported_model"] = (
-                        non_default_params.get("functions")
+                    optional_params["functions_unsupported_model"] = non_default_params.get(
+                        "functions"
                     )
         non_default_params.pop("tool_choice", None)  # causes ollama requests to hang
         non_default_params.pop("functions", None)  # causes ollama requests to hang
@@ -312,9 +307,7 @@ class OllamaChatConfig(BaseConfig):
                         )
                         new_tools.append(ollama_tool_call)
                 cast(dict, m)["tool_calls"] = new_tools
-            reasoning_content, parsed_content = _extract_reasoning_content(
-                cast(dict, m)
-            )
+            reasoning_content, parsed_content = _extract_reasoning_content(cast(dict, m))
             content_str = convert_content_list_to_str(cast(AllMessageValues, m))
             images = extract_images_from_message(cast(AllMessageValues, m))
 
@@ -386,9 +379,7 @@ class OllamaChatConfig(BaseConfig):
         if response_json_message is not None:
             if "thinking" in response_json_message:
                 # remap 'thinking' to 'reasoning_content'
-                response_json_message["reasoning_content"] = response_json_message[
-                    "thinking"
-                ]
+                response_json_message["reasoning_content"] = response_json_message["thinking"]
                 del response_json_message["thinking"]
             elif response_json_message.get("content") is not None:
                 # parse reasoning content from content
@@ -413,12 +404,8 @@ class OllamaChatConfig(BaseConfig):
                     {
                         "id": f"call_{str(uuid.uuid4())}",
                         "function": {
-                            "name": function_call.get(
-                                "name", litellm_params.get("function_name")
-                            ),
-                            "arguments": json.dumps(
-                                function_call.get("arguments", function_call)
-                            ),
+                            "name": function_call.get("name", litellm_params.get("function_name")),
+                            "arguments": json.dumps(function_call.get("arguments", function_call)),
                         },
                         "type": "function",
                     }
@@ -452,9 +439,7 @@ class OllamaChatConfig(BaseConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, Headers]
     ) -> BaseLLMException:
-        return OllamaError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return OllamaError(status_code=status_code, message=error_message, headers=headers)
 
     def get_model_response_iterator(
         self,
@@ -520,9 +505,7 @@ class OllamaChatCompletionResponseIterator(BaseModelResponseIterator):
                 for tool_call in tool_calls:
                     function_args = tool_call.get("function").get("arguments")
                     if function_args is not None and len(function_args) > 0:
-                        is_function_call_complete = self._is_function_call_complete(
-                            function_args
-                        )
+                        is_function_call_complete = self._is_function_call_complete(function_args)
                         if is_function_call_complete:
                             tool_call["id"] = str(uuid.uuid4())
 
@@ -547,10 +530,7 @@ class OllamaChatCompletionResponseIterator(BaseModelResponseIterator):
                     message_content = message_content.replace("</think>", "")
                     self.finished_reasoning_content = True
 
-                if (
-                    self.started_reasoning_content
-                    and not self.finished_reasoning_content
-                ):
+                if self.started_reasoning_content and not self.finished_reasoning_content:
                     reasoning_content = message_content
                 else:
                     content = message_content
@@ -579,8 +559,7 @@ class OllamaChatCompletionResponseIterator(BaseModelResponseIterator):
             usage = ChatCompletionUsageBlock(
                 prompt_tokens=chunk.get("prompt_eval_count", 0),
                 completion_tokens=chunk.get("eval_count", 0),
-                total_tokens=chunk.get("prompt_eval_count", 0)
-                + chunk.get("eval_count", 0),
+                total_tokens=chunk.get("prompt_eval_count", 0) + chunk.get("eval_count", 0),
             )
 
             return ModelResponseStream(

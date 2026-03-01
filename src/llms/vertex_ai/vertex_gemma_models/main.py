@@ -22,7 +22,6 @@ https://{ENDPOINT_NUMBER}.{location}-{REGION_NUMBER}.prediction.vertexai.goog/v1
 from typing import Callable, Optional, Union
 
 import httpx  # type: ignore
-
 from litellm.utils import ModelResponse
 
 from ..common_utils import VertexAIError, get_vertex_base_model_name
@@ -61,7 +60,6 @@ class VertexAIGemmaModels(VertexBase):
         """
         try:
             import vertexai
-
             from litellm.llms.vertex_ai.gemini.vertex_and_google_ai_studio_gemini import (
                 VertexLLM,
             )
@@ -74,15 +72,13 @@ class VertexAIGemmaModels(VertexBase):
                 message=f"""vertexai import failed please run `pip install -U "google-cloud-aiplatform>=1.38"`. Got error: {e}""",
             )
 
-        if not (
-            hasattr(vertexai, "preview") or hasattr(vertexai.preview, "language_models")
-        ):
+        if not (hasattr(vertexai, "preview") or hasattr(vertexai.preview, "language_models")):
             raise VertexAIError(
                 status_code=400,
                 message="""Upgrade vertex ai. Run `pip install "google-cloud-aiplatform>=1.38"`""",
             )
         try:
-            
+
             model = get_vertex_base_model_name(model=model)
             vertex_httpx_logic = VertexLLM()
 
@@ -143,4 +139,3 @@ class VertexAIGemmaModels(VertexBase):
             if hasattr(e, "status_code"):
                 raise e
             raise VertexAIError(status_code=500, message=str(e))
-

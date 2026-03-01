@@ -6,9 +6,7 @@ import json
 from typing import Any, Literal, Optional, Union
 
 import httpx
-
 import litellm
-from litellm.types.utils import EmbeddingResponse
 from litellm.llms.custom_httpx.http_handler import (
     AsyncHTTPHandler,
     HTTPHandler,
@@ -19,6 +17,7 @@ from litellm.types.llms.vertex_ai import (
     VertexAIBatchEmbeddingsRequestBody,
     VertexAIBatchEmbeddingsResponseObject,
 )
+from litellm.types.utils import EmbeddingResponse
 
 from ..gemini.vertex_and_google_ai_studio_gemini import VertexLLM
 from .batch_embed_content_transformation import (

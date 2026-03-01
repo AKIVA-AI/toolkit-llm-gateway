@@ -49,9 +49,7 @@ class TopazModelInfo(BaseLLMModelInfo):
 
     @staticmethod
     def get_api_base(api_base: Optional[str] = None) -> Optional[str]:
-        return (
-            api_base or get_secret_str("TOPAZ_API_BASE") or "https://api.topazlabs.com"
-        )
+        return api_base or get_secret_str("TOPAZ_API_BASE") or "https://api.topazlabs.com"
 
     @staticmethod
     def get_base_model(model: str) -> str:

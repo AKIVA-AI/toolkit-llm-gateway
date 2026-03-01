@@ -3,7 +3,6 @@ import time
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.prompt_templates.factory import cohere_messages_pt_v2
 from litellm.llms.base_llm.chat.transformation import BaseConfig, BaseLLMException
@@ -232,9 +231,7 @@ class CohereChatConfig(BaseConfig):
             raw_response_json = raw_response.json()
             model_response.choices[0].message.content = raw_response_json["text"]  # type: ignore
         except Exception:
-            raise CohereError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise CohereError(message=raw_response.text, status_code=raw_response.status_code)
 
         ## ADD CITATIONS
         if "citations" in raw_response_json:
@@ -338,13 +335,9 @@ class CohereChatConfig(BaseConfig):
             "parameter_definitions": {},
         }
 
-        for param_name, param_def in openai_tool["function"]["parameters"][
-            "properties"
-        ].items():
+        for param_name, param_def in openai_tool["function"]["parameters"]["properties"].items():
             required_params = (
-                openai_tool.get("function", {})
-                .get("parameters", {})
-                .get("required", [])
+                openai_tool.get("function", {}).get("parameters", {}).get("required", [])
             )
             cohere_param_def = {
                 "description": param_def.get("description", ""),

@@ -53,16 +53,17 @@ class MlflowLogger(CustomLogger):
 
     def _extract_and_set_chat_attributes(self, span, kwargs, response_obj):
         try:
-            from mlflow.tracing.utils import set_span_chat_messages  # type: ignore
-            from mlflow.tracing.utils import set_span_chat_tools  # type: ignore
+            from mlflow.tracing.utils import (
+                set_span_chat_messages,  # type: ignore
+                set_span_chat_tools,  # type: ignore
+            )
         except ImportError:
             return
 
         inputs = self._construct_input(kwargs)
         input_messages = inputs.get("messages", [])
         output_messages = [
-            c.message.model_dump(exclude_none=True)
-            for c in getattr(response_obj, "choices", [])
+            c.message.model_dump(exclude_none=True) for c in getattr(response_obj, "choices", [])
         ]
         if messages := [*input_messages, *output_messages]:
             set_span_chat_messages(span, messages)
@@ -156,9 +157,7 @@ class MlflowLogger(CustomLogger):
                 span.add_event(
                     SpanEvent(
                         name="streaming_chunk",
-                        attributes={
-                            "delta": json.dumps(choice.delta.model_dump, default=str)
-                        },
+                        attributes={"delta": json.dumps(choice.delta.model_dump, default=str)},
                     )
                 )
         except Exception:
@@ -192,9 +191,7 @@ class MlflowLogger(CustomLogger):
             "call_type": kwargs.get("call_type"),
             "model": kwargs.get("model"),
         }
-        standard_obj: Optional[StandardLoggingPayload] = kwargs.get(
-            "standard_logging_object"
-        )
+        standard_obj: Optional[StandardLoggingPayload] = kwargs.get("standard_logging_object")
         if standard_obj:
             attributes.update(
                 {
@@ -267,9 +264,7 @@ class MlflowLogger(CustomLogger):
                 span_type=span_type,
                 inputs=inputs,
                 attributes=attributes,
-                tags=self._transform_tag_list_to_dict(
-                    attributes.get("request_tags", [])
-                ),
+                tags=self._transform_tag_list_to_dict(attributes.get("request_tags", [])),
                 start_time_ns=start_time_ns,
             )
 

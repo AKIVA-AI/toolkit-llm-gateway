@@ -3,7 +3,6 @@ import time
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import httpx
-
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
     convert_content_list_to_str,
 )
@@ -146,9 +145,7 @@ class NLPCloudConfig(BaseConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, httpx.Headers]
     ) -> BaseLLMException:
-        return NLPCloudError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return NLPCloudError(status_code=status_code, message=error_message, headers=headers)
 
     def transform_request(
         self,
@@ -193,9 +190,7 @@ class NLPCloudConfig(BaseConfig):
         try:
             completion_response = raw_response.json()
         except Exception:
-            raise NLPCloudError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise NLPCloudError(message=raw_response.text, status_code=raw_response.status_code)
         if "error" in completion_response:
             raise NLPCloudError(
                 message=completion_response["error"],

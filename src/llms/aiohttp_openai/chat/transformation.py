@@ -10,7 +10,6 @@ New config to ensure we introduce this without causing breaking changes for user
 from typing import TYPE_CHECKING, Any, List, Optional
 
 from aiohttp import ClientResponse
-
 from litellm.llms.openai_like.chat.transformation import OpenAILikeChatConfig
 from litellm.types.llms.openai import AllMessageValues
 from litellm.types.utils import Choices, ModelResponse
@@ -72,9 +71,7 @@ class AiohttpOpenAIChatConfig(OpenAILikeChatConfig):
     ) -> ModelResponse:
         _json_response = await raw_response.json()
         model_response.id = _json_response.get("id")
-        model_response.choices = [
-            Choices(**choice) for choice in _json_response.get("choices")
-        ]
+        model_response.choices = [Choices(**choice) for choice in _json_response.get("choices")]
         model_response.created = _json_response.get("created")
         model_response.model = _json_response.get("model")
         model_response.object = _json_response.get("object")

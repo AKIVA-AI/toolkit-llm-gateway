@@ -2,21 +2,21 @@
 # for the sake of performance and scalability.
 
 import asyncio
+import atexit
 import contextvars
 from typing import Coroutine, Optional
-import atexit
-from typing_extensions import TypedDict
 
 from litellm._logging import verbose_logger
 from litellm.constants import (
+    LOGGING_WORKER_AGGRESSIVE_CLEAR_COOLDOWN_SECONDS,
+    LOGGING_WORKER_CLEAR_PERCENTAGE,
     LOGGING_WORKER_CONCURRENCY,
     LOGGING_WORKER_MAX_QUEUE_SIZE,
     LOGGING_WORKER_MAX_TIME_PER_COROUTINE,
-    LOGGING_WORKER_CLEAR_PERCENTAGE,
-    LOGGING_WORKER_AGGRESSIVE_CLEAR_COOLDOWN_SECONDS,
     MAX_ITERATIONS_TO_CLEAR_QUEUE,
     MAX_TIME_TO_CLEAR_QUEUE,
 )
+from typing_extensions import TypedDict
 
 
 class LoggingTask(TypedDict):
@@ -101,9 +101,7 @@ class LoggingWorker:
                 try:
                     task = await self._queue.get()
                     # Track each spawned coroutine so we can cancel on shutdown.
-                    processing_task = asyncio.create_task(
-                        self._process_log_task(task, self._sem)
-                    )
+                    processing_task = asyncio.create_task(self._process_log_task(task, self._sem))
                     self._running_tasks.add(processing_task)
                     processing_task.add_done_callback(self._running_tasks.discard)
                 except Exception:
@@ -126,7 +124,7 @@ class LoggingWorker:
 
         # Capture the current context when enqueueing
         task = LoggingTask(coroutine=coroutine, context=contextvars.copy_context())
-        
+
         try:
             self._queue.put_nowait(task)
         except asyncio.QueueFull:
@@ -141,15 +139,15 @@ class LoggingWorker:
         """
         if self._aggressive_clear_in_progress:
             return False
-        
+
         try:
             loop = asyncio.get_running_loop()
             current_time = loop.time()
             time_since_last_clear = current_time - self._last_aggressive_clear_time
-            
+
             if time_since_last_clear < LOGGING_WORKER_AGGRESSIVE_CLEAR_COOLDOWN_SECONDS:
                 return False
-            
+
             return True
         except RuntimeError:
             # No event loop running, drop the task
@@ -158,8 +156,8 @@ class LoggingWorker:
     def _mark_aggressive_clear_started(self) -> None:
         """
         Mark that an aggressive clear operation has started.
-        
-        Note: This should only be called after _should_start_aggressive_clear() 
+
+        Note: This should only be called after _should_start_aggressive_clear()
         returns True, which guarantees an event loop exists.
         """
         loop = asyncio.get_running_loop()
@@ -171,7 +169,7 @@ class LoggingWorker:
         Handle queue full condition by either starting an aggressive clear
         or scheduling a delayed retry.
         """
-        
+
         if self._should_start_aggressive_clear():
             self._mark_aggressive_clear_started()
             # Schedule clearing as async task so enqueue returns immediately (non-blocking)
@@ -190,8 +188,7 @@ class LoggingWorker:
             current_time = loop.time()
             time_since_last_clear = current_time - self._last_aggressive_clear_time
             remaining_cooldown = max(
-                0.0,
-                LOGGING_WORKER_AGGRESSIVE_CLEAR_COOLDOWN_SECONDS - time_since_last_clear
+                0.0, LOGGING_WORKER_AGGRESSIVE_CLEAR_COOLDOWN_SECONDS - time_since_last_clear
             )
             # Add a small buffer (10% of cooldown or 50ms, whichever is larger) to ensure
             # cooldown has expired and aggressive clear has completed
@@ -212,7 +209,7 @@ class LoggingWorker:
             # Check that we have a running event loop (will raise RuntimeError if not)
             asyncio.get_running_loop()
             delay = self._calculate_retry_delay()
-            
+
             # Schedule the retry as a background task
             asyncio.create_task(self._retry_enqueue_task(task, delay))
         except RuntimeError:
@@ -225,11 +222,11 @@ class LoggingWorker:
         This is called as a background task from _schedule_delayed_enqueue_retry.
         """
         await asyncio.sleep(delay)
-        
+
         # Try to enqueue the task directly, preserving its original context
         if self._queue is None:
             return
-        
+
         try:
             self._queue.put_nowait(task)
         except asyncio.QueueFull:
@@ -243,7 +240,7 @@ class LoggingWorker:
         """
         if self._queue is None:
             return []
-        
+
         # Calculate items based on percentage of queue size
         items_to_extract = (self.max_queue_size * LOGGING_WORKER_CLEAR_PERCENTAGE) // 100
         # Use actual queue size to avoid unnecessary iterations
@@ -251,7 +248,7 @@ class LoggingWorker:
         if actual_size == 0:
             return []
         items_to_extract = min(items_to_extract, actual_size)
-        
+
         # Extract tasks from queue (using list comprehension would require wrapping in try/except)
         extracted_tasks = []
         for _ in range(items_to_extract):
@@ -259,7 +256,7 @@ class LoggingWorker:
                 extracted_tasks.append(self._queue.get_nowait())
             except asyncio.QueueEmpty:
                 break
-        
+
         return extracted_tasks
 
     async def _aggressively_clear_queue_async(self, new_task: Optional[LoggingTask] = None) -> None:
@@ -271,13 +268,13 @@ class LoggingWorker:
         try:
             if self._queue is None:
                 return
-            
+
             extracted_tasks = self._extract_tasks_from_queue()
-            
+
             # Add new task to extracted tasks to process directly
             if new_task is not None:
                 extracted_tasks.append(new_task)
-            
+
             # Process extracted tasks directly
             if extracted_tasks:
                 await self._process_extracted_tasks(extracted_tasks)
@@ -291,7 +288,7 @@ class LoggingWorker:
         """Process a single task and mark it done."""
         if self._queue is None:
             return
-        
+
         try:
             await asyncio.wait_for(
                 task["context"].run(asyncio.create_task, task["coroutine"]),
@@ -310,7 +307,7 @@ class LoggingWorker:
         """
         if not tasks or self._queue is None:
             return
-        
+
         # Process all tasks concurrently for maximum speed
         await asyncio.gather(*[self._process_single_task(task) for task in tasks])
 
@@ -361,10 +358,7 @@ class LoggingWorker:
 
         for _ in range(MAX_ITERATIONS_TO_CLEAR_QUEUE):
             # Check if we've exceeded the maximum time
-            if (
-                asyncio.get_event_loop().time() - start_time
-                >= MAX_TIME_TO_CLEAR_QUEUE
-            ):
+            if asyncio.get_event_loop().time() - start_time >= MAX_TIME_TO_CLEAR_QUEUE:
                 verbose_logger.warning(
                     f"clear_queue exceeded max_time of {MAX_TIME_TO_CLEAR_QUEUE}s, stopping early"
                 )
@@ -410,7 +404,7 @@ class LoggingWorker:
 
         This ensures callbacks queued by async completions are processed
         even when the script exits before the worker loop can handle them.
-        
+
         Note: All logging in this method is wrapped to handle cases where
         logging handlers are closed during shutdown.
         """
@@ -438,7 +432,7 @@ class LoggingWorker:
                 if loop.time() - start_time >= MAX_TIME_TO_CLEAR_QUEUE:
                     self._safe_log(
                         "warning",
-                        f"[LoggingWorker] atexit: Reached time limit ({MAX_TIME_TO_CLEAR_QUEUE}s), stopping flush"
+                        f"[LoggingWorker] atexit: Reached time limit ({MAX_TIME_TO_CLEAR_QUEUE}s), stopping flush",
                     )
                     break
 
@@ -457,7 +451,9 @@ class LoggingWorker:
                     # Silent failure to not break user's program
                     pass
 
-            self._safe_log("info", f"[LoggingWorker] atexit: Successfully flushed {processed} events!")
+            self._safe_log(
+                "info", f"[LoggingWorker] atexit: Successfully flushed {processed} events!"
+            )
 
         finally:
             loop.close()

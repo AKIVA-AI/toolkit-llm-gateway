@@ -1,7 +1,5 @@
 from typing import List, Optional, Union
 
-from openai import OpenAI
-
 import litellm
 from litellm.llms.custom_httpx.http_handler import (
     AsyncHTTPHandler,
@@ -12,6 +10,7 @@ from litellm.llms.openai.openai import OpenAIChatCompletion
 from litellm.types.llms.azure_ai import ImageEmbeddingRequest
 from litellm.types.utils import EmbeddingResponse
 from litellm.utils import convert_to_model_response_object
+from openai import OpenAI
 
 from .cohere_transformation import AzureAICohereConfig
 
@@ -26,10 +25,7 @@ class AzureAIEmbedding(OpenAIChatCompletion):
         input: List,
     ):
         combined_responses = []
-        if (
-            image_embedding_responses is not None
-            and text_embedding_responses is not None
-        ):
+        if image_embedding_responses is not None and text_embedding_responses is not None:
             # Combine and order the results
             text_idx = 0
             image_idx = 0
@@ -270,11 +266,7 @@ class AzureAIEmbedding(OpenAIChatCompletion):
                 optional_params,
                 api_key,
                 api_base,
-                client=(
-                    client
-                    if client is not None and isinstance(client, OpenAI)
-                    else None
-                ),
+                client=(client if client is not None and isinstance(client, OpenAI) else None),
                 aembedding=aembedding,
                 shared_session=shared_session,
             )

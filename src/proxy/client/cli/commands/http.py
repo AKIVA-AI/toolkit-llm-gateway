@@ -2,8 +2,8 @@ import json as json_lib
 from typing import Optional
 
 import click
-import rich
 import requests
+import rich
 
 from ...http_client import HTTPClient
 

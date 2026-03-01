@@ -4,7 +4,7 @@ Type definitions for AWS Bedrock AgentCore API.
 https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agentcore_InvokeAgentRuntime.html
 """
 
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from typing_extensions import Literal, TypedDict
 
@@ -132,4 +132,3 @@ class AgentCoreParsedResponse(TypedDict):
     content: str
     usage: Optional[AgentCoreUsage]
     final_message: Optional[AgentCoreMessage]
-

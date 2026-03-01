@@ -1,6 +1,8 @@
+from typing import Any, Dict, List, Optional, Union
+
 import requests
-from typing import List, Dict, Any, Optional, Union
-from .exceptions import UnauthorizedError, NotFoundError
+
+from .exceptions import NotFoundError, UnauthorizedError
 
 
 class ModelsManagementClient:
@@ -109,7 +111,9 @@ class ModelsManagementClient:
                 raise UnauthorizedError(e)
             raise
 
-    def delete(self, model_id: str, return_request: bool = False) -> Union[Dict[str, Any], requests.Request]:
+    def delete(
+        self, model_id: str, return_request: bool = False
+    ) -> Union[Dict[str, Any], requests.Request]:
         """
         Delete a model from the proxy.
 
@@ -148,7 +152,10 @@ class ModelsManagementClient:
             raise
 
     def get(
-        self, model_id: Optional[str] = None, model_name: Optional[str] = None, return_request: bool = False
+        self,
+        model_id: Optional[str] = None,
+        model_name: Optional[str] = None,
+        return_request: bool = False,
     ) -> Union[Dict[str, Any], requests.Request]:
         """
         Get information about a specific model by its ID or name.
@@ -168,7 +175,9 @@ class ModelsManagementClient:
             NotFoundError: If the model is not found
             requests.exceptions.RequestException: If the request fails with any other error
         """
-        if (model_id is None and model_name is None) or (model_id is not None and model_name is not None):
+        if (model_id is None and model_name is None) or (
+            model_id is not None and model_name is not None
+        ):
             raise ValueError("Exactly one of model_id or model_name must be provided")
 
         # If return_request is True, delegate to info

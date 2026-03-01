@@ -1,7 +1,6 @@
 import json
 
 from fastapi import APIRouter, Depends, HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.litellm_core_utils.sensitive_data_masker import SensitiveDataMasker
 from litellm.proxy._types import CommonProxyErrors, LitellmUserRoles, UserAPIKeyAuth
@@ -201,9 +200,7 @@ async def update_cloudzero_settings(
 
         # Update only provided fields
         updated_api_key = (
-            request.api_key
-            if request.api_key is not None
-            else current_settings["api_key"]
+            request.api_key if request.api_key is not None else current_settings["api_key"]
         )
         updated_connection_id = (
             request.connection_id
@@ -211,9 +208,7 @@ async def update_cloudzero_settings(
             else current_settings["connection_id"]
         )
         updated_timezone = (
-            request.timezone
-            if request.timezone is not None
-            else current_settings["timezone"]
+            request.timezone if request.timezone is not None else current_settings["timezone"]
         )
 
         # Store updated settings using the setter method with encryption
@@ -291,6 +286,7 @@ def is_cloudzero_setup_in_config() -> bool:
         bool: True if CloudZero is configured, False otherwise
     """
     import litellm
+
     return "cloudzero" in litellm.callbacks
 
 
@@ -300,7 +296,7 @@ async def is_cloudzero_setup() -> bool:
 
     CloudZero is considered setup if:
     - CloudZero is configured in config.yaml callbacks, OR
-    - CloudZero environment variables are set, OR  
+    - CloudZero environment variables are set, OR
     - CloudZero settings exist in the database
 
     Returns:
@@ -310,11 +306,11 @@ async def is_cloudzero_setup() -> bool:
         # Check config.yaml/environment variables first
         if is_cloudzero_setup_in_config():
             return True
-            
+
         # Check database as fallback
         if await is_cloudzero_setup_in_db():
             return True
-            
+
         return False
 
     except Exception as e:
@@ -413,9 +409,7 @@ async def cloudzero_dry_run_export(
 
         # Initialize logger with credentials directly
         logger = CloudZeroLogger()
-        dry_run_result = await logger.dry_run_export_usage_data(
-            limit=request.limit
-        )
+        dry_run_result = await logger.dry_run_export_usage_data(limit=request.limit)
 
         verbose_proxy_logger.info("CloudZero dry run export completed successfully")
 
@@ -427,9 +421,7 @@ async def cloudzero_dry_run_export(
         )
 
     except Exception as e:
-        verbose_proxy_logger.error(
-            f"Error performing CloudZero dry run export: {str(e)}"
-        )
+        verbose_proxy_logger.error(f"Error performing CloudZero dry run export: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail={"error": f"Failed to perform CloudZero dry run export: {str(e)}"},
@@ -457,7 +449,6 @@ async def cloudzero_export(
 
     Only admin users can perform CloudZero exports.
     """
-
 
     if user_api_key_dict.user_role != LitellmUserRoles.PROXY_ADMIN:
         raise HTTPException(
@@ -488,10 +479,10 @@ async def cloudzero_export(
         verbose_proxy_logger.info("CloudZero export completed successfully")
 
         return CloudZeroExportResponse(
-            message="CloudZero export completed successfully", 
+            message="CloudZero export completed successfully",
             status="success",
             dry_run_data=None,
-            summary=None
+            summary=None,
         )
 
     except Exception as e:

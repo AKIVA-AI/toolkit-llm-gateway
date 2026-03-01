@@ -99,25 +99,17 @@ def cost_per_second(
     """
 
     ## GET MODEL INFO
-    model_info = get_model_info(
-        model=model, custom_llm_provider=custom_llm_provider or "openai"
-    )
+    model_info = get_model_info(model=model, custom_llm_provider=custom_llm_provider or "openai")
     prompt_cost = 0.0
     completion_cost = 0.0
     ## Speech / Audio cost calculation
-    if (
-        "output_cost_per_second" in model_info
-        and model_info["output_cost_per_second"] is not None
-    ):
+    if "output_cost_per_second" in model_info and model_info["output_cost_per_second"] is not None:
         verbose_logger.debug(
             f"For model={model} - output_cost_per_second: {model_info.get('output_cost_per_second')}; duration: {duration}"
         )
         ## COST PER SECOND ##
         completion_cost = model_info["output_cost_per_second"] * duration
-    elif (
-        "input_cost_per_second" in model_info
-        and model_info["input_cost_per_second"] is not None
-    ):
+    elif "input_cost_per_second" in model_info and model_info["input_cost_per_second"] is not None:
         verbose_logger.debug(
             f"For model={model} - input_cost_per_second: {model_info.get('input_cost_per_second')}; duration: {duration}"
         )
@@ -143,9 +135,7 @@ def video_generation_cost(
         float - total_cost_in_usd
     """
     ## GET MODEL INFO
-    model_info = get_model_info(
-        model=model, custom_llm_provider=custom_llm_provider or "openai"
-    )
+    model_info = get_model_info(model=model, custom_llm_provider=custom_llm_provider or "openai")
 
     # Check for video-specific cost per second
     video_cost_per_second = model_info.get("output_cost_per_video_per_second")

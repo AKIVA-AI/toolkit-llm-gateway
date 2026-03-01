@@ -8,7 +8,7 @@ from typing import List, Optional
 import litellm
 
 logger = logging.getLogger(__name__)
-from litellm.constants import HEALTH_CHECK_TIMEOUT_SECONDS, DEFAULT_HEALTH_CHECK_PROMPT
+from litellm.constants import DEFAULT_HEALTH_CHECK_PROMPT, HEALTH_CHECK_TIMEOUT_SECONDS
 
 ILLEGAL_DISPLAY_PARAMS = [
     "messages",
@@ -90,9 +90,7 @@ async def _perform_health_check(model_list: list, details: Optional[bool] = True
         litellm_params = model["litellm_params"]
         model_info = model.get("model_info", {})
         mode = model_info.get("mode", None)
-        litellm_params = _update_litellm_params_for_health_check(
-            model_info, litellm_params
-        )
+        litellm_params = _update_litellm_params_for_health_check(model_info, litellm_params)
         timeout = model_info.get("health_check_timeout") or HEALTH_CHECK_TIMEOUT_SECONDS
 
         task = run_with_timeout(
@@ -129,9 +127,7 @@ async def _perform_health_check(model_list: list, details: Optional[bool] = True
     return healthy_endpoints, unhealthy_endpoints
 
 
-def _update_litellm_params_for_health_check(
-    model_info: dict, litellm_params: dict
-) -> dict:
+def _update_litellm_params_for_health_check(model_info: dict, litellm_params: dict) -> dict:
     """
     Update the litellm params for health check.
 
@@ -199,16 +195,12 @@ async def perform_health_check(
     """
     if not model_list:
         if cli_model:
-            model_list = [
-                {"model_name": cli_model, "litellm_params": {"model": cli_model}}
-            ]
+            model_list = [{"model_name": cli_model, "litellm_params": {"model": cli_model}}]
         else:
             return [], []
 
     if model is not None:
-        _new_model_list = [
-            x for x in model_list if x["litellm_params"]["model"] == model
-        ]
+        _new_model_list = [x for x in model_list if x["litellm_params"]["model"] == model]
         if _new_model_list == []:
             _new_model_list = [x for x in model_list if x["model_name"] == model]
         model_list = _new_model_list
@@ -216,8 +208,6 @@ async def perform_health_check(
     model_list = filter_deployments_by_id(
         model_list=model_list
     )  # filter duplicate deployments (e.g. when model alias'es are used)
-    healthy_endpoints, unhealthy_endpoints = await _perform_health_check(
-        model_list, details
-    )
+    healthy_endpoints, unhealthy_endpoints = await _perform_health_check(model_list, details)
 
     return healthy_endpoints, unhealthy_endpoints

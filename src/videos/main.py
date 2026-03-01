@@ -25,6 +25,7 @@ from litellm.videos.utils import VideoGenerationRequestUtils
 #################### Initialize provider clients ####################
 llm_http_handler: BaseLLMHTTPHandler = BaseLLMHTTPHandler()
 
+
 ##### Video Generation #######################
 @client
 async def avideo_generation(
@@ -71,7 +72,8 @@ async def avideo_generation(
         # get custom llm provider so we can use this for mapping exceptions
         if custom_llm_provider is None:
             _, custom_llm_provider, _, _ = litellm.get_llm_provider(
-                model=model or DEFAULT_VIDEO_ENDPOINT_MODEL, api_base=local_vars.get("api_base", None)
+                model=model or DEFAULT_VIDEO_ENDPOINT_MODEL,
+                api_base=local_vars.get("api_base", None),
             )
 
         func = partial(
@@ -446,6 +448,7 @@ async def avideo_content(
             completion_kwargs=local_vars,
             extra_kwargs=kwargs,
         )
+
 
 ##### Video Remix #######################
 @client
@@ -906,7 +909,6 @@ async def avideo_status(
     try:
         loop = asyncio.get_event_loop()
         kwargs["async_call"] = True
-
 
         func = partial(
             video_status,

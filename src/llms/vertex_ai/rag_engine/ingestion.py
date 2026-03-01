@@ -79,9 +79,8 @@ class VertexAIRAGIngestion(BaseRAGIngestion):
             )
 
         # GCP config
-        self.vertex_project = (
-            self.vector_store_config.get("vertex_project")
-            or get_secret_str("VERTEXAI_PROJECT")
+        self.vertex_project = self.vector_store_config.get("vertex_project") or get_secret_str(
+            "VERTEXAI_PROJECT"
         )
         self.vertex_location = (
             self.vector_store_config.get("vertex_location")
@@ -91,9 +90,8 @@ class VertexAIRAGIngestion(BaseRAGIngestion):
         self.vertex_credentials = self.vector_store_config.get("vertex_credentials")
 
         # GCS bucket for file uploads
-        self.gcs_bucket = (
-            self.vector_store_config.get("gcs_bucket")
-            or os.environ.get("GCS_BUCKET_NAME")
+        self.gcs_bucket = self.vector_store_config.get("gcs_bucket") or os.environ.get(
+            "GCS_BUCKET_NAME"
         )
         if not self.gcs_bucket:
             raise ValueError(
@@ -103,9 +101,7 @@ class VertexAIRAGIngestion(BaseRAGIngestion):
 
         # Import settings
         self.wait_for_import = self.vector_store_config.get("wait_for_import", True)
-        self.import_timeout = _get_int(
-            self.vector_store_config.get("import_timeout"), 600
-        )
+        self.import_timeout = _get_int(self.vector_store_config.get("import_timeout"), 600)
 
         # Validate required config
         if not self.vertex_project:
@@ -292,9 +288,7 @@ class VertexAIRAGIngestion(BaseRAGIngestion):
             Tuple of (corpus_id, gcs_uri)
         """
         if not file_content or not filename:
-            verbose_logger.warning(
-                "No file content or filename provided for Vertex AI ingestion"
-            )
+            verbose_logger.warning("No file content or filename provided for Vertex AI ingestion")
             return _get_str_or_none(self.corpus_id), None
 
         # Step 1: Upload file to GCS
@@ -312,4 +306,3 @@ class VertexAIRAGIngestion(BaseRAGIngestion):
             raise RuntimeError(f"Failed to import file into RAG corpus: {e}") from e
 
         return str(self.corpus_id), gcs_uri
-

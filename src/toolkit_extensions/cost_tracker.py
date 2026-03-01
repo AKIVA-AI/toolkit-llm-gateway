@@ -3,6 +3,7 @@ Cost tracking middleware for Toolkit LLM Gateway
 
 Intercepts LLM requests and logs costs to database.
 """
+
 import logging
 import time
 from datetime import datetime
@@ -11,17 +12,17 @@ from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from toolkit_extensions.database.connection import get_session
-from toolkit_extensions.database.models import LLMRequest, User, Team, Project
+from toolkit_extensions.database.models import LLMRequest, Project, Team, User
 
 logger = logging.getLogger(__name__)
 
 
 class CostTracker:
     """Tracks costs for LLM requests"""
-    
+
     def __init__(self, enabled: bool = True):
         self.enabled = enabled
-    
+
     def track_request(
         self,
         model: str,
@@ -43,7 +44,7 @@ class CostTracker:
     ) -> Optional[str]:
         """
         Track an LLM request and return the request ID.
-        
+
         Args:
             model: Model name (e.g., "gpt-4")
             provider: Provider name (e.g., "openai")
@@ -61,20 +62,20 @@ class CostTracker:
             project_name: Project name for attribution
             request_id: External request ID (optional)
             metadata: Additional metadata (optional)
-        
+
         Returns:
             Request ID (UUID) or None if tracking is disabled
         """
         if not self.enabled:
             return None
-        
+
         try:
             with get_session() as session:
                 # Resolve user, team, project IDs
                 user_id = self._get_user_id(session, user_email) if user_email else None
                 team_id = self._get_team_id(session, team_name) if team_name else None
                 project_id = self._get_project_id(session, project_name) if project_name else None
-                
+
                 # Create request record
                 request = LLMRequest(
                     request_id=request_id or str(uuid4()),
@@ -96,17 +97,17 @@ class CostTracker:
                     error_message=error_message,
                     extra_metadata=metadata,
                 )
-                
+
                 session.add(request)
                 session.commit()
-                
+
                 return str(request.id)
-        
+
         except Exception as e:
             # Log error but don't fail the request
             logger.error("Error tracking request: %s", e, exc_info=True)
             return None
-    
+
     def _get_user_id(self, session, email: str) -> Optional[str]:
         """Get or create user by email"""
         user = session.query(User).filter_by(email=email).first()
@@ -115,7 +116,7 @@ class CostTracker:
             session.add(user)
             session.flush()
         return str(user.id)
-    
+
     def _get_team_id(self, session, name: str) -> Optional[str]:
         """Get or create team by name"""
         team = session.query(Team).filter_by(name=name).first()
@@ -124,7 +125,7 @@ class CostTracker:
             session.add(team)
             session.flush()
         return str(team.id)
-    
+
     def _get_project_id(self, session, name: str) -> Optional[str]:
         """Get or create project by name"""
         project = session.query(Project).filter_by(name=name).first()
@@ -138,12 +139,12 @@ class CostTracker:
 class CostTrackingMiddleware:
     """
     Middleware to automatically track costs for LiteLLM requests.
-    
+
     Usage:
         from toolkit_extensions.cost_tracker import CostTrackingMiddleware
-        
+
         middleware = CostTrackingMiddleware()
-        
+
         # Wrap LiteLLM completion
         response = completion(
             model="gpt-4",
@@ -154,14 +155,14 @@ class CostTrackingMiddleware:
                 "project": "chatbot-v2"
             }
         )
-        
+
         # Track the request
         middleware.track_completion(response)
     """
-    
+
     def __init__(self, enabled: bool = True):
         self.tracker = CostTracker(enabled=enabled)
-    
+
     def track_completion(
         self,
         response: Any,
@@ -170,12 +171,12 @@ class CostTrackingMiddleware:
     ) -> Optional[str]:
         """
         Track a completion response from LiteLLM.
-        
+
         Args:
             response: LiteLLM completion response
             start_time: Request start time (for latency calculation)
             metadata: Additional metadata (user, team, project, etc.)
-        
+
         Returns:
             Request ID or None
         """
@@ -184,32 +185,32 @@ class CostTrackingMiddleware:
             usage = getattr(response, "usage", None)
             if not usage:
                 return None
-            
+
             prompt_tokens = getattr(usage, "prompt_tokens", 0)
             completion_tokens = getattr(usage, "completion_tokens", 0)
-            
+
             # Get cost from response (LiteLLM calculates this)
             hidden_params = getattr(response, "_hidden_params", {})
             total_cost = hidden_params.get("response_cost", 0.0)
-            
+
             # Calculate latency if start_time provided
             latency_ms = None
             if start_time:
                 latency_ms = int((time.time() - start_time) * 1000)
-            
+
             # Extract metadata
             meta = metadata or {}
             user_email = meta.get("user")
             team_name = meta.get("team")
             project_name = meta.get("project")
-            
+
             # Extract model and provider
             model = getattr(response, "model", "unknown")
             provider = hidden_params.get("custom_llm_provider", "unknown")
-            
+
             # Check if cached
             cache_hit = hidden_params.get("cache_hit", False)
-            
+
             # Track the request
             return self.tracker.track_request(
                 model=model,
@@ -225,11 +226,11 @@ class CostTrackingMiddleware:
                 project_name=project_name,
                 metadata=meta,
             )
-        
+
         except Exception as e:
             logger.error("Error in cost tracking middleware: %s", e, exc_info=True)
             return None
-    
+
     def track_error(
         self,
         model: str,
@@ -239,13 +240,13 @@ class CostTrackingMiddleware:
     ) -> Optional[str]:
         """
         Track a failed request.
-        
+
         Args:
             model: Model name
             provider: Provider name
             error_message: Error message
             metadata: Additional metadata
-        
+
         Returns:
             Request ID or None
         """
@@ -287,5 +288,3 @@ def disable_cost_tracking():
     """Disable cost tracking globally"""
     middleware = get_cost_tracking_middleware()
     middleware.tracker.enabled = False
-
-

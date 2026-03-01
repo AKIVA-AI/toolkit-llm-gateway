@@ -40,9 +40,7 @@ from litellm.types.utils import (
 if TYPE_CHECKING:  # newer pattern to avoid importing pydantic objects on __init__.py
     from litellm.types.llms.openai import ChatCompletionImageObject
 
-DEFAULT_USER_CONTINUE_MESSAGE = ChatCompletionUserMessage(
-    content="Please continue.", role="user"
-)
+DEFAULT_USER_CONTINUE_MESSAGE = ChatCompletionUserMessage(content="Please continue.", role="user")
 
 DEFAULT_ASSISTANT_CONTINUE_MESSAGE = ChatCompletionAssistantMessage(
     content="Please continue.", role="assistant"
@@ -94,7 +92,9 @@ def handle_messages_with_content_list_to_str_conversion(
     return messages
 
 
-def strip_name_from_message(message: AllMessageValues, allowed_name_roles: List[str] = ["user"]) -> AllMessageValues:
+def strip_name_from_message(
+    message: AllMessageValues, allowed_name_roles: List[str] = ["user"]
+) -> AllMessageValues:
     """
     Removes 'name' from message
     """
@@ -102,6 +102,7 @@ def strip_name_from_message(message: AllMessageValues, allowed_name_roles: List[
     if msg_copy.get("role") not in allowed_name_roles:
         msg_copy.pop("name", None)  # type: ignore
     return msg_copy
+
 
 def strip_name_from_messages(
     messages: List[AllMessageValues], allowed_name_roles: List[str] = ["user"]
@@ -161,9 +162,7 @@ def get_str_from_messages(messages: List[AllMessageValues]) -> str:
 
 def is_non_content_values_set(message: AllMessageValues) -> bool:
     ignore_keys = ["content", "role", "name"]
-    return any(
-        message.get(key, None) is not None for key in message if key not in ignore_keys
-    )
+    return any(message.get(key, None) is not None for key in message if key not in ignore_keys)
 
 
 def _audio_or_image_in_message_content(message: AllMessageValues) -> bool:
@@ -330,9 +329,7 @@ def _insert_assistant_continue_message(
             and messages[i + 1].get("role") == "user"
         ):  # Next is user
             # Insert assistant message
-            continue_message = (
-                assistant_continue_message or DEFAULT_ASSISTANT_CONTINUE_MESSAGE
-            )
+            continue_message = assistant_continue_message or DEFAULT_ASSISTANT_CONTINUE_MESSAGE
             modified_messages.append(continue_message)
 
     return modified_messages
@@ -381,9 +378,7 @@ def get_format_from_file_id(file_id: Optional[str]) -> Optional[str]:
         return None
     try:
         transformed_file_id = convert_b64_uid_to_unified_uid(file_id)
-        if transformed_file_id.startswith(
-            SpecialEnums.LITELM_MANAGED_FILE_ID_PREFIX.value
-        ):
+        if transformed_file_id.startswith(SpecialEnums.LITELM_MANAGED_FILE_ID_PREFIX.value):
             match = re.match(
                 f"{SpecialEnums.LITELM_MANAGED_FILE_ID_PREFIX.value}:(.*?);unified_id",
                 transformed_file_id,
@@ -428,8 +423,7 @@ def update_messages_with_model_file_ids(
 
                         if file_id:
                             provider_file_id = (
-                                model_file_id_mapping.get(file_id, {}).get(model_id)
-                                or file_id
+                                model_file_id_mapping.get(file_id, {}).get(model_id) or file_id
                             )
                             file_object_file_field["file_id"] = provider_file_id
                         if format:
@@ -443,7 +437,7 @@ def update_responses_input_with_model_file_ids(
     """
     Updates responses API input with provider-specific file IDs.
     File IDs are always inside the content array, not as direct input_file items.
-    
+
     For managed files (unified file IDs), decodes the base64-encoded unified file ID
     and extracts the llm_output_file_id directly.
     """
@@ -451,19 +445,19 @@ def update_responses_input_with_model_file_ids(
         _is_base64_encoded_unified_file_id,
         convert_b64_uid_to_unified_uid,
     )
-    
+
     if isinstance(input, str):
         return input
-    
+
     if not isinstance(input, list):
         return input
-    
+
     updated_input = []
     for item in input:
         if not isinstance(item, dict):
             updated_input.append(item)
             continue
-        
+
         updated_item = item.copy()
         content = item.get("content")
         if isinstance(content, list):
@@ -477,7 +471,9 @@ def update_responses_input_with_model_file_ids(
                         if is_unified_file_id:
                             unified_file_id = convert_b64_uid_to_unified_uid(file_id)
                             if "llm_output_file_id," in unified_file_id:
-                                provider_file_id = unified_file_id.split("llm_output_file_id,")[1].split(";")[0]
+                                provider_file_id = unified_file_id.split("llm_output_file_id,")[
+                                    1
+                                ].split(";")[0]
                             else:
                                 # Fallback: keep original if we can't extract
                                 provider_file_id = file_id
@@ -491,9 +487,9 @@ def update_responses_input_with_model_file_ids(
                 else:
                     updated_content.append(content_item)
             updated_item["content"] = updated_content
-        
+
         updated_input.append(updated_item)
-    
+
     return updated_input
 
 
@@ -550,11 +546,7 @@ def extract_file_data(file_data: FileTypes) -> ExtractedFileData:
 
     # Use provided content type or guess based on filename
     if not content_type:
-        content_type = (
-            mimetypes.guess_type(filename)[0]
-            if filename
-            else "application/octet-stream"
-        )
+        content_type = mimetypes.guess_type(filename)[0] if filename else "application/octet-stream"
 
     return ExtractedFileData(
         filename=filename,
@@ -595,9 +587,9 @@ def unpack_defs(schema: dict, defs: dict) -> None:
 
     # Use iterative approach with queue to avoid recursion
     # Each item in queue is (node, parent_container, key/index, active_defs, ref_chain)
-    queue: deque[
-        tuple[Any, Union[dict, list, None], Union[str, int, None], dict, set]
-    ] = deque([(schema, None, None, root_defs, set())])
+    queue: deque[tuple[Any, Union[dict, list, None], Union[str, int, None], dict, set]] = deque(
+        [(schema, None, None, root_defs, set())]
+    )
 
     while queue:
         node, parent, key, active_defs, ref_chain = queue.popleft()
@@ -730,28 +722,28 @@ def infer_content_type_from_url_and_content(
 ) -> str:
     """
     Infer content type from URL extension and binary content when content-type header is missing or generic.
-    
+
     This helper implements a fallback strategy for determining MIME types when HTTP headers
     are missing or provide generic values (like binary/octet-stream). It's commonly used
     when processing images and documents from various sources (S3, URLs, etc.).
-    
+
     Fallback Strategy:
     1. If current_content_type is valid (not None and not generic octet-stream), return it
     2. Try to infer from URL extension (handles query parameters)
     3. Try to detect from binary content signature (magic bytes)
     4. Raise ValueError if all methods fail
-    
+
     Args:
         url: The URL of the content (used to extract file extension)
         content: The binary content (first ~100 bytes are sufficient for detection)
         current_content_type: The current content-type from headers (may be None or generic)
-    
+
     Returns:
         str: The inferred MIME type (e.g., "image/png", "application/pdf")
-        
+
     Raises:
         ValueError: If content type cannot be determined by any method
-        
+
     Example:
         >>> content_type = infer_content_type_from_url_and_content(
         ...     url="https://s3.amazonaws.com/bucket/image.png?AWSAccessKeyId=123",
@@ -762,14 +754,14 @@ def infer_content_type_from_url_and_content(
         "image/png"
     """
     from litellm.litellm_core_utils.token_counter import get_image_type
-    
+
     # If we have a valid content type that's not generic, use it
     if current_content_type and current_content_type not in [
         "binary/octet-stream",
         "application/octet-stream",
     ]:
         return current_content_type
-    
+
     # Extension to MIME type mapping
     # Supports images, documents, and other common file types
     extension_to_mime = {
@@ -790,14 +782,14 @@ def infer_content_type_from_url_and_content(
         "txt": "text/plain",
         "md": "text/markdown",
     }
-    
+
     # Try to infer from URL extension
     if url:
         extension = url.split(".")[-1].lower().split("?")[0]  # Remove query params
         inferred_type = extension_to_mime.get(extension)
         if inferred_type:
             return inferred_type
-    
+
     # Try to detect from binary content signature (magic bytes)
     if content:
         detected_type = get_image_type(content[:100])
@@ -811,7 +803,7 @@ def infer_content_type_from_url_and_content(
             }
             if detected_type in type_to_mime:
                 return type_to_mime[detected_type]
-    
+
     # If all fallbacks failed, raise error
     raise ValueError(
         f"Unable to determine content type from URL: {url}. "
@@ -867,9 +859,7 @@ def check_is_function_call(logging_obj: "LoggingClass") -> bool:
         is_function_call,
     )
 
-    if hasattr(logging_obj, "optional_params") and isinstance(
-        logging_obj.optional_params, dict
-    ):
+    if hasattr(logging_obj, "optional_params") and isinstance(logging_obj.optional_params, dict):
         if is_function_call(logging_obj.optional_params):
             return True
 
@@ -972,9 +962,7 @@ def get_last_user_message(messages: List[AllMessageValues]) -> Optional[str]:
     return result if result else None
 
 
-def set_last_user_message(
-    messages: List[AllMessageValues], content: str
-) -> List[AllMessageValues]:
+def set_last_user_message(messages: List[AllMessageValues], content: str) -> List[AllMessageValues]:
     """
     Set the last user message
 
@@ -990,9 +978,7 @@ def set_last_user_message(
             break
     if idx_to_remove:
         messages = [
-            message
-            for idx, message in enumerate(reversed(messages))
-            if idx not in idx_to_remove
+            message for idx, message in enumerate(reversed(messages)) if idx not in idx_to_remove
         ]
         messages.reverse()
     messages.append({"role": "user", "content": content})
@@ -1071,7 +1057,9 @@ def _parse_content_for_reasoning(
         return None, message_text
 
     reasoning_match = re.match(
-        r"<(?:think|thinking|budget:thinking)>(.*?)</(?:think|thinking|budget:thinking)>(.*)", message_text, re.DOTALL
+        r"<(?:think|thinking|budget:thinking)>(.*?)</(?:think|thinking|budget:thinking)>(.*)",
+        message_text,
+        re.DOTALL,
     )
 
     if reasoning_match:

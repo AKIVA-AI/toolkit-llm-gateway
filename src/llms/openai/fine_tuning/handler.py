@@ -1,10 +1,9 @@
 from typing import Any, Coroutine, Optional, Union, cast
 
 import httpx
-from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
-
 from litellm._logging import verbose_logger
 from litellm.types.utils import LiteLLMFineTuningJob
+from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
 
 class OpenAIFineTuningAPI:
@@ -22,17 +21,20 @@ class OpenAIFineTuningAPI:
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
         organization: Optional[str],
-        client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = None,
+        client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = None,
         _is_async: bool = False,
         api_version: Optional[str] = None,
         litellm_params: Optional[dict] = None,
-    ) -> Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI,]]:
+    ) -> Optional[
+        Union[
+            OpenAI,
+            AsyncOpenAI,
+            AzureOpenAI,
+            AsyncAzureOpenAI,
+        ]
+    ]:
         received_args = locals()
-        openai_client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = None
+        openai_client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = None
         if client is None:
             data = {}
             for k, v in received_args.items():
@@ -56,9 +58,7 @@ class OpenAIFineTuningAPI:
         create_fine_tuning_job_data: dict,
         openai_client: Union[AsyncOpenAI, AsyncAzureOpenAI],
     ) -> LiteLLMFineTuningJob:
-        response = await openai_client.fine_tuning.jobs.create(
-            **create_fine_tuning_job_data
-        )
+        response = await openai_client.fine_tuning.jobs.create(**create_fine_tuning_job_data)
 
         return LiteLLMFineTuningJob(**response.model_dump())
 
@@ -72,21 +72,19 @@ class OpenAIFineTuningAPI:
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
         organization: Optional[str],
-        client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = None,
+        client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = None,
     ) -> Union[LiteLLMFineTuningJob, Coroutine[Any, Any, LiteLLMFineTuningJob]]:
-        openai_client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_openai_client(
-            api_key=api_key,
-            api_base=api_base,
-            timeout=timeout,
-            max_retries=max_retries,
-            organization=organization,
-            client=client,
-            _is_async=_is_async,
-            api_version=api_version,
+        openai_client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_openai_client(
+                api_key=api_key,
+                api_base=api_base,
+                timeout=timeout,
+                max_retries=max_retries,
+                organization=organization,
+                client=client,
+                _is_async=_is_async,
+                api_version=api_version,
+            )
         )
         if openai_client is None:
             raise ValueError(
@@ -102,9 +100,7 @@ class OpenAIFineTuningAPI:
                 create_fine_tuning_job_data=create_fine_tuning_job_data,
                 openai_client=openai_client,
             )
-        verbose_logger.debug(
-            "creating fine tuning job, args= %s", create_fine_tuning_job_data
-        )
+        verbose_logger.debug("creating fine tuning job, args= %s", create_fine_tuning_job_data)
         response = cast(OpenAI, openai_client).fine_tuning.jobs.create(
             **create_fine_tuning_job_data
         )
@@ -130,21 +126,19 @@ class OpenAIFineTuningAPI:
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
         organization: Optional[str],
-        client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = None,
+        client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = None,
     ) -> Union[LiteLLMFineTuningJob, Coroutine[Any, Any, LiteLLMFineTuningJob]]:
-        openai_client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_openai_client(
-            api_key=api_key,
-            api_base=api_base,
-            timeout=timeout,
-            max_retries=max_retries,
-            organization=organization,
-            client=client,
-            _is_async=_is_async,
-            api_version=api_version,
+        openai_client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_openai_client(
+                api_key=api_key,
+                api_base=api_base,
+                timeout=timeout,
+                max_retries=max_retries,
+                organization=organization,
+                client=client,
+                _is_async=_is_async,
+                api_version=api_version,
+            )
         )
         if openai_client is None:
             raise ValueError(
@@ -184,23 +178,21 @@ class OpenAIFineTuningAPI:
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
         organization: Optional[str],
-        client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = None,
+        client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = None,
         after: Optional[str] = None,
         limit: Optional[int] = None,
     ):
-        openai_client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_openai_client(
-            api_key=api_key,
-            api_base=api_base,
-            timeout=timeout,
-            max_retries=max_retries,
-            organization=organization,
-            client=client,
-            _is_async=_is_async,
-            api_version=api_version,
+        openai_client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_openai_client(
+                api_key=api_key,
+                api_base=api_base,
+                timeout=timeout,
+                max_retries=max_retries,
+                organization=organization,
+                client=client,
+                _is_async=_is_async,
+                api_version=api_version,
+            )
         )
         if openai_client is None:
             raise ValueError(
@@ -241,21 +233,19 @@ class OpenAIFineTuningAPI:
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
         organization: Optional[str],
-        client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = None,
+        client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = None,
     ) -> Union[LiteLLMFineTuningJob, Coroutine[Any, Any, LiteLLMFineTuningJob]]:
-        openai_client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_openai_client(
-            api_key=api_key,
-            api_base=api_base,
-            timeout=timeout,
-            max_retries=max_retries,
-            organization=organization,
-            client=client,
-            _is_async=_is_async,
-            api_version=api_version,
+        openai_client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_openai_client(
+                api_key=api_key,
+                api_base=api_base,
+                timeout=timeout,
+                max_retries=max_retries,
+                organization=organization,
+                client=client,
+                _is_async=_is_async,
+                api_version=api_version,
+            )
         )
         if openai_client is None:
             raise ValueError(

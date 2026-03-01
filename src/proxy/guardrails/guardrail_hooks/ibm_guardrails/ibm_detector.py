@@ -10,7 +10,6 @@ from datetime import datetime
 from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm.caching.caching import DualCache
@@ -59,15 +58,11 @@ class IBMGuardrailDetector(CustomGuardrail):
 
         self.base_url = base_url
         if not self.base_url:
-            raise ValueError(
-                "IBM Guardrails base_url is required. Pass base_url parameter."
-            )
+            raise ValueError("IBM Guardrails base_url is required. Pass base_url parameter.")
 
         self.detector_id = detector_id
         if not self.detector_id:
-            raise ValueError(
-                "IBM Guardrails detector_id is required. Pass detector_id parameter."
-            )
+            raise ValueError("IBM Guardrails detector_id is required. Pass detector_id parameter.")
 
         self.is_detector_server = is_detector_server
         self.detector_params = detector_params or {}
@@ -156,9 +151,7 @@ class IBMGuardrailDetector(CustomGuardrail):
 
             # Add guardrail information to request trace
             if request_data:
-                guardrail_status = self._determine_guardrail_status_detector_server(
-                    response_json
-                )
+                guardrail_status = self._determine_guardrail_status_detector_server(response_json)
                 self.add_standard_logging_guardrail_information_to_request_data(
                     guardrail_provider=self.guardrail_provider,
                     guardrail_json_response={
@@ -247,9 +240,7 @@ class IBMGuardrailDetector(CustomGuardrail):
 
             # Add guardrail information to request trace
             if request_data:
-                guardrail_status = self._determine_guardrail_status_orchestrator(
-                    response_json
-                )
+                guardrail_status = self._determine_guardrail_status_orchestrator(response_json)
                 self.add_standard_logging_guardrail_information_to_request_data(
                     guardrail_provider=self.guardrail_provider,
                     guardrail_json_response=dict(response_json),
@@ -385,9 +376,7 @@ class IBMGuardrailDetector(CustomGuardrail):
         error_message = "IBM Guardrail Detector failed:\n\n"
 
         for idx, message_detections in enumerate(detections_list):
-            filtered_detections = self._filter_detections_by_threshold(
-                message_detections
-            )
+            filtered_detections = self._filter_detections_by_threshold(message_detections)
             if filtered_detections:
                 error_message += f"Message {idx + 1}:\n"
                 total_detections += len(filtered_detections)
@@ -396,9 +385,7 @@ class IBMGuardrailDetector(CustomGuardrail):
                     detection_type = detection.get("detection_type", "unknown")
                     score = detection.get("score", 0.0)
                     text = detection.get("text", "")
-                    error_message += (
-                        f"  - {detection_type.upper()} (score: {score:.3f})\n"
-                    )
+                    error_message += f"  - {detection_type.upper()} (score: {score:.3f})\n"
                     error_message += f"    Text: '{text}'\n"
 
                 error_message += "\n"
@@ -409,9 +396,7 @@ class IBMGuardrailDetector(CustomGuardrail):
         )
         return error_message.strip()
 
-    def _create_error_message_orchestrator(
-        self, detections: List[IBMDetectorDetection]
-    ) -> str:
+    def _create_error_message_orchestrator(self, detections: List[IBMDetectorDetection]) -> str:
         """
         Create a detailed error message from orchestrator response.
 
@@ -423,7 +408,9 @@ class IBMGuardrailDetector(CustomGuardrail):
         """
         filtered_detections = self._filter_detections_by_threshold(detections)
 
-        error_message = f"IBM Guardrail Detector failed: {len(filtered_detections)} violation(s) detected\n\n"
+        error_message = (
+            f"IBM Guardrail Detector failed: {len(filtered_detections)} violation(s) detected\n\n"
+        )
 
         for detection in filtered_detections:
             detection_type = detection.get("detection_type", "unknown")
@@ -431,7 +418,9 @@ class IBMGuardrailDetector(CustomGuardrail):
             score = detection.get("score", 0.0)
             text = detection.get("text", "")
 
-            error_message += f"- {detection_type.upper()} (detector: {detector_id}, score: {score:.3f})\n"
+            error_message += (
+                f"- {detection_type.upper()} (detector: {detector_id}, score: {score:.3f})\n"
+            )
             error_message += f"  Text: '{text}'\n\n"
 
         return error_message.strip()
@@ -481,17 +470,13 @@ class IBMGuardrailDetector(CustomGuardrail):
                     # Check if any detections were found
                     has_violations = False
                     for message_detections in result:
-                        filtered = self._filter_detections_by_threshold(
-                            message_detections
-                        )
+                        filtered = self._filter_detections_by_threshold(message_detections)
                         if filtered:
                             has_violations = True
                             break
 
                     if has_violations and self.block_on_detection:
-                        error_message = self._create_error_message_detector_server(
-                            result
-                        )
+                        error_message = self._create_error_message_detector_server(result)
                         raise ValueError(error_message)
 
                 else:
@@ -507,9 +492,7 @@ class IBMGuardrailDetector(CustomGuardrail):
                             orchestrator_result,
                         )
 
-                        filtered = self._filter_detections_by_threshold(
-                            orchestrator_result
-                        )
+                        filtered = self._filter_detections_by_threshold(orchestrator_result)
                         if filtered and self.block_on_detection:
                             error_message = self._create_error_message_orchestrator(
                                 orchestrator_result
@@ -566,17 +549,13 @@ class IBMGuardrailDetector(CustomGuardrail):
                     # Check if any detections were found
                     has_violations = False
                     for message_detections in result:
-                        filtered = self._filter_detections_by_threshold(
-                            message_detections
-                        )
+                        filtered = self._filter_detections_by_threshold(message_detections)
                         if filtered:
                             has_violations = True
                             break
 
                     if has_violations and self.block_on_detection:
-                        error_message = self._create_error_message_detector_server(
-                            result
-                        )
+                        error_message = self._create_error_message_detector_server(result)
                         raise ValueError(error_message)
 
                 else:
@@ -592,9 +571,7 @@ class IBMGuardrailDetector(CustomGuardrail):
                             orchestrator_result,
                         )
 
-                        filtered = self._filter_detections_by_threshold(
-                            orchestrator_result
-                        )
+                        filtered = self._filter_detections_by_threshold(orchestrator_result)
                         if filtered and self.block_on_detection:
                             error_message = self._create_error_message_orchestrator(
                                 orchestrator_result
@@ -627,16 +604,12 @@ class IBMGuardrailDetector(CustomGuardrail):
         from litellm.types.guardrails import GuardrailEventHooks
 
         if (
-            self.should_run_guardrail(
-                data=data, event_type=GuardrailEventHooks.post_call
-            )
+            self.should_run_guardrail(data=data, event_type=GuardrailEventHooks.post_call)
             is not True
         ):
             return
 
-        verbose_proxy_logger.debug(
-            "async_post_call_success_hook response: %s", response
-        )
+        verbose_proxy_logger.debug("async_post_call_success_hook response: %s", response)
 
         # Check if the ModelResponse has text content in its choices
         # to avoid sending empty content to IBM Detector (e.g., during tool calls)
@@ -644,9 +617,7 @@ class IBMGuardrailDetector(CustomGuardrail):
             has_text_content = False
             for choice in response.choices:
                 if isinstance(choice, litellm.Choices):
-                    if choice.message.content and isinstance(
-                        choice.message.content, str
-                    ):
+                    if choice.message.content and isinstance(choice.message.content, str):
                         has_text_content = True
                         break
 
@@ -659,12 +630,8 @@ class IBMGuardrailDetector(CustomGuardrail):
             contents_to_check: List[str] = []
             for choice in response.choices:
                 if isinstance(choice, litellm.Choices):
-                    verbose_proxy_logger.debug(
-                        "async_post_call_success_hook choice: %s", choice
-                    )
-                    if choice.message.content and isinstance(
-                        choice.message.content, str
-                    ):
+                    verbose_proxy_logger.debug("async_post_call_success_hook choice: %s", choice)
+                    if choice.message.content and isinstance(choice.message.content, str):
                         contents_to_check.append(choice.message.content)
 
             if contents_to_check:
@@ -683,17 +650,13 @@ class IBMGuardrailDetector(CustomGuardrail):
                     # Check if any detections were found
                     has_violations = False
                     for message_detections in result:
-                        filtered = self._filter_detections_by_threshold(
-                            message_detections
-                        )
+                        filtered = self._filter_detections_by_threshold(message_detections)
                         if filtered:
                             has_violations = True
                             break
 
                     if has_violations and self.block_on_detection:
-                        error_message = self._create_error_message_detector_server(
-                            result
-                        )
+                        error_message = self._create_error_message_detector_server(result)
                         raise ValueError(error_message)
 
                 else:
@@ -709,9 +672,7 @@ class IBMGuardrailDetector(CustomGuardrail):
                             orchestrator_result,
                         )
 
-                        filtered = self._filter_detections_by_threshold(
-                            orchestrator_result
-                        )
+                        filtered = self._filter_detections_by_threshold(orchestrator_result)
                         if filtered and self.block_on_detection:
                             error_message = self._create_error_message_orchestrator(
                                 orchestrator_result

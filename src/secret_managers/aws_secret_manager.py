@@ -88,9 +88,7 @@ class AWSKeyManagementService_V2:
             raise ValueError("kms_client is None")
         encrypted_value = os.getenv(secret_name, None)
         if encrypted_value is None:
-            raise Exception(
-                "AWS KMS - Encrypted Value of Key={} is None".format(secret_name)
-            )
+            raise Exception("AWS KMS - Encrypted Value of Key={} is None".format(secret_name))
         if isinstance(encrypted_value, str) and encrypted_value.startswith("aws_kms/"):
             encrypted_value = encrypted_value.replace("aws_kms/", "")
 
@@ -131,9 +129,7 @@ def decrypt_env_var() -> Dict[str, Any]:
     new_values = {}
     for k, v in os.environ.items():
         if (
-            k is not None
-            and isinstance(k, str)
-            and k.lower().startswith("litellm_secret_aws_kms")
+            k is not None and isinstance(k, str) and k.lower().startswith("litellm_secret_aws_kms")
         ) or (v is not None and isinstance(v, str) and v.startswith("aws_kms/")):
             decrypted_value = aws_kms.decrypt_value(secret_name=k)
             # reset env var

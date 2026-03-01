@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, Iterable, List, Optional
 
+import litellm
 from fastapi import (
     APIRouter,
     Depends,
@@ -29,10 +30,8 @@ from fastapi import (
     status,
 )
 from fastapi.responses import JSONResponse
-
-import litellm
-from litellm._uuid import uuid
 from litellm._logging import verbose_logger, verbose_proxy_logger
+from litellm._uuid import uuid
 from litellm.constants import LITELLM_PROXY_ADMIN_NAME
 from litellm.proxy._experimental.mcp_server.utils import (
     validate_and_normalize_mcp_server_payload,
@@ -66,7 +65,6 @@ if MCP_AVAILABLE:
     from litellm.proxy._experimental.mcp_server.ui_session_utils import (
         build_effective_auth_contexts,
     )
-    from litellm.proxy.common_utils.http_parsing_utils import _read_request_body
     from litellm.proxy._types import (
         LiteLLM_MCPServerTable,
         LitellmUserRoles,
@@ -77,6 +75,7 @@ if MCP_AVAILABLE:
         UserAPIKeyAuth,
     )
     from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
+    from litellm.proxy.common_utils.http_parsing_utils import _read_request_body
     from litellm.proxy.management_endpoints.common_utils import _user_has_admin_view
     from litellm.proxy.management_helpers.utils import management_endpoint_wrapper
     from litellm.types.mcp import MCPCredentials
@@ -147,9 +146,7 @@ if MCP_AVAILABLE:
         if not payload.server_id or payload.credentials:
             return payload
 
-        existing_server = global_mcp_server_manager.get_mcp_server_by_id(
-            payload.server_id
-        )
+        existing_server = global_mcp_server_manager.get_mcp_server_by_id(payload.server_id)
         if existing_server is None:
             return payload
 
@@ -284,10 +281,7 @@ if MCP_AVAILABLE:
             try:
                 mcp_servers = await prisma_client.db.litellm_mcpservertable.find_many()
                 for server in mcp_servers:
-                    if (
-                        hasattr(server, "mcp_access_groups")
-                        and server.mcp_access_groups
-                    ):
+                    if hasattr(server, "mcp_access_groups") and server.mcp_access_groups:
                         access_groups.update(server.mcp_access_groups)
             except Exception as e:
                 verbose_proxy_logger.debug(f"Error getting MCP access groups: {e}")
@@ -345,9 +339,7 @@ if MCP_AVAILABLE:
 
         # Perform health check using server manager
         try:
-            health_result = await global_mcp_server_manager.health_check_server(
-                server_id
-            )
+            health_result = await global_mcp_server_manager.health_check_server(server_id)
             return health_result
         except Exception as e:
             verbose_proxy_logger.exception(
@@ -375,10 +367,8 @@ if MCP_AVAILABLE:
         """
         # Use server manager to get health checks for allowed servers
         try:
-            all_health_results = (
-                await global_mcp_server_manager.health_check_allowed_servers(
-                    user_api_key_auth=user_api_key_dict
-                )
+            all_health_results = await global_mcp_server_manager.health_check_allowed_servers(
+                user_api_key_auth=user_api_key_dict
             )
 
             return {
@@ -387,11 +377,7 @@ if MCP_AVAILABLE:
                     [r for r in all_health_results.values() if r["status"] == "healthy"]
                 ),
                 "unhealthy_count": len(
-                    [
-                        r
-                        for r in all_health_results.values()
-                        if r["status"] == "unhealthy"
-                    ]
+                    [r for r in all_health_results.values() if r["status"] == "unhealthy"]
                 ),
                 "unknown_count": len(
                     [r for r in all_health_results.values() if r["status"] == "unknown"]
@@ -480,9 +466,7 @@ if MCP_AVAILABLE:
 
         # Perform health check on the server using server manager
         try:
-            health_result = await global_mcp_server_manager.health_check_server(
-                server_id
-            )
+            health_result = await global_mcp_server_manager.health_check_server(server_id)
             # Update the server object with health check results
             mcp_server.status = health_result.get("status", "unknown")
             mcp_server.last_health_check = (
@@ -494,9 +478,7 @@ if MCP_AVAILABLE:
             )
             mcp_server.health_check_error = health_result.get("error")
         except Exception as e:
-            verbose_proxy_logger.debug(
-                f"Error performing health check on server {server_id}: {e}"
-            )
+            verbose_proxy_logger.debug(f"Error performing health check on server {server_id}: {e}")
             mcp_server.status = "unknown"
             mcp_server.last_health_check = datetime.now()
             mcp_server.health_check_error = str(e)
@@ -506,9 +488,7 @@ if MCP_AVAILABLE:
             return _redact_mcp_credentials(mcp_server)
 
         # Perform authz check to filter the mcp servers user has access to
-        mcp_server_records = await get_all_mcp_servers_for_user(
-            prisma_client, user_api_key_dict
-        )
+        mcp_server_records = await get_all_mcp_servers_for_user(prisma_client, user_api_key_dict)
         exists = does_mcp_server_exist(mcp_server_records, server_id)
 
         if exists:
@@ -640,20 +620,16 @@ if MCP_AVAILABLE:
         )
 
         try:
-            temporary_server = (
-                await global_mcp_server_manager.build_mcp_server_from_table(
-                    temp_record,
-                    credentials_are_encrypted=False,
-                )
+            temporary_server = await global_mcp_server_manager.build_mcp_server_from_table(
+                temp_record,
+                credentials_are_encrypted=False,
             )
             _cache_temporary_mcp_server(
                 temporary_server,
                 ttl_seconds=TEMPORARY_MCP_SERVER_TTL_SECONDS,
             )
         except Exception as e:
-            verbose_proxy_logger.exception(
-                f"Error caching temporary mcp server: {str(e)}"
-            )
+            verbose_proxy_logger.exception(f"Error caching temporary mcp server: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"error": f"Error caching temporary mcp server: {str(e)}"},
@@ -863,9 +839,7 @@ if MCP_AVAILABLE:
         if mcp_server_record_updated is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "error": f"MCP Server not found, passed server_id={payload.server_id}"
-                },
+                detail={"error": f"MCP Server not found, passed server_id={payload.server_id}"},
             )
         await global_mcp_server_manager.add_update_server(mcp_server_record_updated)
 
@@ -916,9 +890,7 @@ if MCP_AVAILABLE:
                 litellm.public_mcp_servers = []
 
             for server_id in request.mcp_server_ids:
-                server = global_mcp_server_manager.get_mcp_server_by_id(
-                    server_id=server_id
-                )
+                server = global_mcp_server_manager.get_mcp_server_by_id(server_id=server_id)
                 if server is None:
                     raise HTTPException(
                         status_code=404,
@@ -931,9 +903,7 @@ if MCP_AVAILABLE:
             if "litellm_settings" not in config or config["litellm_settings"] is None:
                 config["litellm_settings"] = {}
 
-            config["litellm_settings"][
-                "public_mcp_servers"
-            ] = litellm.public_mcp_servers
+            config["litellm_settings"]["public_mcp_servers"] = litellm.public_mcp_servers
 
             # Save the updated config
             await proxy_config.save_config(new_config=config)

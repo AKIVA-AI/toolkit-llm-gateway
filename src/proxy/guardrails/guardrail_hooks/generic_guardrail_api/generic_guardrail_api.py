@@ -75,9 +75,7 @@ class GenericGuardrailAPI(CustomGuardrail):
         else:
             self.api_base = base_url
 
-        self.additional_provider_specific_params = (
-            additional_provider_specific_params or {}
-        )
+        self.additional_provider_specific_params = additional_provider_specific_params or {}
 
         # Set supported event hooks
         if "supported_event_hooks" not in kwargs:
@@ -93,9 +91,7 @@ class GenericGuardrailAPI(CustomGuardrail):
             "Generic Guardrail API initialized with api_base: %s", self.api_base
         )
 
-    def _extract_user_api_key_metadata(
-        self, request_data: dict
-    ) -> GenericGuardrailAPIMetadata:
+    def _extract_user_api_key_metadata(self, request_data: dict) -> GenericGuardrailAPIMetadata:
         """
         Extract user API key metadata from request_data.
 
@@ -131,9 +127,7 @@ class GenericGuardrailAPI(CustomGuardrail):
 
         # handle user_api_key_token = user_api_key_hash
         if metadata_dict.get("user_api_key_token") is not None:
-            result_metadata["user_api_key_hash"] = metadata_dict.get(
-                "user_api_key_token"
-            )
+            result_metadata["user_api_key_hash"] = metadata_dict.get("user_api_key_token")
 
         verbose_proxy_logger.debug(
             "Generic Guardrail API: Extracted user metadata: %s",
@@ -225,18 +219,14 @@ class GenericGuardrailAPI(CustomGuardrail):
             response.raise_for_status()
             response_json = response.json()
 
-            verbose_proxy_logger.debug(
-                "Generic Guardrail API response: %s", response_json
-            )
+            verbose_proxy_logger.debug("Generic Guardrail API response: %s", response_json)
 
             guardrail_response = GenericGuardrailAPIResponse.from_dict(response_json)
 
             # Handle the response
             if guardrail_response.action == "BLOCKED":
                 # Block the request
-                error_message = (
-                    guardrail_response.blocked_reason or "Content violates policy"
-                )
+                error_message = guardrail_response.blocked_reason or "Content violates policy"
                 verbose_proxy_logger.warning(
                     "Generic Guardrail API blocked request: %s", error_message
                 )
@@ -260,7 +250,5 @@ class GenericGuardrailAPI(CustomGuardrail):
             # Check if it's already an exception we raised
             if "Content blocked by guardrail" in str(e):
                 raise
-            verbose_proxy_logger.error(
-                "Generic Guardrail API: failed to make request: %s", str(e)
-            )
+            verbose_proxy_logger.error("Generic Guardrail API: failed to make request: %s", str(e))
             raise Exception(f"Generic Guardrail API failed: {str(e)}")

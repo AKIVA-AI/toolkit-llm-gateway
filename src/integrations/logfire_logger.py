@@ -3,14 +3,13 @@
 
 import os
 import traceback
-from litellm._uuid import uuid
 from enum import Enum
 from typing import Any, Dict, NamedTuple
 
-from typing_extensions import LiteralString
-
 from litellm._logging import print_verbose, verbose_logger
+from litellm._uuid import uuid
 from litellm.litellm_core_utils.redact_messages import redact_user_api_key_info
+from typing_extensions import LiteralString
 
 
 class SpanConfig(NamedTuple):
@@ -39,17 +38,12 @@ class LogfireLogger:
             raise e
 
     def _get_span_config(self, payload) -> SpanConfig:
-        if (
-            payload["call_type"] == "completion"
-            or payload["call_type"] == "acompletion"
-        ):
+        if payload["call_type"] == "completion" or payload["call_type"] == "acompletion":
             return SpanConfig(
                 message_template="Chat Completion with {request_data[model]!r}",
                 span_data={"request_data": payload},
             )
-        elif (
-            payload["call_type"] == "embedding" or payload["call_type"] == "aembedding"
-        ):
+        elif payload["call_type"] == "embedding" or payload["call_type"] == "aembedding":
             return SpanConfig(
                 message_template="Embedding Creation with {request_data[model]!r}",
                 span_data={"request_data": payload},
@@ -98,9 +92,7 @@ class LogfireLogger:
         try:
             import logfire
 
-            verbose_logger.debug(
-                f"logfire Logging - Enters logging function for model {kwargs}"
-            )
+            verbose_logger.debug(f"logfire Logging - Enters logging function for model {kwargs}")
 
             if not response_obj:
                 response_obj = {}
@@ -169,11 +161,7 @@ class LogfireLogger:
                 )
             print_verbose(f"\ndd Logger - Logging payload = {payload}")
 
-            print_verbose(
-                f"Logfire Layer Logging - final response object: {response_obj}"
-            )
+            print_verbose(f"Logfire Layer Logging - final response object: {response_obj}")
         except Exception as e:
-            verbose_logger.debug(
-                f"Logfire Layer Error - {str(e)}\n{traceback.format_exc()}"
-            )
+            verbose_logger.debug(f"Logfire Layer Error - {str(e)}\n{traceback.format_exc()}")
             pass

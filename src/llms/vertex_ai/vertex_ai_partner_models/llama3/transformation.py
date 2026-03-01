@@ -2,7 +2,6 @@ import types
 from typing import Any, List, Optional
 
 import httpx
-
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.openai.chat.gpt_transformation import OpenAIGPTConfig
 from litellm.types.llms.openai import AllMessageValues, OpenAIChatCompletionResponse
@@ -69,9 +68,7 @@ class VertexAILlama3Config(OpenAIGPTConfig):
         drop_params: bool,
     ):
         if "max_completion_tokens" in non_default_params:
-            non_default_params["max_tokens"] = non_default_params.pop(
-                "max_completion_tokens"
-            )
+            non_default_params["max_tokens"] = non_default_params.pop("max_completion_tokens")
         return super().map_openai_params(
             non_default_params=non_default_params,
             optional_params=optional_params,

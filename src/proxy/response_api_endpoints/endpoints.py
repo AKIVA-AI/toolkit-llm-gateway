@@ -2,7 +2,6 @@ import asyncio
 from typing import Any, AsyncIterator, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-
 from litellm._logging import verbose_proxy_logger
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import UserAPIKeyAuth, user_api_key_auth
@@ -79,12 +78,12 @@ async def responses_api(
     )
 
     data = await _read_request_body(request=request)
-    
+
     # Check if polling via cache should be used for this request
     from litellm.proxy.response_polling.polling_handler import (
         should_use_polling_for_request,
     )
-    
+
     should_use_polling = should_use_polling_for_request(
         background_mode=data.get("background", False),
         polling_via_cache_enabled=polling_via_cache_enabled,
@@ -92,7 +91,7 @@ async def responses_api(
         model=data.get("model", ""),
         llm_router=llm_router,
     )
-    
+
     # If polling is enabled, use polling mode
     if should_use_polling:
         from litellm.proxy.response_polling.background_streaming import (
@@ -101,26 +100,25 @@ async def responses_api(
         from litellm.proxy.response_polling.polling_handler import (
             ResponsePollingHandler,
         )
-        
+
         verbose_proxy_logger.info(
             f"Starting background response with polling for model={data.get('model')}"
         )
-        
+
         # Initialize polling handler with configured TTL (from global config)
         polling_handler = ResponsePollingHandler(
-            redis_cache=redis_usage_cache,
-            ttl=polling_cache_ttl  # Global var set at startup
+            redis_cache=redis_usage_cache, ttl=polling_cache_ttl  # Global var set at startup
         )
-        
+
         # Generate polling ID
         polling_id = ResponsePollingHandler.generate_polling_id()
-        
+
         # Create initial state in Redis
         initial_state = await polling_handler.create_initial_state(
             polling_id=polling_id,
             request_data=data,
         )
-        
+
         # Start background task to stream and update cache
         asyncio.create_task(
             background_streaming_task(
@@ -143,11 +141,11 @@ async def responses_api(
                 version=version,
             )
         )
-        
+
         # Return OpenAI Response object format (initial state)
         # https://platform.openai.com/docs/api-reference/responses/object
         return initial_state
-    
+
     # Normal response flow
     processor = ProxyBaseLLMRequestProcessing(data=data)
     try:
@@ -228,26 +226,26 @@ async def cursor_chat_completions(
     from litellm.types.utils import ModelResponse
 
     data = await _read_request_body(request=request)
-    
+
     # Convert 'messages' to 'input' for Responses API compatibility
     # Cursor sends 'messages' but Responses API expects 'input'
     if "messages" in data and "input" not in data:
         data["input"] = data.pop("messages")
-    
+
     processor = ProxyBaseLLMRequestProcessing(data=data)
 
     def cursor_data_generator(response, user_api_key_dict, request_data):
         """
         Custom generator that transforms Responses API streaming chunks to chat completion chunks.
-        
+
         This generator is used for the cursor endpoint to convert Responses API format responses
         to chat completion format that Cursor IDE expects.
-        
+
         Args:
             response: The streaming response (BaseResponsesAPIStreamingIterator or other)
             user_api_key_dict: User API key authentication dict
             request_data: Request data containing model, logging_obj, etc.
-        
+
         Returns:
             Async generator that yields SSE-formatted chat completion chunks
         """
@@ -255,10 +253,12 @@ async def cursor_chat_completions(
         if isinstance(response, BaseResponsesAPIStreamingIterator):
             # Transform Responses API iterator to chat completion iterator
             # Cast to AsyncIterator[str] since BaseResponsesAPIStreamingIterator implements __aiter__/__anext__
-            completion_stream = responses_api_bridge.transformation_handler.get_model_response_iterator(
-                streaming_response=cast(AsyncIterator[str], response),
-                sync_stream=False,
-                json_mode=False,
+            completion_stream = (
+                responses_api_bridge.transformation_handler.get_model_response_iterator(
+                    streaming_response=cast(AsyncIterator[str], response),
+                    sync_stream=False,
+                    json_mode=False,
+                )
             )
             # Wrap in CustomStreamWrapper to get the async generator
             logging_obj = request_data.get("litellm_logging_obj")
@@ -392,25 +392,23 @@ async def get_response(
         # Handle polling response
         if not redis_usage_cache:
             raise HTTPException(
-                status_code=500,
-                detail="Redis cache not configured. Polling requires Redis."
+                status_code=500, detail="Redis cache not configured. Polling requires Redis."
             )
-        
+
         polling_handler = ResponsePollingHandler(redis_cache=redis_usage_cache)
-        
+
         # Get current state from cache
         state = await polling_handler.get_state(response_id)
-        
+
         if not state:
             raise HTTPException(
-                status_code=404,
-                detail=f"Polling response {response_id} not found or expired"
+                status_code=404, detail=f"Polling response {response_id} not found or expired"
             )
-        
+
         # Return the whole state directly (OpenAI Response object format)
         # https://platform.openai.com/docs/api-reference/responses/object
         return state
-    
+
     # Normal provider response flow
     data = await _read_request_body(request=request)
     data["response_id"] = response_id
@@ -499,37 +497,24 @@ async def delete_response(
     if ResponsePollingHandler.is_polling_id(response_id):
         # Handle polling response deletion
         if not redis_usage_cache:
-            raise HTTPException(
-                status_code=500,
-                detail="Redis cache not configured."
-            )
-        
+            raise HTTPException(status_code=500, detail="Redis cache not configured.")
+
         polling_handler = ResponsePollingHandler(redis_cache=redis_usage_cache)
-        
+
         # Get state to verify access
         state = await polling_handler.get_state(response_id)
-        
+
         if not state:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Polling response {response_id} not found"
-            )
-        
+            raise HTTPException(status_code=404, detail=f"Polling response {response_id} not found")
+
         # Delete from cache
         success = await polling_handler.delete_polling(response_id)
-        
+
         if success:
-            return DeleteResponseResult(
-                id=response_id,
-                object="response",
-                deleted=True
-            )
+            return DeleteResponseResult(id=response_id, object="response", deleted=True)
         else:
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to delete polling response"
-            )
-    
+            raise HTTPException(status_code=500, detail="Failed to delete polling response")
+
     # Normal provider response flow
     data = await _read_request_body(request=request)
     data["response_id"] = response_id
@@ -691,37 +676,28 @@ async def cancel_response(
     if ResponsePollingHandler.is_polling_id(response_id):
         # Handle polling response cancellation
         if not redis_usage_cache:
-            raise HTTPException(
-                status_code=500,
-                detail="Redis cache not configured."
-            )
-        
+            raise HTTPException(status_code=500, detail="Redis cache not configured.")
+
         polling_handler = ResponsePollingHandler(redis_cache=redis_usage_cache)
-        
+
         # Get current state to verify it exists
         state = await polling_handler.get_state(response_id)
-        
+
         if not state:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Polling response {response_id} not found"
-            )
-        
+            raise HTTPException(status_code=404, detail=f"Polling response {response_id} not found")
+
         # Cancel the polling response (sets status to "cancelled")
         success = await polling_handler.cancel_polling(response_id)
-        
+
         if success:
             # Fetch the updated state with cancelled status
             updated_state = await polling_handler.get_state(response_id)
-            
+
             # Return the whole state directly (now with status="cancelled")
             return updated_state
         else:
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to cancel polling response"
-            )
-    
+            raise HTTPException(status_code=500, detail="Failed to cancel polling response")
+
     # Normal provider response flow
     data = await _read_request_body(request=request)
     data["response_id"] = response_id

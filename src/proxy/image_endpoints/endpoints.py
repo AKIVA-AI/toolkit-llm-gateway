@@ -2,11 +2,10 @@ import asyncio
 import traceback
 from typing import List
 
+import litellm
 import orjson
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, status
 from fastapi.responses import ORJSONResponse
-
-import litellm
 from litellm._logging import verbose_proxy_logger
 from litellm.litellm_core_utils.prompt_templates.common_utils import (
     get_str_from_messages,
@@ -173,9 +172,7 @@ async def image_generation(
             user_api_key_dict=user_api_key_dict, original_exception=e, request_data=data
         )
         verbose_proxy_logger.error(
-            "litellm.proxy.proxy_server.image_generation(): Exception occured - {}".format(
-                str(e)
-            )
+            "litellm.proxy.proxy_server.image_generation(): Exception occured - {}".format(str(e))
         )
         verbose_proxy_logger.debug(traceback.format_exc())
         if isinstance(e, HTTPException):

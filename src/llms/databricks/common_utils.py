@@ -15,9 +15,7 @@ class DatabricksBase:
 
                 databricks_client = WorkspaceClient()
 
-                api_base = (
-                    api_base or f"{databricks_client.config.host}/serving-endpoints"
-                )
+                api_base = api_base or f"{databricks_client.config.host}/serving-endpoints"
 
                 return api_base
             except ImportError:
@@ -42,9 +40,7 @@ class DatabricksBase:
             api_base = api_base or f"{databricks_client.config.host}/serving-endpoints"
 
             if api_key is None:
-                databricks_auth_headers: dict[
-                    str, str
-                ] = databricks_client.config.authenticate()
+                databricks_auth_headers: dict[str, str] = databricks_client.config.authenticate()
                 headers = {**databricks_auth_headers, **headers}
 
             return api_base, headers

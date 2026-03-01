@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, List, Optional
 
 import httpx
-
 from litellm.llms.base_llm.image_generation.transformation import (
     BaseImageGenerationConfig,
 )
@@ -18,9 +17,7 @@ class DallE2ImageGenerationConfig(BaseImageGenerationConfig):
     OpenAI dall-e-2 image generation config
     """
 
-    def get_supported_openai_params(
-        self, model: str
-    ) -> List[OpenAIImageGenerationOptionalParams]:
+    def get_supported_openai_params(self, model: str) -> List[OpenAIImageGenerationOptionalParams]:
         return ["n", "response_format", "quality", "size", "user"]
 
     def map_openai_params(

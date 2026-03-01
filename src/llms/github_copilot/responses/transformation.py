@@ -7,6 +7,7 @@ which is required for models like gpt-5.1-codex that only support the /responses
 Implementation based on analysis of the copilot-api project by caozhiyuan:
 https://github.com/caozhiyuan/copilot-api
 """
+
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from litellm._logging import verbose_logger
@@ -22,8 +23,8 @@ from litellm.types.utils import LlmProviders
 
 from ..authenticator import Authenticator
 from ..common_utils import (
-    GetAPIKeyError,
     GITHUB_COPILOT_API_BASE,
+    GetAPIKeyError,
     get_copilot_default_headers,
 )
 
@@ -126,16 +127,12 @@ class GithubCopilotResponsesAPIConfig(OpenAIResponsesAPIConfig):
             if input_param is not None:
                 initiator = self._get_initiator(input_param)
                 merged_headers["X-Initiator"] = initiator
-                verbose_logger.debug(
-                    f"GitHub Copilot Responses API: Set X-Initiator={initiator}"
-                )
+                verbose_logger.debug(f"GitHub Copilot Responses API: Set X-Initiator={initiator}")
 
                 # Add vision header if input contains images
                 if self._has_vision_input(input_param):
                     merged_headers["copilot-vision-request"] = "true"
-                    verbose_logger.debug(
-                        "GitHub Copilot Responses API: Enabled vision request"
-                    )
+                    verbose_logger.debug("GitHub Copilot Responses API: Enabled vision request")
 
             verbose_logger.debug(
                 f"GitHub Copilot Responses API: Successfully configured headers for model {model}"
@@ -165,11 +162,7 @@ class GithubCopilotResponsesAPIConfig(OpenAIResponsesAPIConfig):
         added in the future by detecting account type.
         """
         # Use provided api_base or fall back to authenticator's base or default
-        api_base = (
-            api_base
-            or self.authenticator.get_api_base()
-            or GITHUB_COPILOT_API_BASE
-        )
+        api_base = api_base or self.authenticator.get_api_base() or GITHUB_COPILOT_API_BASE
 
         # Remove trailing slashes
         api_base = api_base.rstrip("/")

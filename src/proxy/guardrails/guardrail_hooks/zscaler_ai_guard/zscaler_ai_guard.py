@@ -7,7 +7,6 @@ import os
 from typing import TYPE_CHECKING, Literal, Optional
 
 from fastapi import HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import CustomGuardrail
 from litellm.llms.custom_httpx.http_handler import (
@@ -60,9 +59,7 @@ class ZscalerAIGuard(CustomGuardrail):
 
         verbose_proxy_logger.debug("ZscalerAIGuard Initializing ...")
 
-    def _get_stripped_metadata_value(
-        self, request_data: Optional[dict], key: str
-    ) -> Optional[str]:
+    def _get_stripped_metadata_value(self, request_data: Optional[dict], key: str) -> Optional[str]:
         if request_data is None:
             return "N/A"
         value = request_data.get("metadata", {}).get(key, "N/A")
@@ -127,20 +124,13 @@ class ZscalerAIGuard(CustomGuardrail):
                     **kwargs,
                 )
 
-                if (
-                    zscaler_ai_guard_result
-                    and zscaler_ai_guard_result.get("action") == "BLOCK"
-                ):
-                    blocking_info = zscaler_ai_guard_result.get(
-                        "zscaler_ai_guard_response"
-                    )
+                if zscaler_ai_guard_result and zscaler_ai_guard_result.get("action") == "BLOCK":
+                    blocking_info = zscaler_ai_guard_result.get("zscaler_ai_guard_response")
                     error_message = f"Content blocked by Zscaler AI Guard: {self.extract_blocking_info(blocking_info)}"
                     raise Exception(error_message)
 
         except Exception as e:
-            verbose_proxy_logger.error(
-                "ZscalerAIGuard: Failed to apply guardrail: %s", str(e)
-            )
+            verbose_proxy_logger.error("ZscalerAIGuard: Failed to apply guardrail: %s", str(e))
             raise e
 
         verbose_proxy_logger.debug("ZscalerAIGuard: Successfully applied guardrail.")
@@ -182,9 +172,7 @@ class ZscalerAIGuard(CustomGuardrail):
         if self.send_user_api_key_alias:
             verbose_proxy_logger.debug(f"kwargs: {kwargs}")
             user_api_key_alias = kwargs.get("user_api_key_alias", "N/A")
-            verbose_proxy_logger.debug(
-                f"kwargs user_api_key_alias: {user_api_key_alias}"
-            )
+            verbose_proxy_logger.debug(f"kwargs user_api_key_alias: {user_api_key_alias}")
             extra_headers.update({"user-api-key-alias": user_api_key_alias})
 
         if self.send_user_api_key_team_id:
@@ -199,9 +187,7 @@ class ZscalerAIGuard(CustomGuardrail):
         return extra_headers
 
     async def _send_request(self, url, headers, data):
-        async_client = get_async_httpx_client(
-            llm_provider=httpxSpecialProvider.LoggingCallback
-        )
+        async_client = get_async_httpx_client(llm_provider=httpxSpecialProvider.LoggingCallback)
 
         response = await async_client.post(
             f"{url}",
@@ -215,9 +201,7 @@ class ZscalerAIGuard(CustomGuardrail):
     def _handle_response(self, response, direction):
         # Raise exceptions on critical errors to stop the request
         if response.status_code == 429:  # Rate limit
-            verbose_proxy_logger.error(
-                "Zscaler AI Guard rate limit reached. Blocking request."
-            )
+            verbose_proxy_logger.error("Zscaler AI Guard rate limit reached. Blocking request.")
             user_facing_error = self._create_user_facing_error(
                 "Rate limit reached. status_code: 429"
             )
@@ -275,15 +259,11 @@ class ZscalerAIGuard(CustomGuardrail):
                 )
                 raise HTTPException(status_code=500, detail=user_facing_error)
         else:
-            verbose_proxy_logger.error(
-                f"Zscaler AI Guard status_code - {response.status_code}"
-            )
+            verbose_proxy_logger.error(f"Zscaler AI Guard status_code - {response.status_code}")
             user_facing_error = self._create_user_facing_error(
                 f"Response status code: {response.status_code}"
             )
-            raise HTTPException(
-                status_code=response.status_code, detail=user_facing_error
-            )
+            raise HTTPException(status_code=response.status_code, detail=user_facing_error)
 
     async def make_zscaler_ai_guard_api_call(
         self, zscaler_ai_guard_url, api_key, policy_id, direction, content, **kwargs
@@ -301,9 +281,7 @@ class ZscalerAIGuard(CustomGuardrail):
         }
 
         try:
-            response = await self._send_request(
-                zscaler_ai_guard_url, extra_headers, data
-            )
+            response = await self._send_request(zscaler_ai_guard_url, extra_headers, data)
             return self._handle_response(response, direction)
         except Exception as e:
             verbose_proxy_logger.error(f"{e}. Blocking request.")

@@ -2,8 +2,8 @@ import os
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from litellm.types.prompts.init_prompts import PromptLiteLLMParams, PromptSpec
     from litellm.integrations.custom_prompt_management import CustomPromptManagement
+    from litellm.types.prompts.init_prompts import PromptLiteLLMParams, PromptSpec
 
 from litellm.types.prompts.init_prompts import SupportedPromptIntegrations
 
@@ -19,16 +19,12 @@ def prompt_initializer(
     """
     Initialize a prompt from Arize Phoenix.
     """
-    api_key = getattr(litellm_params, "api_key", None) or os.environ.get(
-        "PHOENIX_API_KEY"
-    )
+    api_key = getattr(litellm_params, "api_key", None) or os.environ.get("PHOENIX_API_KEY")
     api_base = getattr(litellm_params, "api_base", None)
     prompt_id = getattr(litellm_params, "prompt_id", None)
 
     if not api_key or not api_base:
-        raise ValueError(
-            "api_key and api_base are required for Arize Phoenix prompt integration"
-        )
+        raise ValueError("api_key and api_base are required for Arize Phoenix prompt integration")
 
     try:
         arize_prompt_manager = ArizePhoenixPromptManager(
@@ -36,9 +32,7 @@ def prompt_initializer(
                 "api_key": api_key,
                 "api_base": api_base,
                 "prompt_id": prompt_id,
-                **litellm_params.model_dump(
-                    exclude={"api_key", "api_base", "prompt_id"}
-                ),
+                **litellm_params.model_dump(exclude={"api_key", "api_base", "prompt_id"}),
             },
         )
 

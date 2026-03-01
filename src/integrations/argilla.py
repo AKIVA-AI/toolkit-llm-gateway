@@ -10,8 +10,6 @@ import types
 from typing import Any, Dict, List, Optional
 
 import httpx
-from pydantic import BaseModel  # type: ignore
-
 import litellm
 from litellm._logging import verbose_logger
 from litellm.integrations.custom_batch_logger import CustomBatchLogger
@@ -26,6 +24,7 @@ from litellm.types.integrations.argilla import (
     ArgillaItem,
 )
 from litellm.types.utils import StandardLoggingPayload
+from pydantic import BaseModel  # type: ignore
 
 
 def is_serializable(value):
@@ -50,9 +49,7 @@ class ArgillaLogger(CustomBatchLogger):
             raise Exception(
                 "'litellm.argilla_transformation_object' is required, to log your payload to Argilla."
             )
-        self.validate_argilla_transformation_object(
-            litellm.argilla_transformation_object
-        )
+        self.validate_argilla_transformation_object(litellm.argilla_transformation_object)
         self.argilla_transformation_object = litellm.argilla_transformation_object
         self.default_credentials = self.get_credentials_from_env(
             argilla_api_key=argilla_api_key,
@@ -69,18 +66,14 @@ class ArgillaLogger(CustomBatchLogger):
         self.async_httpx_client = get_async_httpx_client(
             llm_provider=httpxSpecialProvider.LoggingCallback
         )
-        _batch_size = (
-            os.getenv("ARGILLA_BATCH_SIZE", None) or litellm.argilla_batch_size
-        )
+        _batch_size = os.getenv("ARGILLA_BATCH_SIZE", None) or litellm.argilla_batch_size
         if _batch_size:
             self.batch_size = int(_batch_size)
         asyncio.create_task(self.periodic_flush())
         self.flush_lock = asyncio.Lock()
         super().__init__(**kwargs, flush_lock=self.flush_lock)
 
-    def validate_argilla_transformation_object(
-        self, argilla_transformation_object: Dict[str, Any]
-    ):
+    def validate_argilla_transformation_object(self, argilla_transformation_object: Dict[str, Any]):
         if not isinstance(argilla_transformation_object, dict):
             raise Exception(
                 "'argilla_transformation_object' must be a dictionary, to log your payload to Argilla."
@@ -103,19 +96,13 @@ class ArgillaLogger(CustomBatchLogger):
             raise Exception("Invalid Argilla API Key given. _credentials_api_key=None.")
 
         _credentials_base_url = (
-            argilla_base_url
-            or os.getenv("ARGILLA_BASE_URL")
-            or "http://localhost:6900/"
+            argilla_base_url or os.getenv("ARGILLA_BASE_URL") or "http://localhost:6900/"
         )
         if _credentials_base_url is None:
-            raise Exception(
-                "Invalid Argilla Base URL given. _credentials_base_url=None."
-            )
+            raise Exception("Invalid Argilla Base URL given. _credentials_base_url=None.")
 
         _credentials_dataset_name = (
-            argilla_dataset_name
-            or os.getenv("ARGILLA_DATASET_NAME")
-            or "litellm-completion"
+            argilla_dataset_name or os.getenv("ARGILLA_DATASET_NAME") or "litellm-completion"
         )
         if _credentials_dataset_name is None:
             raise Exception("Invalid Argilla Dataset give. Value=None.")
@@ -138,9 +125,7 @@ class ArgillaLogger(CustomBatchLogger):
             ARGILLA_DATASET_NAME=_credentials_dataset_name,
         )
 
-    def get_chat_messages(
-        self, payload: StandardLoggingPayload
-    ) -> List[Dict[str, Any]]:
+    def get_chat_messages(self, payload: StandardLoggingPayload) -> List[Dict[str, Any]]:
         payload_messages = payload.get("messages", None)
 
         if payload_messages is None:
@@ -166,9 +151,7 @@ class ArgillaLogger(CustomBatchLogger):
         if isinstance(response, str):
             return response
         elif isinstance(response, dict):
-            return (
-                response.get("choices", [{}])[0].get("message", {}).get("content", "")
-            )
+            return response.get("choices", [{}])[0].get("message", {}).get("content", "")
         else:
             raise Exception(f"Invalid response format: {response}")
 
@@ -177,9 +160,7 @@ class ArgillaLogger(CustomBatchLogger):
     ) -> Optional[ArgillaItem]:
         try:
             # Ensure everything in the payload is converted to str
-            payload: Optional[StandardLoggingPayload] = kwargs.get(
-                "standard_logging_object", None
-            )
+            payload: Optional[StandardLoggingPayload] = kwargs.get("standard_logging_object", None)
 
             if payload is None:
                 raise Exception("Error logging request payload. Payload=none.")
@@ -220,13 +201,9 @@ class ArgillaLogger(CustomBatchLogger):
             )
 
             if response.status_code >= 300:
-                verbose_logger.error(
-                    f"Argilla Error: {response.status_code} - {response.text}"
-                )
+                verbose_logger.error(f"Argilla Error: {response.status_code} - {response.text}")
             else:
-                verbose_logger.debug(
-                    f"Batch of {len(self.log_queue)} runs successfully created"
-                )
+                verbose_logger.debug(f"Batch of {len(self.log_queue)} runs successfully created")
 
             self.log_queue.clear()
         except Exception:
@@ -284,9 +261,7 @@ class ArgillaLogger(CustomBatchLogger):
                 kwargs,
                 response_obj,
             )
-            payload: Optional[StandardLoggingPayload] = kwargs.get(
-                "standard_logging_object", None
-            )
+            payload: Optional[StandardLoggingPayload] = kwargs.get("standard_logging_object", None)
 
             data = self._prepare_log_data(kwargs, response_obj, start_time, end_time)
 
@@ -312,9 +287,7 @@ class ArgillaLogger(CustomBatchLogger):
             if len(self.log_queue) >= self.batch_size:
                 await self.flush_queue()
         except Exception:
-            verbose_logger.exception(
-                "Argilla Layer Error - error logging async success event."
-            )
+            verbose_logger.exception("Argilla Layer Error - error logging async success event.")
 
     async def async_log_failure_event(self, kwargs, response_obj, start_time, end_time):
         sampling_rate = self.sampling_rate
@@ -338,9 +311,7 @@ class ArgillaLogger(CustomBatchLogger):
             if len(self.log_queue) >= self.batch_size:
                 await self.flush_queue()
         except Exception:
-            verbose_logger.exception(
-                "Langsmith Layer Error - error logging async failure event."
-            )
+            verbose_logger.exception("Langsmith Layer Error - error logging async failure event.")
 
     async def async_send_batch(self):
         """
@@ -378,13 +349,9 @@ class ArgillaLogger(CustomBatchLogger):
             response.raise_for_status()
 
             if response.status_code >= 300:
-                verbose_logger.error(
-                    f"Argilla Error: {response.status_code} - {response.text}"
-                )
+                verbose_logger.error(f"Argilla Error: {response.status_code} - {response.text}")
             else:
-                verbose_logger.debug(
-                    "Batch of %s runs successfully created", len(self.log_queue)
-                )
+                verbose_logger.debug("Batch of %s runs successfully created", len(self.log_queue))
         except httpx.HTTPStatusError:
             verbose_logger.exception("Argilla HTTP Error")
         except Exception:

@@ -6,7 +6,6 @@ Why separate file? Make it easy to see how transformation works
 
 from typing import List
 
-from litellm.types.utils import EmbeddingResponse
 from litellm.types.llms.openai import EmbeddingInput
 from litellm.types.llms.vertex_ai import (
     ContentType,
@@ -15,7 +14,7 @@ from litellm.types.llms.vertex_ai import (
     VertexAIBatchEmbeddingsRequestBody,
     VertexAIBatchEmbeddingsResponseObject,
 )
-from litellm.types.utils import Embedding, Usage
+from litellm.types.utils import Embedding, EmbeddingResponse, Usage
 from litellm.utils import get_formatted_prompt, token_counter
 
 
@@ -31,7 +30,7 @@ def transform_openai_input_gemini_content(
         request = EmbedContentRequest(
             model=gemini_model_name,
             content=ContentType(parts=[PartType(text=input)]),
-            **optional_params
+            **optional_params,
         )
         requests.append(request)
     else:
@@ -39,7 +38,7 @@ def transform_openai_input_gemini_content(
             request = EmbedContentRequest(
                 model=gemini_model_name,
                 content=ContentType(parts=[PartType(text=i)]),
-                **optional_params
+                **optional_params,
             )
             requests.append(request)
 
@@ -66,8 +65,6 @@ def process_response(
 
     input_text = get_formatted_prompt(data={"input": input}, call_type="embedding")
     prompt_tokens = token_counter(model=model, text=input_text)
-    model_response.usage = Usage(
-        prompt_tokens=prompt_tokens, total_tokens=prompt_tokens
-    )
+    model_response.usage = Usage(prompt_tokens=prompt_tokens, total_tokens=prompt_tokens)
 
     return model_response

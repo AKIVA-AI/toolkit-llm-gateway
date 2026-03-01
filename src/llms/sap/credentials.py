@@ -1,12 +1,13 @@
 from __future__ import annotations
-from typing import Any, Callable, Dict, Final, List, Optional, Sequence, Tuple
-from datetime import datetime, timedelta, timezone
-from threading import Lock
-from pathlib import Path
-from dataclasses import dataclass
+
 import json
 import os
 import tempfile
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from threading import Lock
+from typing import Any, Callable, Dict, Final, List, Optional, Sequence, Tuple
 
 from litellm import sap_service_key
 from litellm.llms.custom_httpx.http_handler import _get_httpx_client
@@ -79,8 +80,7 @@ CREDENTIAL_VALUES: Final[List[CredentialsValue]] = [
     CredentialsValue(
         "base_url",
         ("serviceurls", "AI_API_URL"),
-        transform_fn=lambda url: url.rstrip("/")
-        + ("" if url.endswith("/v2") else "/v2"),
+        transform_fn=lambda url: url.rstrip("/") + ("" if url.endswith("/v2") else "/v2"),
     ),
     CredentialsValue("resource_group", default="default"),
     CredentialsValue(
@@ -93,12 +93,8 @@ CREDENTIAL_VALUES: Final[List[CredentialsValue]] = [
     CredentialsValue("cert_file_path"),
     CredentialsValue("key_file_path"),
     # inline PEMs from VCAP
-    CredentialsValue(
-        "cert_str", ("certificate",), transform_fn=lambda s: s.replace("\\n", "\n")
-    ),
-    CredentialsValue(
-        "key_str", ("key",), transform_fn=lambda s: s.replace("\\n", "\n")
-    ),
+    CredentialsValue("cert_str", ("certificate",), transform_fn=lambda s: s.replace("\\n", "\n")),
+    CredentialsValue("key_str", ("key",), transform_fn=lambda s: s.replace("\\n", "\n")),
 ]
 
 
@@ -116,12 +112,7 @@ def init_conf(profile: Optional[str] = None) -> Dict[str, Any]:
         Path(cfg_env)
         if cfg_env
         else (
-            home
-            / (
-                "config.json"
-                if profile in (None, "", "default")
-                else f"config_{profile}.json"
-            )
+            home / ("config.json" if profile in (None, "", "default") else f"config_{profile}.json")
         )
     )
 
@@ -180,7 +171,9 @@ def _resolve_value(
     return cred.default
 
 
-def fetch_credentials(service_key: Optional[str] = None, profile: Optional[str] = None, **kwargs) -> Dict[str, str]:
+def fetch_credentials(
+    service_key: Optional[str] = None, profile: Optional[str] = None, **kwargs
+) -> Dict[str, str]:
     """
     Resolution order per key:
       kwargs
@@ -196,8 +189,11 @@ def fetch_credentials(service_key: Optional[str] = None, profile: Optional[str] 
 
     if not config:
         # Prefer AICORE_SERVICE_KEY if present; otherwise fall back to the VCAP service.
-        service_like = service_key or sap_service_key or _load_json_env(SERVICE_KEY_ENV_VAR) or _get_vcap_service(
-            VCAP_AICORE_SERVICE_NAME
+        service_like = (
+            service_key
+            or sap_service_key
+            or _load_json_env(SERVICE_KEY_ENV_VAR)
+            or _get_vcap_service(VCAP_AICORE_SERVICE_NAME)
         )
 
     out: Dict[str, str] = {}
@@ -241,7 +237,9 @@ def get_token_creator(
     """
 
     # Resolve credentials using your helper
-    credentials: Dict[str, str] = fetch_credentials(service_key=service_key, profile=profile, **overrides)
+    credentials: Dict[str, str] = fetch_credentials(
+        service_key=service_key, profile=profile, **overrides
+    )
 
     auth_url = credentials.get("auth_url")
     client_id = credentials.get("client_id")
@@ -253,9 +251,7 @@ def get_token_creator(
 
     # Sanity check
     if not auth_url or not client_id:
-        raise ValueError(
-            "fetch_credentials did not return valid 'auth_url' or 'client_id'"
-        )
+        raise ValueError("fetch_credentials did not return valid 'auth_url' or 'client_id'")
 
     modes = [
         client_secret is not None,

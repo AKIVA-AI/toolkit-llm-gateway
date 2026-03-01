@@ -30,8 +30,6 @@ Output: response.output is List[GenericResponseOutputItem] where each has:
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 
-from openai import BaseModel
-
 from litellm._logging import verbose_proxy_logger
 from litellm.llms.base_llm.guardrail_translation.base_translation import BaseTranslation
 from litellm.responses.litellm_completion_transformation.transformation import (
@@ -47,6 +45,7 @@ from litellm.types.responses.main import (
     OutputFunctionToolCall,
     OutputText,
 )
+from openai import BaseModel
 
 if TYPE_CHECKING:
     from litellm.integrations.custom_guardrail import CustomGuardrail
@@ -161,9 +160,7 @@ class OpenAIResponsesHandler(BaseTranslation):
                 task_mappings=task_mappings,
             )
 
-        verbose_proxy_logger.debug(
-            "OpenAI Responses API: Processed input messages: %s", input_data
-        )
+        verbose_proxy_logger.debug("OpenAI Responses API: Processed input messages: %s", input_data)
 
         return data
 
@@ -186,9 +183,7 @@ class OpenAIResponsesHandler(BaseTranslation):
             ) = LiteLLMCompletionResponsesConfig.transform_responses_api_tools_to_chat_completion_tools(
                 tools  # type: ignore
             )
-            tools_to_check.extend(
-                cast(List[ChatCompletionToolParam], transformed_tools)
-            )
+            tools_to_check.extend(cast(List[ChatCompletionToolParam], transformed_tools))
 
     def _extract_input_text_and_images(
         self,
@@ -257,9 +252,7 @@ class OpenAIResponsesHandler(BaseTranslation):
             elif isinstance(content, list) and content_idx_optional is not None:
                 # Replace specific text item in list content
                 if isinstance(messages[msg_idx]["content"][content_idx_optional], dict):
-                    messages[msg_idx]["content"][content_idx_optional][
-                        "text"
-                    ] = guardrail_response
+                    messages[msg_idx]["content"][content_idx_optional]["text"] = guardrail_response
 
     async def process_output_response(
         self,
@@ -311,9 +304,7 @@ class OpenAIResponsesHandler(BaseTranslation):
             request_data: dict = {"response": response}
 
             # Add user API key metadata with prefixed keys
-            user_metadata = self.transform_user_api_key_dict_to_metadata(
-                user_api_key_dict
-            )
+            user_metadata = self.transform_user_api_key_dict_to_metadata(user_api_key_dict)
             if user_metadata:
                 request_data["litellm_metadata"] = user_metadata
 
@@ -339,9 +330,7 @@ class OpenAIResponsesHandler(BaseTranslation):
                 task_mappings=task_mappings,
             )
 
-        verbose_proxy_logger.debug(
-            "OpenAI Responses API: Processed output response: %s", response
-        )
+        verbose_proxy_logger.debug("OpenAI Responses API: Processed output response: %s", response)
 
         return response
 
@@ -382,10 +371,8 @@ class OpenAIResponsesHandler(BaseTranslation):
         for output_item in response.output:
             if isinstance(output_item, BaseModel):
                 try:
-                    generic_response_output_item = (
-                        GenericResponseOutputItem.model_validate(
-                            output_item.model_dump()
-                        )
+                    generic_response_output_item = GenericResponseOutputItem.model_validate(
+                        output_item.model_dump()
                     )
                     if generic_response_output_item.content:
                         output_item = generic_response_output_item
@@ -431,9 +418,7 @@ class OpenAIResponsesHandler(BaseTranslation):
                     tool_call_item=output_item,
                     index=output_idx,
                 )
-                tool_calls_to_check.append(
-                    cast(ChatCompletionToolCallChunk, tool_call_dict)
-                )
+                tool_calls_to_check.append(cast(ChatCompletionToolCallChunk, tool_call_dict))
             return
         elif (
             isinstance(output_item, BaseModel)
@@ -445,13 +430,9 @@ class OpenAIResponsesHandler(BaseTranslation):
                     tool_call_item=output_item,
                     index=output_idx,
                 )
-                tool_calls_to_check.append(
-                    cast(ChatCompletionToolCallChunk, tool_call_dict)
-                )
+                tool_calls_to_check.append(cast(ChatCompletionToolCallChunk, tool_call_dict))
             return
-        elif (
-            isinstance(output_item, dict) and output_item.get("type") == "function_call"
-        ):
+        elif isinstance(output_item, dict) and output_item.get("type") == "function_call":
             # Handle dict representation of tool call
             if tool_calls_to_check is not None:
                 # Convert dict to OutputFunctionToolCall for processing
@@ -461,9 +442,7 @@ class OpenAIResponsesHandler(BaseTranslation):
                         tool_call_item=tool_call_obj,
                         index=output_idx,
                     )
-                    tool_calls_to_check.append(
-                        cast(ChatCompletionToolCallChunk, tool_call_dict)
-                    )
+                    tool_calls_to_check.append(cast(ChatCompletionToolCallChunk, tool_call_dict))
                 except Exception:
                     pass
             return
@@ -487,9 +466,7 @@ class OpenAIResponsesHandler(BaseTranslation):
         if not content:
             return
 
-        verbose_proxy_logger.debug(
-            "OpenAI Responses API: Processing output item: %s", output_item
-        )
+        verbose_proxy_logger.debug("OpenAI Responses API: Processing output item: %s", output_item)
 
         # Iterate through content items (list of OutputText objects)
         for content_idx, content_item in enumerate(content):

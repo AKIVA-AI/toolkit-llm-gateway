@@ -60,9 +60,7 @@ class CloudZeroLogger(CustomLogger):
 
         # if using redis, ensure only one pod exports the data at a time
         if pod_lock_manager and pod_lock_manager.redis_cache:
-            if await pod_lock_manager.acquire_lock(
-                cronjob_id=CLOUDZERO_EXPORT_USAGE_DATA_JOB_NAME
-            ):
+            if await pod_lock_manager.acquire_lock(cronjob_id=CLOUDZERO_EXPORT_USAGE_DATA_JOB_NAME):
                 try:
                     await self._hourly_usage_data_export()
                 finally:
@@ -145,9 +143,7 @@ class CloudZeroLogger(CustomLogger):
             cbf_data = transformer.transform(data)
 
             if cbf_data.is_empty():
-                verbose_logger.warning(
-                    "CloudZero Logger: No valid data after transformation"
-                )
+                verbose_logger.warning("CloudZero Logger: No valid data after transformation")
                 return
 
             # Send data to CloudZero
@@ -167,9 +163,7 @@ class CloudZeroLogger(CustomLogger):
             )
 
         except Exception as e:
-            verbose_logger.error(
-                f"CloudZero Logger: Error exporting usage data: {str(e)}"
-            )
+            verbose_logger.error(f"CloudZero Logger: Error exporting usage data: {str(e)}")
             raise
 
     async def dry_run_export_usage_data(self, limit: Optional[int] = 10000):
@@ -207,9 +201,7 @@ class CloudZeroLogger(CustomLogger):
                     },
                 }
 
-            verbose_logger.debug(
-                f"CloudZero Dry Run: Processing {len(data)} records..."
-            )
+            verbose_logger.debug(f"CloudZero Dry Run: Processing {len(data)} records...")
 
             # Convert usage data to dict format for response
             usage_data_sample = data.head(50).to_dicts()  # Return first 50 rows
@@ -219,20 +211,15 @@ class CloudZeroLogger(CustomLogger):
             cbf_data = transformer.transform(data)
 
             if cbf_data.is_empty():
-                verbose_logger.warning(
-                    "CloudZero Dry Run: No valid data after transformation"
-                )
+                verbose_logger.warning("CloudZero Dry Run: No valid data after transformation")
                 return {
                     "usage_data": usage_data_sample,
                     "cbf_data": [],
                     "summary": {
                         "total_records": len(usage_data_sample),
-                        "total_cost": sum(
-                            row.get("spend", 0) for row in usage_data_sample
-                        ),
+                        "total_cost": sum(row.get("spend", 0) for row in usage_data_sample),
                         "total_tokens": sum(
-                            row.get("prompt_tokens", 0)
-                            + row.get("completion_tokens", 0)
+                            row.get("prompt_tokens", 0) + row.get("completion_tokens", 0)
                             for row in usage_data_sample
                         ),
                         "unique_accounts": 0,
@@ -259,13 +246,9 @@ class CloudZeroLogger(CustomLogger):
                     if record.get("resource/service")
                 )
             )
-            total_tokens = sum(
-                record.get("usage/amount", 0) for record in cbf_data_dict
-            )
+            total_tokens = sum(record.get("usage/amount", 0) for record in cbf_data_dict)
 
-            verbose_logger.debug(
-                f"CloudZero Logger: Dry run completed for {len(cbf_data)} records"
-            )
+            verbose_logger.debug(f"CloudZero Logger: Dry run completed for {len(cbf_data)} records")
 
             return {
                 "usage_data": usage_data_sample,
@@ -304,23 +287,15 @@ class CloudZeroLogger(CustomLogger):
         records = cbf_data.to_dicts()
 
         # Create main CBF table
-        cbf_table = Table(
-            show_header=True, header_style="bold cyan", box=SIMPLE, padding=(0, 1)
-        )
+        cbf_table = Table(show_header=True, header_style="bold cyan", box=SIMPLE, padding=(0, 1))
         cbf_table.add_column("time/usage_start", style="blue", no_wrap=False)
         cbf_table.add_column("cost/cost", style="green", justify="right", no_wrap=False)
-        cbf_table.add_column(
-            "entity_type", style="magenta", justify="right", no_wrap=False
-        )
-        cbf_table.add_column(
-            "entity_id", style="magenta", justify="right", no_wrap=False
-        )
+        cbf_table.add_column("entity_type", style="magenta", justify="right", no_wrap=False)
+        cbf_table.add_column("entity_id", style="magenta", justify="right", no_wrap=False)
         cbf_table.add_column("team_id", style="cyan", no_wrap=False)
         cbf_table.add_column("team_alias", style="cyan", no_wrap=False)
         cbf_table.add_column("api_key_alias", style="yellow", no_wrap=False)
-        cbf_table.add_column(
-            "usage/amount", style="yellow", justify="right", no_wrap=False
-        )
+        cbf_table.add_column("usage/amount", style="yellow", justify="right", no_wrap=False)
         cbf_table.add_column("resource/id", style="magenta", no_wrap=False)
         cbf_table.add_column("resource/service", style="cyan", no_wrap=False)
         cbf_table.add_column("resource/account", style="white", no_wrap=False)
@@ -399,10 +374,10 @@ class CloudZeroLogger(CustomLogger):
         from litellm.constants import CLOUDZERO_EXPORT_INTERVAL_MINUTES
         from litellm.integrations.custom_logger import CustomLogger
 
-        prometheus_loggers: List[
-            CustomLogger
-        ] = litellm.logging_callback_manager.get_custom_loggers_for_type(
-            callback_type=CloudZeroLogger
+        prometheus_loggers: List[CustomLogger] = (
+            litellm.logging_callback_manager.get_custom_loggers_for_type(
+                callback_type=CloudZeroLogger
+            )
         )
         # we need to get the initialized prometheus logger instance(s) and call logger.initialize_remaining_budget_metrics() on them
         verbose_logger.debug("found %s cloudzero loggers", len(prometheus_loggers))

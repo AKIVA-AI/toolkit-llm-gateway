@@ -1,7 +1,6 @@
 from typing import List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.llms.base_llm.base_utils import BaseLLMModelInfo
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
@@ -85,6 +84,4 @@ class VLLMModelInfo(BaseLLMModelInfo):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, httpx.Headers]
     ) -> BaseLLMException:
-        return VLLMError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return VLLMError(status_code=status_code, message=error_message, headers=headers)

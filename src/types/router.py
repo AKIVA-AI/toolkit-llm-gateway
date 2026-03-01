@@ -8,10 +8,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union, get_type_hints
 
 import httpx
+from litellm._uuid import uuid
 from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Required, TypedDict
-
-from litellm._uuid import uuid
 
 from .completion import CompletionRequest
 from .embedding import EmbeddingRequest
@@ -172,9 +171,7 @@ class GenericLiteLLMParams(CredentialLiteLLMParams, CustomPricingLiteLLMParams):
     custom_llm_provider: Optional[str] = None
     tpm: Optional[int] = None
     rpm: Optional[int] = None
-    timeout: Optional[Union[float, str, httpx.Timeout]] = (
-        None  # if str, pass in as os.environ/
-    )
+    timeout: Optional[Union[float, str, httpx.Timeout]] = None  # if str, pass in as os.environ/
     stream_timeout: Optional[Union[float, str]] = (
         None  # timeout when making stream=True calls, if str, pass in as os.environ/
     )
@@ -276,9 +273,7 @@ class GenericLiteLLMParams(CredentialLiteLLMParams, CustomPricingLiteLLMParams):
         if max_retries is not None and isinstance(max_retries, str):
             max_retries = int(max_retries)  # cast to int
         # We need to keep max_retries in args since it's a parameter of GenericLiteLLMParams
-        args["max_retries"] = (
-            max_retries  # Put max_retries back in args after popping it
-        )
+        args["max_retries"] = max_retries  # Put max_retries back in args after popping it
         super().__init__(**args, **params)
 
     def __contains__(self, key):
@@ -392,7 +387,9 @@ class LiteLLMParamsTypedDict(TypedDict, total=False):
     stream_timeout: Optional[Union[float, str]]
     max_retries: Optional[int]
     organization: Optional[Union[List, str]]  # for openai orgs
-    configurable_clientside_auth_params: CONFIGURABLE_CLIENTSIDE_AUTH_PARAMS  # for allowing api base switching on finetuned models
+    configurable_clientside_auth_params: (
+        CONFIGURABLE_CLIENTSIDE_AUTH_PARAMS  # for allowing api base switching on finetuned models
+    )
     ## DROP PARAMS ##
     drop_params: Optional[bool]
     ## UNIFIED PROJECT/REGION ##
@@ -504,12 +501,8 @@ class RouterErrors(enum.Enum):
 
     user_defined_ratelimit_error = "Deployment over user-defined ratelimit."
     no_deployments_available = "No deployments available for selected model"
-    no_deployments_with_tag_routing = (
-        "Not allowed to access model due to tags configuration"
-    )
-    no_deployments_with_provider_budget_routing = (
-        "No deployments available - crossed budget"
-    )
+    no_deployments_with_tag_routing = "Not allowed to access model due to tags configuration"
+    no_deployments_with_provider_budget_routing = "No deployments available - crossed budget"
 
 
 class AllowedFailsPolicy(BaseModel):
@@ -800,9 +793,7 @@ class MockRouterTestingParams:
 
         return cls(
             mock_testing_fallbacks=extract_bool_param("mock_testing_fallbacks"),
-            mock_testing_context_fallbacks=extract_bool_param(
-                "mock_testing_context_fallbacks"
-            ),
+            mock_testing_context_fallbacks=extract_bool_param("mock_testing_context_fallbacks"),
             mock_testing_content_policy_fallbacks=extract_bool_param(
                 "mock_testing_content_policy_fallbacks"
             ),

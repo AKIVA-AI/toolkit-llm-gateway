@@ -28,9 +28,7 @@ def get_model_cost_map(url: str) -> dict:
             return content
 
     try:
-        response = httpx.get(
-            url, timeout=5
-        )  # set a 5 second timeout for the get request
+        response = httpx.get(url, timeout=5)  # set a 5 second timeout for the get request
         response.raise_for_status()  # Raise an exception if the request is unsuccessful
         content = response.json()
         return content

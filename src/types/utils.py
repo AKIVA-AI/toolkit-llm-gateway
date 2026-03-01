@@ -3,31 +3,20 @@ import time
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Mapping, Optional, Union
 
-from aiohttp import FormData
-from openai._models import BaseModel as OpenAIObject
-from openai.types.audio.transcription_create_params import FileTypes  # type: ignore
-from openai.types.chat.chat_completion import ChatCompletion
-from openai.types.completion_usage import (
-    CompletionTokensDetails,
-    CompletionUsage,
-    PromptTokensDetails,
-)
-from openai.types.moderation import (
-    Categories,
-    CategoryAppliedInputTypes,
-    CategoryScores,
-)
-from openai.types.moderation_create_response import Moderation, ModerationCreateResponse
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
-from typing_extensions import Callable, Dict, Required, TypedDict, override
-
-import litellm
 from litellm._uuid import uuid
 from litellm.types.llms.base import (
     BaseLiteLLMOpenAIResponseObject,
     LiteLLMPydanticObjectBase,
 )
 from litellm.types.mcp import MCPServerCostInfo
+from openai._models import BaseModel as OpenAIObject
+from openai.types.completion_usage import (
+    CompletionTokensDetails,
+    CompletionUsage,
+    PromptTokensDetails,
+)
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
+from typing_extensions import Dict, Required, TypedDict
 
 from ..litellm_core_utils.core_helpers import map_finish_reason
 from .guardrails import GuardrailEventHooks
@@ -49,7 +38,6 @@ from .llms.openai import (
     ResponsesAPIResponse,
     WebSearchOptions,
 )
-from .rerank import RerankResponse
 
 if TYPE_CHECKING:
     from .vector_stores import VectorStoreSearchResponse
@@ -115,19 +103,13 @@ class ModelInfoBase(ProviderSpecificModelInfo, total=False):
     max_output_tokens: Required[Optional[int]]
     input_cost_per_token: Required[float]
     input_cost_per_token_flex: Optional[float]  # OpenAI flex service tier pricing
-    input_cost_per_token_priority: Optional[
-        float
-    ]  # OpenAI priority service tier pricing
+    input_cost_per_token_priority: Optional[float]  # OpenAI priority service tier pricing
     cache_creation_input_token_cost: Optional[float]
     cache_creation_input_token_cost_above_200k_tokens: Optional[float]
     cache_creation_input_token_cost_above_1hr: Optional[float]
     cache_read_input_token_cost: Optional[float]
-    cache_read_input_token_cost_flex: Optional[
-        float
-    ]  # OpenAI flex service tier pricing
-    cache_read_input_token_cost_priority: Optional[
-        float
-    ]  # OpenAI priority service tier pricing
+    cache_read_input_token_cost_flex: Optional[float]  # OpenAI flex service tier pricing
+    cache_read_input_token_cost_priority: Optional[float]  # OpenAI priority service tier pricing
     cache_read_input_token_cost_above_200k_tokens: Optional[float]
     input_cost_per_character: Optional[float]  # only for vertex ai models
     input_cost_per_audio_token: Optional[float]
@@ -135,9 +117,7 @@ class ModelInfoBase(ProviderSpecificModelInfo, total=False):
     input_cost_per_token_above_200k_tokens: Optional[
         float
     ]  # only for vertex ai gemini-2.5-pro models
-    input_cost_per_character_above_128k_tokens: Optional[
-        float
-    ]  # only for vertex ai models
+    input_cost_per_character_above_128k_tokens: Optional[float]  # only for vertex ai models
     input_cost_per_query: Optional[float]  # only for rerank models
     input_cost_per_image: Optional[float]  # only for vertex ai models
     input_cost_per_audio_per_second: Optional[float]  # only for vertex ai models
@@ -147,20 +127,14 @@ class ModelInfoBase(ProviderSpecificModelInfo, total=False):
     output_cost_per_token_batches: Optional[float]
     output_cost_per_token: Required[float]
     output_cost_per_token_flex: Optional[float]  # OpenAI flex service tier pricing
-    output_cost_per_token_priority: Optional[
-        float
-    ]  # OpenAI priority service tier pricing
+    output_cost_per_token_priority: Optional[float]  # OpenAI priority service tier pricing
     output_cost_per_character: Optional[float]  # only for vertex ai models
     output_cost_per_audio_token: Optional[float]
-    output_cost_per_token_above_128k_tokens: Optional[
-        float
-    ]  # only for vertex ai models
+    output_cost_per_token_above_128k_tokens: Optional[float]  # only for vertex ai models
     output_cost_per_token_above_200k_tokens: Optional[
         float
     ]  # only for vertex ai gemini-2.5-pro models
-    output_cost_per_character_above_128k_tokens: Optional[
-        float
-    ]  # only for vertex ai models
+    output_cost_per_character_above_128k_tokens: Optional[float]  # only for vertex ai models
     output_cost_per_image: Optional[float]
     output_cost_per_image_token: Optional[float]
     output_vector_size: Optional[int]
@@ -1020,9 +994,7 @@ class Message(OpenAIObject):
         provider_specific_fields: Optional[Dict[str, Any]] = None,
         reasoning_content: Optional[str] = None,
         thinking_blocks: Optional[
-            List[
-                Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]
-            ]
+            List[Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]]
         ] = None,
         annotations: Optional[List[ChatCompletionAnnotation]] = None,
         **params,
@@ -1030,9 +1002,7 @@ class Message(OpenAIObject):
         init_values: Dict[str, Any] = {
             "content": content,
             "role": role or "assistant",  # handle null input
-            "function_call": (
-                FunctionCall(**function_call) if function_call is not None else None
-            ),
+            "function_call": (FunctionCall(**function_call) if function_call is not None else None),
             "tool_calls": (
                 [
                     (
@@ -1132,9 +1102,7 @@ class Delta(OpenAIObject):
         images: Optional[List[ImageURLListItem]] = None,
         reasoning_content: Optional[str] = None,
         thinking_blocks: Optional[
-            List[
-                Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]
-            ]
+            List[Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]]
         ] = None,
         annotations: Optional[List[ChatCompletionAnnotation]] = None,
         **params,
@@ -1281,9 +1249,7 @@ class Choices(OpenAIObject):
         setattr(self, key, value)
 
 
-class CompletionTokensDetailsWrapper(
-    CompletionTokensDetails
-):  # wrapper for older openai versions
+class CompletionTokensDetailsWrapper(CompletionTokensDetails):  # wrapper for older openai versions
     text_tokens: Optional[int] = None
     """Text tokens generated by the model."""
 
@@ -1296,9 +1262,7 @@ class CacheCreationTokenDetails(BaseModel):
     ephemeral_1h_input_tokens: Optional[int] = None
 
 
-class PromptTokensDetailsWrapper(
-    PromptTokensDetails
-):  # wrapper for older openai versions
+class PromptTokensDetailsWrapper(PromptTokensDetails):  # wrapper for older openai versions
     text_tokens: Optional[int] = None
     """Text tokens sent to the model."""
 
@@ -1370,9 +1334,7 @@ class Usage(CompletionUsage):
         prompt_tokens_details: Optional[
             Union[PromptTokensDetailsWrapper, PromptTokensDetails, dict]
         ] = None,
-        completion_tokens_details: Optional[
-            Union[CompletionTokensDetailsWrapper, dict]
-        ] = None,
+        completion_tokens_details: Optional[Union[CompletionTokensDetailsWrapper, dict]] = None,
         server_tool_use: Optional[ServerToolUse] = None,
         cost: Optional[float] = None,
         **params,
@@ -1401,10 +1363,7 @@ class Usage(CompletionUsage):
 
             # Auto-calculate text_tokens only if provider didn't set it explicitly
             # Formula: text_tokens = completion_tokens - reasoning_tokens - image_tokens - audio_tokens
-            if (
-                _completion_tokens_details.text_tokens is None
-                and completion_tokens is not None
-            ):
+            if _completion_tokens_details.text_tokens is None and completion_tokens is not None:
                 calculated_text_tokens = completion_tokens - reasoning_tokens
 
                 # Subtract other modality tokens if present
@@ -1422,9 +1381,7 @@ class Usage(CompletionUsage):
         # guarantee prompt_token_details is always a PromptTokensDetailsWrapper
         if prompt_tokens_details:
             if isinstance(prompt_tokens_details, dict):
-                _prompt_tokens_details = PromptTokensDetailsWrapper(
-                    **prompt_tokens_details
-                )
+                _prompt_tokens_details = PromptTokensDetailsWrapper(**prompt_tokens_details)
             elif isinstance(prompt_tokens_details, PromptTokensDetails):
                 _prompt_tokens_details = PromptTokensDetailsWrapper(
                     **prompt_tokens_details.model_dump()
@@ -1462,9 +1419,7 @@ class Usage(CompletionUsage):
                     cache_creation_tokens=params["cache_creation_input_tokens"]
                 )
             else:
-                _prompt_tokens_details.cache_creation_tokens = params[
-                    "cache_creation_input_tokens"
-                ]
+                _prompt_tokens_details.cache_creation_tokens = params["cache_creation_input_tokens"]
 
         super().__init__(
             prompt_tokens=prompt_tokens or 0,
@@ -1646,11 +1601,7 @@ class ModelResponseStream(ModelResponseBase):
         else:
             created = created
 
-        if (
-            "usage" in kwargs
-            and kwargs["usage"] is not None
-            and isinstance(kwargs["usage"], dict)
-        ):
+        if "usage" in kwargs and kwargs["usage"] is not None and isinstance(kwargs["usage"], dict):
             kwargs["usage"] = Usage(**kwargs["usage"])
 
         kwargs["id"] = id
@@ -2213,9 +2164,7 @@ class TranscriptionUsageTokensObject(BaseModel):
 
 class TranscriptionResponse(OpenAIObject):
     text: Optional[str] = None
-    usage: Optional[
-        Union[TranscriptionUsageDurationObject, TranscriptionUsageTokensObject]
-    ] = None
+    usage: Optional[Union[TranscriptionUsageDurationObject, TranscriptionUsageTokensObject]] = None
 
     _hidden_params: dict = {}
     _response_headers: Optional[dict] = None
@@ -2425,9 +2374,7 @@ class StandardLoggingMetadata(StandardLoggingUserAPIKeyMetadata):
     Specific metadata k,v pairs logged to integration for easier cost tracking and prompt management
     """
 
-    spend_logs_metadata: Optional[
-        dict
-    ]  # special param to log k,v pairs to spendlogs for a call
+    spend_logs_metadata: Optional[dict]  # special param to log k,v pairs to spendlogs for a call
     requester_ip_address: Optional[str]
     requester_metadata: Optional[dict]
     requester_custom_headers: Optional[
@@ -2438,9 +2385,7 @@ class StandardLoggingMetadata(StandardLoggingUserAPIKeyMetadata):
     vector_store_request_metadata: Optional[List[StandardLoggingVectorStoreRequest]]
     applied_guardrails: Optional[List[str]]
     usage_object: Optional[dict]
-    cold_storage_object_key: Optional[
-        str
-    ]  # S3/GCS object key for cold storage retrieval
+    cold_storage_object_key: Optional[str]  # S3/GCS object key for cold storage retrieval
 
 
 class StandardLoggingAdditionalHeaders(TypedDict, total=False):
@@ -2507,9 +2452,7 @@ GuardrailStatus = Literal[
 class StandardLoggingGuardrailInformation(TypedDict, total=False):
     guardrail_name: Optional[str]
     guardrail_provider: Optional[str]
-    guardrail_mode: Optional[
-        Union[GuardrailEventHooks, List[GuardrailEventHooks], GuardrailMode]
-    ]
+    guardrail_mode: Optional[Union[GuardrailEventHooks, List[GuardrailEventHooks], GuardrailMode]]
     guardrail_request: Optional[dict]
     guardrail_response: Optional[Union[dict, str, List[dict]]]
     guardrail_status: GuardrailStatus
@@ -2554,9 +2497,7 @@ class CostBreakdown(TypedDict, total=False):
     """
 
     input_cost: float  # Cost of input/prompt tokens
-    output_cost: (
-        float  # Cost of output/completion tokens (includes reasoning if applicable)
-    )
+    output_cost: float  # Cost of output/completion tokens (includes reasoning if applicable)
     total_cost: float  # Total cost (input + output + tool usage)
     tool_usage_cost: float  # Cost of usage of built-in tools
     original_cost: float  # Cost before discount (optional)
@@ -2581,14 +2522,14 @@ class StandardLoggingPayloadStatusFields(TypedDict, total=False):
 
 class StandardLoggingPayload(TypedDict):
     id: str
-    trace_id: str  # Trace multiple LLM calls belonging to same overall request (e.g. fallbacks/retries)
+    trace_id: (
+        str  # Trace multiple LLM calls belonging to same overall request (e.g. fallbacks/retries)
+    )
     call_type: str
     stream: Optional[bool]
     response_cost: float
     cost_breakdown: Optional[CostBreakdown]  # Detailed cost breakdown
-    response_cost_failure_debug_info: Optional[
-        StandardLoggingModelCostFailureDebugInformation
-    ]
+    response_cost_failure_debug_info: Optional[StandardLoggingModelCostFailureDebugInformation]
     status: StandardLoggingPayloadStatus
     status_fields: StandardLoggingPayloadStatusFields
     custom_llm_provider: Optional[str]
@@ -2627,9 +2568,7 @@ from typing import AsyncIterator, Iterator
 class CustomStreamingDecoder:
     async def aiter_bytes(
         self, iterator: AsyncIterator[bytes]
-    ) -> AsyncIterator[
-        Optional[Union[GenericStreamingChunk, StreamingChatCompletionChunk]]
-    ]:
+    ) -> AsyncIterator[Optional[Union[GenericStreamingChunk, StreamingChatCompletionChunk]]]:
         raise NotImplementedError
 
     def iter_bytes(
@@ -2857,9 +2796,7 @@ all_litellm_params = (
 
 
 class KeyGenerationConfig(TypedDict, total=False):
-    required_params: List[
-        str
-    ]  # specify params that must be present in the key generation request
+    required_params: List[str]  # specify params that must be present in the key generation request
 
 
 class TeamUIKeyGenerationConfig(KeyGenerationConfig):
@@ -3052,9 +2989,7 @@ class LiteLLMLoggingBaseClass:
     def pre_call(self, input, api_key, model=None, additional_args={}):
         pass
 
-    def post_call(
-        self, original_response, input=None, api_key=None, additional_args={}
-    ):
+    def post_call(self, original_response, input=None, api_key=None, additional_args={}):
         pass
 
 
@@ -3224,9 +3159,7 @@ class SpecialEnums(Enum):
 
     LITELLM_MANAGED_GENERIC_RESPONSE_COMPLETE_STR = "litellm_proxy;model_id:{};generic_response_id:{}"  # generic implementation of 'managed batches' - used for finetuning and any future work.
 
-    LITELLM_MANAGED_VIDEO_COMPLETE_STR = (
-        "litellm:custom_llm_provider:{};model_id:{};video_id:{}"
-    )
+    LITELLM_MANAGED_VIDEO_COMPLETE_STR = "litellm:custom_llm_provider:{};model_id:{};video_id:{}"
 
 
 class ServiceTier(Enum):

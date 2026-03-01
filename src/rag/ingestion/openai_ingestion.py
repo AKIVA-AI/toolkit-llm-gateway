@@ -118,4 +118,3 @@ class OpenAIRAGIngestion(BaseRAGIngestion):
             )
 
         return vector_store_id, result_file_id
-

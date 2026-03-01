@@ -7,7 +7,6 @@ Reference: https://docs.fireworks.ai/inference-api-reference/rerank
 from typing import Any, Dict, List, Optional, Union
 
 import httpx
-
 from litellm._uuid import uuid
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.base_llm.rerank.transformation import BaseRerankConfig
@@ -75,26 +74,26 @@ class FireworksAIRerankConfig(FireworksAIMixin, BaseRerankConfig):
             "query": query,
             "documents": documents,
         }
-        
+
         if top_n is not None:
             params["top_n"] = top_n
-        
+
         if return_documents is not None:
             params["return_documents"] = return_documents
-        
+
         # Fireworks AI doesn't support these params
         if rank_fields is not None:
             # Silently ignore rank_fields as Fireworks AI doesn't support it
             pass
-        
+
         if max_chunks_per_doc is not None:
             # Silently ignore max_chunks_per_doc as Fireworks AI doesn't support it
             pass
-        
+
         if max_tokens_per_doc is not None:
             # Silently ignore max_tokens_per_doc as Fireworks AI doesn't support it
             pass
-        
+
         return params
 
     def validate_environment(  # type: ignore[override]
@@ -140,7 +139,7 @@ class FireworksAIRerankConfig(FireworksAIMixin, BaseRerankConfig):
         # Remove fireworks_ai/ prefix if present
         if model.startswith("fireworks_ai/"):
             model = model.replace("fireworks_ai/", "")
-        
+
         # If model doesn't start with "fireworks/", add it
         # But don't add if it already has the prefix
         if not model.startswith("fireworks/"):
@@ -155,7 +154,10 @@ class FireworksAIRerankConfig(FireworksAIMixin, BaseRerankConfig):
         if "top_n" in optional_rerank_params and optional_rerank_params["top_n"] is not None:
             request_data["top_n"] = optional_rerank_params["top_n"]
 
-        if "return_documents" in optional_rerank_params and optional_rerank_params["return_documents"] is not None:
+        if (
+            "return_documents" in optional_rerank_params
+            and optional_rerank_params["return_documents"] is not None
+        ):
             request_data["return_documents"] = optional_rerank_params["return_documents"]
 
         return request_data
@@ -191,7 +193,7 @@ class FireworksAIRerankConfig(FireworksAIMixin, BaseRerankConfig):
         #     {
         #       "index": 0,
         #       "relevance_score": 0.95,
-        #       "document": "..."  
+        #       "document": "..."
         #     }
         #   ],
         #   "usage": {
@@ -203,9 +205,7 @@ class FireworksAIRerankConfig(FireworksAIMixin, BaseRerankConfig):
 
         # Extract usage information
         usage = raw_response_json.get("usage", {})
-        _billed_units = RerankBilledUnits(
-            search_units=usage.get("total_tokens", 0)
-        )
+        _billed_units = RerankBilledUnits(search_units=usage.get("total_tokens", 0))
         _tokens = RerankTokens(
             input_tokens=usage.get("prompt_tokens", 0),
             output_tokens=usage.get("completion_tokens", 0),
@@ -213,7 +213,9 @@ class FireworksAIRerankConfig(FireworksAIMixin, BaseRerankConfig):
         rerank_meta = RerankResponseMeta(billed_units=_billed_units, tokens=_tokens)
 
         # Extract results - Fireworks AI uses "data" instead of "results"
-        _results: Optional[List[dict]] = raw_response_json.get("data") or raw_response_json.get("results")
+        _results: Optional[List[dict]] = raw_response_json.get("data") or raw_response_json.get(
+            "results"
+        )
 
         if _results is None:
             raise ValueError(f"No results found in the response={raw_response_json}")
@@ -251,11 +253,12 @@ class FireworksAIRerankConfig(FireworksAIMixin, BaseRerankConfig):
             rerank_results.append(rerank_result)
 
         # Use model name as id if no id is provided
-        response_id = raw_response_json.get("id") or raw_response_json.get("model") or str(uuid.uuid4())
+        response_id = (
+            raw_response_json.get("id") or raw_response_json.get("model") or str(uuid.uuid4())
+        )
 
         return RerankResponse(
             id=response_id,
             results=rerank_results,
             meta=rerank_meta,
         )
-

@@ -98,15 +98,10 @@ async def get_all_mcp_servers(
     try:
         mcp_servers = await prisma_client.db.litellm_mcpservertable.find_many()
 
-        return [
-            LiteLLM_MCPServerTable(**mcp_server.model_dump())
-            for mcp_server in mcp_servers
-        ]
+        return [LiteLLM_MCPServerTable(**mcp_server.model_dump()) for mcp_server in mcp_servers]
     except Exception as e:
         verbose_proxy_logger.debug(
-            "litellm.proxy._experimental.mcp_server.db.py::get_all_mcp_servers - {}".format(
-                str(e)
-            )
+            "litellm.proxy._experimental.mcp_server.db.py::get_all_mcp_servers - {}".format(str(e))
         )
         return []
 
@@ -117,12 +112,12 @@ async def get_mcp_server(
     """
     Returns the matching mcp server from the db iff exists
     """
-    mcp_server: Optional[
-        LiteLLM_MCPServerTable
-    ] = await prisma_client.db.litellm_mcpservertable.find_unique(
-        where={
-            "server_id": server_id,
-        }
+    mcp_server: Optional[LiteLLM_MCPServerTable] = (
+        await prisma_client.db.litellm_mcpservertable.find_unique(
+            where={
+                "server_id": server_id,
+            }
+        )
     )
     return mcp_server
 
@@ -133,12 +128,12 @@ async def get_mcp_servers(
     """
     Returns the matching mcp servers from the db with the server_ids
     """
-    _mcp_servers: List[
-        LiteLLM_MCPServerTable
-    ] = await prisma_client.db.litellm_mcpservertable.find_many(
-        where={
-            "server_id": {"in": server_ids},
-        }
+    _mcp_servers: List[LiteLLM_MCPServerTable] = (
+        await prisma_client.db.litellm_mcpservertable.find_many(
+            where={
+                "server_id": {"in": server_ids},
+            }
+        )
     )
     final_mcp_servers: List[LiteLLM_MCPServerTable] = []
     for _mcp_server in _mcp_servers:
@@ -173,21 +168,17 @@ async def get_mcp_servers_by_verificationtoken(
     return mcp_servers or []
 
 
-async def get_mcp_servers_by_team(
-    prisma_client: PrismaClient, team_id: str
-) -> List[str]:
+async def get_mcp_servers_by_team(prisma_client: PrismaClient, team_id: str) -> List[str]:
     """
     Returns the mcp servers from the db for the team id
     """
-    team_record: LiteLLM_TeamTable = (
-        await prisma_client.db.litellm_teamtable.find_unique(
-            where={
-                "team_id": team_id,
-            },
-            include={
-                "object_permission": True,
-            },
-        )
+    team_record: LiteLLM_TeamTable = await prisma_client.db.litellm_teamtable.find_unique(
+        where={
+            "team_id": team_id,
+        },
+        include={
+            "object_permission": True,
+        },
     )
 
     mcp_servers: Optional[List[str]] = []
@@ -211,19 +202,12 @@ async def get_all_mcp_servers_for_user(
 
     # Get the mcp servers for the key
     if user.api_key:
-        token_mcp_servers = await get_mcp_servers_by_verificationtoken(
-            prisma_client, user.api_key
-        )
+        token_mcp_servers = await get_mcp_servers_by_verificationtoken(prisma_client, user.api_key)
         mcp_server_ids.update(token_mcp_servers)
 
         # check for special team membership
-        if (
-            SpecialMCPServerName.all_team_servers in mcp_server_ids
-            and user.team_id is not None
-        ):
-            team_mcp_servers = await get_mcp_servers_by_team(
-                prisma_client, user.team_id
-            )
+        if SpecialMCPServerName.all_team_servers in mcp_server_ids and user.team_id is not None:
+            team_mcp_servers = await get_mcp_servers_by_team(prisma_client, user.team_id)
             mcp_server_ids.update(team_mcp_servers)
 
     if len(mcp_server_ids) > 0:
@@ -238,24 +222,20 @@ async def get_objectpermissions_for_mcp_server(
     """
     Get all the object permissions records and the associated team and verficiationtoken records that have access to the mcp server
     """
-    object_permission_records = (
-        await prisma_client.db.litellm_objectpermissiontable.find_many(
-            where={
-                "mcp_servers": {"has": mcp_server_id},
-            },
-            include={
-                "teams": True,
-                "verification_tokens": True,
-            },
-        )
+    object_permission_records = await prisma_client.db.litellm_objectpermissiontable.find_many(
+        where={
+            "mcp_servers": {"has": mcp_server_id},
+        },
+        include={
+            "teams": True,
+            "verification_tokens": True,
+        },
     )
 
     return object_permission_records
 
 
-async def get_virtualkeys_for_mcp_server(
-    prisma_client: PrismaClient, server_id: str
-) -> List:
+async def get_virtualkeys_for_mcp_server(prisma_client: PrismaClient, server_id: str) -> List:
     """
     Get all the virtual keys that have access to the mcp server
     """

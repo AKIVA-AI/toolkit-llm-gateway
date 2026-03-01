@@ -19,9 +19,7 @@ def _create_health_check_response(response_headers: dict) -> dict:
         ]
 
     if response_headers.get("x-ratelimit-remaining-tokens", None) is not None:
-        response["x-ratelimit-remaining-tokens"] = response_headers[
-            "x-ratelimit-remaining-tokens"
-        ]
+        response["x-ratelimit-remaining-tokens"] = response_headers["x-ratelimit-remaining-tokens"]
 
     if response_headers.get("x-ms-region", None) is not None:
         response["x-ms-region"] = response_headers["x-ms-region"]

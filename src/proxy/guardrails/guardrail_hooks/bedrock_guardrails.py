@@ -9,9 +9,7 @@ import copy
 import os
 import sys
 
-sys.path.insert(
-    0, os.path.abspath("../..")
-)  # Adds the parent directory to the system path
+sys.path.insert(0, os.path.abspath("../.."))  # Adds the parent directory to the system path
 import json
 import sys
 from typing import (
@@ -28,9 +26,8 @@ from typing import (
 )
 
 import httpx
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.caching import DualCache
 from litellm.exceptions import GuardrailInterventionNormalStringError
@@ -201,9 +198,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         if isinstance(response, litellm.ModelResponse):
             for choice in response.choices:
                 if isinstance(choice, litellm.Choices):
-                    if choice.message.content and isinstance(
-                        choice.message.content, str
-                    ):
+                    if choice.message.content and isinstance(choice.message.content, str):
                         bedrock_content_item = BedrockContentItem(
                             text=BedrockTextContent(text=choice.message.content)
                         )
@@ -228,13 +223,9 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         """
         bedrock_request: BedrockRequest = BedrockRequest(source=source)
         if source == "INPUT":
-            bedrock_request = self._create_bedrock_input_content_request(
-                messages=messages
-            )
+            bedrock_request = self._create_bedrock_input_content_request(messages=messages)
         elif source == "OUTPUT":
-            bedrock_request = self._create_bedrock_output_content_request(
-                response=response
-            )
+            bedrock_request = self._create_bedrock_output_content_request(response=response)
         return bedrock_request
 
     def _prepare_guardrail_messages_for_role(
@@ -285,9 +276,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         merged_messages = list(original_messages)
         if not merged_messages:
             merged_messages = list(updated_target_messages)
-        for replacement_index, updated_message in zip(
-            target_indices, updated_target_messages
-        ):
+        for replacement_index, updated_message in zip(target_indices, updated_target_messages):
             if replacement_index < len(merged_messages):
                 merged_messages[replacement_index] = updated_message
 
@@ -312,9 +301,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         aws_role_name = self.optional_params.get("aws_role_name", None)
         aws_session_name = self.optional_params.get("aws_session_name", None)
         aws_profile_name = self.optional_params.get("aws_profile_name", None)
-        aws_web_identity_token = self.optional_params.get(
-            "aws_web_identity_token", None
-        )
+        aws_web_identity_token = self.optional_params.get("aws_web_identity_token", None)
         aws_sts_endpoint = self.optional_params.get("aws_sts_endpoint", None)
 
         ### SET REGION NAME ###
@@ -370,9 +357,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             try:
                 from botocore.awsrequest import AWSRequest
             except ImportError:
-                raise ImportError(
-                    "Missing boto3 to call bedrock. Run 'pip install boto3'."
-                )
+                raise ImportError("Missing boto3 to call bedrock. Run 'pip install boto3'.")
             headers["Authorization"] = f"Bearer {aws_bearer_token}"
             request = AWSRequest(
                 method="POST",
@@ -385,9 +370,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
                 from botocore.auth import SigV4Auth
                 from botocore.awsrequest import AWSRequest
             except ImportError:
-                raise ImportError(
-                    "Missing boto3 to call bedrock. Run 'pip install boto3'."
-                )
+                raise ImportError("Missing boto3 to call bedrock. Run 'pip install boto3'.")
 
             sigv4 = SigV4Auth(credentials, "bedrock", aws_region_name)
             request = AWSRequest(
@@ -417,19 +400,13 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         start_time = datetime.now()
         credentials, aws_region_name = self._load_credentials()
         bedrock_request_data: dict = dict(
-            self.convert_to_bedrock_format(
-                source=source, messages=messages, response=response
-            )
+            self.convert_to_bedrock_format(source=source, messages=messages, response=response)
         )
-        bedrock_guardrail_response: BedrockGuardrailResponse = (
-            BedrockGuardrailResponse()
-        )
+        bedrock_guardrail_response: BedrockGuardrailResponse = BedrockGuardrailResponse()
         api_key: Optional[str] = None
         if request_data:
             bedrock_request_data.update(
-                self.get_guardrail_dynamic_request_body_params(
-                    request_data=request_data
-                )
+                self.get_guardrail_dynamic_request_body_params(request_data=request_data)
             )
             if request_data.get("api_key") is not None:
                 api_key = request_data["api_key"]
@@ -456,9 +433,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             )
         except Exception as e:
             # Endpoint down, timeout, or other HTTP/network errors
-            verbose_proxy_logger.error(
-                "Bedrock AI: failed to make guardrail request: %s", str(e)
-            )
+            verbose_proxy_logger.error("Bedrock AI: failed to make guardrail request: %s", str(e))
             # Add guardrail information with failure status
             self.add_standard_logging_guardrail_information_to_request_data(
                 guardrail_provider=self.guardrail_provider,
@@ -479,9 +454,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             guardrail_provider=self.guardrail_provider,
             guardrail_json_response=httpx_response.json(),
             request_data=request_data or {},
-            guardrail_status=self._get_bedrock_guardrail_response_status(
-                response=httpx_response
-            ),
+            guardrail_status=self._get_bedrock_guardrail_response_status(response=httpx_response),
             start_time=start_time.timestamp(),
             end_time=datetime.now().timestamp(),
             duration=(datetime.now() - start_time).total_seconds(),
@@ -493,12 +466,8 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             redacted_response = _redact_pii_matches(_json_response)
             verbose_proxy_logger.debug("Bedrock AI response : %s", redacted_response)
             bedrock_guardrail_response = BedrockGuardrailResponse(**_json_response)
-            if self._should_raise_guardrail_blocked_exception(
-                bedrock_guardrail_response
-            ):
-                raise self._get_http_exception_for_blocked_guardrail(
-                    bedrock_guardrail_response
-                )
+            if self._should_raise_guardrail_blocked_exception(bedrock_guardrail_response):
+                raise self._get_http_exception_for_blocked_guardrail(bedrock_guardrail_response)
         else:
             verbose_proxy_logger.error(
                 "Bedrock AI: error in response. Status code: %s, response: %s",
@@ -541,9 +510,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
 
         return "Exception" in payload.get("Output", {}).get("__type", "")
 
-    def _get_bedrock_guardrail_response_status(
-        self, response: httpx.Response
-    ) -> GuardrailStatus:
+    def _get_bedrock_guardrail_response_status(self, response: httpx.Response) -> GuardrailStatus:
         """
         Get the status of the bedrock guardrail response.
 
@@ -560,9 +527,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             try:
                 _json_response = response.json()
                 bedrock_guardrail_response = BedrockGuardrailResponse(**_json_response)
-                if self._should_raise_guardrail_blocked_exception(
-                    bedrock_guardrail_response
-                ):
+                if self._should_raise_guardrail_blocked_exception(bedrock_guardrail_response):
                     return "guardrail_intervened"
             except Exception:
                 pass
@@ -577,18 +542,14 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         Get the HTTP exception for a blocked guardrail.
         """
         bedrock_guardrail_output_text: str = ""
-        outputs: Optional[List[BedrockGuardrailOutput]] = (
-            response.get("outputs", []) or []
-        )
+        outputs: Optional[List[BedrockGuardrailOutput]] = response.get("outputs", []) or []
         if outputs:
             for output in outputs:
                 if output.get("text"):
                     bedrock_guardrail_output_text += output.get("text") or ""
 
         if self.disable_exception_on_block is True:
-            return GuardrailInterventionNormalStringError(
-                message=bedrock_guardrail_output_text
-            )
+            return GuardrailInterventionNormalStringError(message=bedrock_guardrail_output_text)
         else:
             return HTTPException(
                 status_code=400,
@@ -598,9 +559,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
                 },
             )
 
-    def _should_raise_guardrail_blocked_exception(
-        self, response: BedrockGuardrailResponse
-    ) -> bool:
+    def _should_raise_guardrail_blocked_exception(self, response: BedrockGuardrailResponse) -> bool:
         """
         Only raise exception for "BLOCKED" actions, not for "ANONYMIZED" actions.
 
@@ -694,9 +653,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         data: dict,
         call_type: CallTypesLiteral,
     ) -> Union[Exception, str, dict, None]:
-        verbose_proxy_logger.debug(
-            "Inside Bedrock Pre-Call Hook for call_type: %s", call_type
-        )
+        verbose_proxy_logger.debug("Inside Bedrock Pre-Call Hook for call_type: %s", call_type)
 
         from litellm.proxy.common_utils.callback_utils import (
             add_guardrail_to_applied_guardrails_header,
@@ -713,26 +670,20 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
 
         # Handle None case
         if new_messages is None:
-            verbose_proxy_logger.debug(
-                "No messages found for call_type, skipping guardrail"
-            )
+            verbose_proxy_logger.debug("No messages found for call_type, skipping guardrail")
             return data
 
         filter_result = self._prepare_guardrail_messages_for_role(messages=new_messages)
 
         filtered_messages = filter_result.payload_messages
         if not filtered_messages:
-            verbose_proxy_logger.debug(
-                "No user-role messages available for guardrail payload"
-            )
+            verbose_proxy_logger.debug("No user-role messages available for guardrail payload")
             return data
 
         #########################################################
         ########## 1. Make the Bedrock API request ##########
         #########################################################
-        bedrock_guardrail_response: Optional[Union[BedrockGuardrailResponse, str]] = (
-            None
-        )
+        bedrock_guardrail_response: Optional[Union[BedrockGuardrailResponse, str]] = None
         try:
             bedrock_guardrail_response = await self.make_bedrock_api_request(
                 source="INPUT", messages=filtered_messages, request_data=data
@@ -786,25 +737,19 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         )
 
         if new_messages is None:
-            verbose_proxy_logger.warning(
-                "Bedrock AI: not running guardrail. No messages in data"
-            )
+            verbose_proxy_logger.warning("Bedrock AI: not running guardrail. No messages in data")
             return
 
         filter_result = self._prepare_guardrail_messages_for_role(messages=new_messages)
         filtered_messages = filter_result.payload_messages
         if not filtered_messages:
-            verbose_proxy_logger.debug(
-                "Bedrock AI: not running guardrail. No user-role messages"
-            )
+            verbose_proxy_logger.debug("Bedrock AI: not running guardrail. No user-role messages")
             return
 
         #########################################################
         ########## 1. Make the Bedrock API request ##########
         #########################################################
-        bedrock_guardrail_response: Optional[Union[BedrockGuardrailResponse, str]] = (
-            None
-        )
+        bedrock_guardrail_response: Optional[Union[BedrockGuardrailResponse, str]] = None
         try:
             bedrock_guardrail_response = await self.make_bedrock_api_request(
                 source="INPUT", messages=filtered_messages, request_data=data
@@ -851,18 +796,14 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         from litellm.types.guardrails import GuardrailEventHooks
 
         if (
-            self.should_run_guardrail(
-                data=data, event_type=GuardrailEventHooks.post_call
-            )
+            self.should_run_guardrail(data=data, event_type=GuardrailEventHooks.post_call)
             is not True
         ):
             return
 
         new_messages: Optional[List[AllMessageValues]] = data.get("messages")
         if new_messages is None:
-            verbose_proxy_logger.warning(
-                "Bedrock AI: not running guardrail. No messages in data"
-            )
+            verbose_proxy_logger.warning("Bedrock AI: not running guardrail. No messages in data")
             return
 
         # Check if the ModelResponse has text content in its choices
@@ -871,9 +812,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             has_text_content = False
             for choice in response.choices:
                 if isinstance(choice, litellm.Choices):
-                    if choice.message.content and isinstance(
-                        choice.message.content, str
-                    ):
+                    if choice.message.content and isinstance(choice.message.content, str):
                         has_text_content = True
                         break
 
@@ -898,9 +837,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         ########## 2. Apply masking to response with output guardrail response ##########
         #########################################################
         if isinstance(output_content_bedrock, str):
-            response = self.create_guardrail_blocked_response(
-                response=output_content_bedrock
-            )
+            response = self.create_guardrail_blocked_response(response=output_content_bedrock)
         else:
             self._apply_masking_to_response(
                 response=response,
@@ -935,9 +872,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         if isinstance(bedrock_guardrail_response, str):
             return messages
         # Get masked texts from guardrail response
-        masked_texts = self._extract_masked_texts_from_response(
-            bedrock_guardrail_response
-        )
+        masked_texts = self._extract_masked_texts_from_response(bedrock_guardrail_response)
 
         # If guardrail provided masked output, use it regardless of masking flags
         # because the guardrail has already determined this content needs anonymization
@@ -945,9 +880,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             verbose_proxy_logger.debug(
                 "Bedrock guardrail provided masked output, applying to messages"
             )
-            return self._apply_masking_to_messages(
-                messages=messages, masked_texts=masked_texts
-            )
+            return self._apply_masking_to_messages(messages=messages, masked_texts=masked_texts)
 
         # If masking is enabled but no masked texts available, still try to apply
         # (this maintains backward compatibility for edge cases)
@@ -981,10 +914,10 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
         async for chunk in response:
             all_chunks.append(chunk)
 
-        assembled_model_response: Optional[
-            Union[ModelResponse, TextCompletionResponse]
-        ] = stream_chunk_builder(
-            chunks=all_chunks,
+        assembled_model_response: Optional[Union[ModelResponse, TextCompletionResponse]] = (
+            stream_chunk_builder(
+                chunks=all_chunks,
+            )
         )
         if isinstance(assembled_model_response, ModelResponse):
             ####################################################################
@@ -996,26 +929,20 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             input_filter = self._prepare_guardrail_messages_for_role(
                 messages=request_data.get("messages")
             )
-            input_messages = input_filter.payload_messages or request_data.get(
-                "messages"
-            )
+            input_messages = input_filter.payload_messages or request_data.get("messages")
             input_task = self.make_bedrock_api_request(
                 source="INPUT",
                 messages=input_messages,
                 request_data=request_data,
             )  # Only input messages
-            output_guardrail_response: Optional[
-                Union[BedrockGuardrailResponse, str]
-            ] = None
+            output_guardrail_response: Optional[Union[BedrockGuardrailResponse, str]] = None
             output_task = self.make_bedrock_api_request(
                 source="OUTPUT", response=assembled_model_response
             )  # Only response
 
             # Execute both requests in parallel
             try:
-                _, output_guardrail_response = await asyncio.gather(
-                    input_task, output_task
-                )
+                _, output_guardrail_response = await asyncio.gather(input_task, output_task)
             except GuardrailInterventionNormalStringError as e:
                 output_guardrail_response = e.message
 
@@ -1035,9 +962,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             #########################################################################
             ########## 3. Return the (potentially masked) chunks ##########
             #########################################################################
-            mock_response = MockResponseIterator(
-                model_response=assembled_model_response
-            )
+            mock_response = MockResponseIterator(model_response=assembled_model_response)
 
             # Return the reconstructed stream
             async for chunk in mock_response:
@@ -1181,14 +1106,10 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             bedrock_guardrail_response: Response from Bedrock guardrail containing masked content
         """
         # Get masked texts from guardrail response
-        masked_texts = self._extract_masked_texts_from_response(
-            bedrock_guardrail_response
-        )
+        masked_texts = self._extract_masked_texts_from_response(bedrock_guardrail_response)
 
         if not masked_texts:
-            verbose_proxy_logger.debug(
-                "No masked outputs found, skipping response masking"
-            )
+            verbose_proxy_logger.debug("No masked outputs found, skipping response masking")
             return
 
         verbose_proxy_logger.debug(
@@ -1222,27 +1143,21 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
                     if masking_index < len(masked_texts):
                         choice.message.content = masked_texts[masking_index]
                         masking_index += 1
-                        verbose_proxy_logger.debug(
-                            "Applied masking to choice message content"
-                        )
+                        verbose_proxy_logger.debug("Applied masking to choice message content")
             elif isinstance(choice, StreamingChoices):
                 # For streaming responses, modify delta content
                 if choice.delta.content and isinstance(choice.delta.content, str):
                     if masking_index < len(masked_texts):
                         choice.delta.content = masked_texts[masking_index]
                         masking_index += 1
-                        verbose_proxy_logger.debug(
-                            "Applied masking to choice delta content"
-                        )
+                        verbose_proxy_logger.debug("Applied masking to choice delta content")
             elif isinstance(choice, TextChoices):
                 # For text completions
                 if choice.text and isinstance(choice.text, str):
                     if masking_index < len(masked_texts):
                         choice.text = masked_texts[masking_index]
                         masking_index += 1
-                        verbose_proxy_logger.debug(
-                            "Applied masking to choice text content"
-                        )
+                        verbose_proxy_logger.debug("Applied masking to choice text content")
 
     async def apply_guardrail(
         self,
@@ -1282,9 +1197,7 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             ]
 
             request_messages = mock_messages
-            filter_result = self._prepare_guardrail_messages_for_role(
-                messages=request_messages
-            )
+            filter_result = self._prepare_guardrail_messages_for_role(messages=request_messages)
             filtered_messages = filter_result.payload_messages or mock_messages
 
             # Bedrock will throw an error if there is no text to process
@@ -1325,15 +1238,11 @@ class BedrockGuardrail(CustomGuardrail, BaseAWSLLM):
             if not masked_texts:
                 masked_texts = texts
 
-            verbose_proxy_logger.debug(
-                "Bedrock Guardrail: Successfully applied guardrail"
-            )
+            verbose_proxy_logger.debug("Bedrock Guardrail: Successfully applied guardrail")
 
             inputs["texts"] = masked_texts
             return inputs
 
         except Exception as e:
-            verbose_proxy_logger.error(
-                "Bedrock Guardrail: Failed to apply guardrail: %s", str(e)
-            )
+            verbose_proxy_logger.error("Bedrock Guardrail: Failed to apply guardrail: %s", str(e))
             raise Exception(f"Bedrock guardrail failed: {str(e)}")

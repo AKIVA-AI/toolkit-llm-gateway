@@ -16,7 +16,9 @@ class CacheSettingsField(BaseModel):
     options: Optional[List[str]] = None  # For fields with predefined options/enum values
     ui_field_name: str  # User-friendly display name
     link: Optional[str] = None  # Documentation link for the field
-    redis_type: Optional[str] = None  # Which Redis type this field applies to (node, cluster, sentinel)
+    redis_type: Optional[str] = (
+        None  # Which Redis type this field applies to (node, cluster, sentinel)
+    )
 
 
 # Redis type descriptions
@@ -207,4 +209,3 @@ CACHE_SETTINGS_FIELDS: List[CacheSettingsField] = [
         redis_type=None,
     ),
 ]
-

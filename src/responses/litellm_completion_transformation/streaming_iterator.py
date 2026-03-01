@@ -59,9 +59,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
             litellm_custom_stream_wrapper
         )
         self.request_input: Union[str, ResponseInputParam] = request_input
-        self.responses_api_request: ResponsesAPIOptionalRequestParams = (
-            responses_api_request
-        )
+        self.responses_api_request: ResponsesAPIOptionalRequestParams = responses_api_request
         self.custom_llm_provider: Optional[str] = custom_llm_provider
         self.litellm_metadata: Optional[dict] = litellm_metadata or {}
         self.collected_chat_completion_chunks: List[ModelResponseStream] = []
@@ -75,9 +73,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
         self.sent_output_content_part_done_event: bool = False
         self.sent_output_item_done_event: bool = False
         self.sent_annotation_events: bool = False
-        self.litellm_model_response: Optional[
-            Union[ModelResponse, TextCompletionResponse]
-        ] = None
+        self.litellm_model_response: Optional[Union[ModelResponse, TextCompletionResponse]] = None
         self.final_text: str = ""
 
     def _default_response_created_event_data(self) -> dict:
@@ -98,16 +94,17 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
             "store": True,
         }
         if "temperature" in self.responses_api_request:
-            response_created_event_data["temperature"] = self.responses_api_request[
-                "temperature"
-            ]
+            response_created_event_data["temperature"] = self.responses_api_request["temperature"]
         if "text" in self.responses_api_request:
             response_created_event_data["text"] = self.responses_api_request["text"]
         if "tool_choice" in self.responses_api_request:
             # Transform tool_choice from dict format (e.g., {"type": "auto"}) to string format
-            response_created_event_data["tool_choice"] = LiteLLMCompletionResponsesConfig._transform_tool_choice(
-                self.responses_api_request["tool_choice"]
-            ) or "auto"
+            response_created_event_data["tool_choice"] = (
+                LiteLLMCompletionResponsesConfig._transform_tool_choice(
+                    self.responses_api_request["tool_choice"]
+                )
+                or "auto"
+            )
         else:
             response_created_event_data["tool_choice"] = "auto"
         if "tools" in self.responses_api_request:
@@ -119,15 +116,11 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
         else:
             response_created_event_data["top_p"] = 1.0
         if "truncation" in self.responses_api_request:
-            response_created_event_data["truncation"] = self.responses_api_request[
-                "truncation"
-            ]
+            response_created_event_data["truncation"] = self.responses_api_request["truncation"]
         if "user" in self.responses_api_request:
             response_created_event_data["user"] = self.responses_api_request["user"]
         if "metadata" in self.responses_api_request:
-            response_created_event_data["metadata"] = self.responses_api_request[
-                "metadata"
-            ]
+            response_created_event_data["metadata"] = self.responses_api_request["metadata"]
         return response_created_event_data
 
     def create_response_created_event(self) -> ResponseCreatedEvent:
@@ -302,9 +295,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
             return True
         return False
 
-    def common_done_event_logic(
-        self, sync_mode: bool = True
-    ) -> BaseLiteLLMOpenAIResponseObject:
+    def common_done_event_logic(self, sync_mode: bool = True) -> BaseLiteLLMOpenAIResponseObject:
         if not self.litellm_model_response or isinstance(
             self.litellm_model_response, TextCompletionResponse
         ):
@@ -320,9 +311,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
                 raise StopAsyncIteration
 
         self.finished = self.is_stream_finished()
-        response_completed_event = self._emit_response_completed_event(
-            self.litellm_model_response
-        )
+        response_completed_event = self._emit_response_completed_event(self.litellm_model_response)
         if response_completed_event:
             return response_completed_event
         else:
@@ -353,9 +342,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
                         chunk = cast(ModelResponseStream, chunk)
                         self.collected_chat_completion_chunks.append(chunk)
                         response_api_chunk = (
-                            self._transform_chat_completion_chunk_to_response_api_chunk(
-                                chunk
-                            )
+                            self._transform_chat_completion_chunk_to_response_api_chunk(chunk)
                         )
                         if response_api_chunk:
                             return response_api_chunk
@@ -390,9 +377,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
                     chunk = self.litellm_custom_stream_wrapper.__next__()
                     self.collected_chat_completion_chunks.append(chunk)
                     response_api_chunk = (
-                        self._transform_chat_completion_chunk_to_response_api_chunk(
-                            chunk
-                        )
+                        self._transform_chat_completion_chunk_to_response_api_chunk(chunk)
                     )
                     if response_api_chunk:
                         return response_api_chunk
@@ -420,14 +405,18 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
             if annotations and self.sent_annotation_events is False:
                 self.sent_annotation_events = True
                 # Store annotation events to emit them one by one
-                if not hasattr(self, '_pending_annotation_events'):
-                    
+                if not hasattr(self, "_pending_annotation_events"):
+
                     response_annotations = LiteLLMCompletionResponsesConfig._transform_chat_completion_annotations_to_response_output_annotations(
                         annotations=annotations
-                    )                    
+                    )
                     self._pending_annotation_events = []
                     for idx, annotation in enumerate(response_annotations):
-                        annotation_dict = annotation.model_dump() if hasattr(annotation, 'model_dump') else dict(annotation)
+                        annotation_dict = (
+                            annotation.model_dump()
+                            if hasattr(annotation, "model_dump")
+                            else dict(annotation)
+                        )
                         event = OutputTextAnnotationAddedEvent(
                             type=ResponsesAPIStreamEvents.OUTPUT_TEXT_ANNOTATION_ADDED,
                             item_id=chunk.id,
@@ -436,7 +425,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
                             annotation_index=idx,
                             annotation=annotation_dict,
                         )
-                        self._pending_annotation_events.append(event)        
+                        self._pending_annotation_events.append(event)
         # Priority 1: Handle reasoning content (highest priority)
         if (
             chunk.choices
@@ -451,7 +440,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
                 output_index=0,
                 delta=reasoning_content,
             )
-        
+
         # Priority 2: Handle text deltas
         delta_content = self._get_delta_string_from_streaming_choices(chunk.choices)
         if delta_content:
@@ -462,18 +451,16 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
                 content_index=0,
                 delta=delta_content,
             )
-        
+
         # Priority 3: If we have pending annotation events, emit the next one
         # This happens when the current chunk has no text/reasoning content
-        if hasattr(self, '_pending_annotation_events') and self._pending_annotation_events:
+        if hasattr(self, "_pending_annotation_events") and self._pending_annotation_events:
             event = self._pending_annotation_events.pop(0)
             return event
 
         return None
 
-    def _get_delta_string_from_streaming_choices(
-        self, choices: List[StreamingChoices]
-    ) -> str:
+    def _get_delta_string_from_streaming_choices(self, choices: List[StreamingChoices]) -> str:
         """
         Get the delta string from the streaming choices
 
@@ -491,10 +478,7 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
 
         if litellm_model_response:
             # Add cost to usage object if include_cost_in_streaming_usage is True
-            if (
-                litellm.include_cost_in_streaming_usage
-                and self.litellm_logging_obj is not None
-            ):
+            if litellm.include_cost_in_streaming_usage and self.litellm_logging_obj is not None:
                 usage = getattr(litellm_model_response, "usage", None)
                 if usage is not None:
                     setattr(
@@ -513,10 +497,12 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
             )
 
             # Encode the response ID to match non-streaming behavior
-            encoded_response = ResponsesAPIRequestUtils._update_responses_api_response_id_with_model_id(
-                responses_api_response=responses_api_response,
-                custom_llm_provider=self.custom_llm_provider,
-                litellm_metadata=self.litellm_metadata,
+            encoded_response = (
+                ResponsesAPIRequestUtils._update_responses_api_response_id_with_model_id(
+                    responses_api_response=responses_api_response,
+                    custom_llm_provider=self.custom_llm_provider,
+                    litellm_metadata=self.litellm_metadata,
+                )
             )
 
             return ResponseCompletedEvent(

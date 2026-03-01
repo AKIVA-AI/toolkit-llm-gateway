@@ -3,7 +3,6 @@ import os
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-
 from litellm.proxy._types import CommonProxyErrors
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
 from litellm.types.agents import AgentCard
@@ -32,9 +31,7 @@ async def public_model_hub():
     from litellm.proxy.proxy_server import _get_model_group_info, llm_router
 
     if llm_router is None:
-        raise HTTPException(
-            status_code=400, detail=CommonProxyErrors.no_llm_router.value
-        )
+        raise HTTPException(status_code=400, detail=CommonProxyErrors.no_llm_router.value)
 
     model_groups: List[ModelGroupInfoProxy] = []
     if litellm.public_model_groups is not None:
@@ -62,9 +59,7 @@ async def get_agents():
     if litellm.public_agent_groups is None:
         return []
     agent_card_list = [
-        agent.agent_card_params
-        for agent in agents
-        if agent.agent_id in litellm.public_agent_groups
+        agent.agent_card_params for agent in agents if agent.agent_id in litellm.public_agent_groups
     ]
     return agent_card_list
 
@@ -140,7 +135,7 @@ async def get_provider_fields() -> List[ProviderCreateInfo]:
         os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
         "proxy",
         "public_endpoints",
-        "provider_create_fields.json"
+        "provider_create_fields.json",
     )
 
     with open(provider_create_fields_path, "r") as f:
@@ -178,7 +173,7 @@ async def get_litellm_model_cost_map():
 async def get_agent_fields() -> List[AgentCreateInfo]:
     """
     Return agent type metadata required by the dashboard create-agent flow.
-    
+
     If an agent has `inherit_credentials_from_provider`, the provider's credential
     fields are automatically appended to the agent's credential_fields.
     """
@@ -187,19 +182,19 @@ async def get_agent_fields() -> List[AgentCreateInfo]:
         "proxy",
         "public_endpoints",
     )
-    
+
     agent_create_fields_path = os.path.join(base_path, "agent_create_fields.json")
     provider_create_fields_path = os.path.join(base_path, "provider_create_fields.json")
 
     with open(agent_create_fields_path, "r") as f:
         agent_create_fields = json.load(f)
-    
+
     with open(provider_create_fields_path, "r") as f:
         provider_create_fields = json.load(f)
-    
+
     # Build a lookup map for providers by name
     provider_map = {p["provider"]: p for p in provider_create_fields}
-    
+
     # Merge inherited credential fields
     for agent in agent_create_fields:
         inherit_from = agent.get("inherit_credentials_from_provider")

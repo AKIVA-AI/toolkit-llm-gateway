@@ -1,13 +1,13 @@
 """
 Base Search transformation configuration.
 """
+
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
 import httpx
-from pydantic import PrivateAttr
-
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.types.llms.base import LiteLLMPydanticObjectBase
+from pydantic import PrivateAttr
 
 if TYPE_CHECKING:
     from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
@@ -17,12 +17,13 @@ else:
 
 class SearchResult(LiteLLMPydanticObjectBase):
     """Single search result."""
+
     title: str
     url: str
     snippet: str
     date: Optional[str] = None
     last_updated: Optional[str] = None
-    
+
     model_config = {"extra": "allow"}
 
 
@@ -31,9 +32,10 @@ class SearchResponse(LiteLLMPydanticObjectBase):
     Standard Search response format.
     Standardized to Perplexity Search format - other providers should transform to this format.
     """
+
     results: List[SearchResult]
     object: str = "search"
-    
+
     model_config = {"extra": "allow"}
 
     # Define private attributes using PrivateAttr
@@ -48,7 +50,7 @@ class BaseSearchConfig:
 
     def __init__(self) -> None:
         pass
-    
+
     @staticmethod
     def ui_friendly_name() -> str:
         """
@@ -56,12 +58,12 @@ class BaseSearchConfig:
         Override in provider-specific implementations.
         """
         return "Unknown Search Provider"
-    
+
     def get_http_method(self) -> Literal["GET", "POST"]:
         """
         Get HTTP method for search requests.
         Override in provider-specific implementations if needed.
-        
+
         Returns:
             HTTP method ('GET' or 'POST'). Default is 'POST'.
         """
@@ -72,7 +74,7 @@ class BaseSearchConfig:
         """
         Get the set of Perplexity unified search parameters.
         These are the standard parameters that providers should transform from.
-        
+
         Returns:
             Set of parameter names that are part of the unified spec
         """
@@ -105,7 +107,7 @@ class BaseSearchConfig:
     ) -> str:
         """
         Get complete URL for Search endpoint.
-        
+
         Args:
             api_base: Base URL for the API
             optional_params: Optional parameters for the request
@@ -114,10 +116,10 @@ class BaseSearchConfig:
                   the request body to construct query parameters in the URL.
                   Can be a dict or list of dicts depending on provider.
             **kwargs: Additional keyword arguments
-            
+
         Returns:
             Complete URL for the search endpoint
-            
+
         Note:
             Override in provider-specific implementations.
         """
@@ -132,11 +134,11 @@ class BaseSearchConfig:
         """
         Transform Search request to provider-specific format.
         Override in provider-specific implementations.
-        
+
         Args:
             query: Search query (string or list of strings)
             optional_params: Optional parameters for the request
-            
+
         Returns:
             Dict with request data
         """
@@ -166,4 +168,3 @@ class BaseSearchConfig:
             message=error_message,
             headers=headers,
         )
-

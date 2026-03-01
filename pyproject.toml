@@ -118,8 +118,10 @@ exclude = '''
 [tool.ruff]
 line-length = 100
 target-version = "py39"
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "N", "W"]
-ignore = ["E501"]  # Line too long (handled by black)
+ignore = ["E501", "E712", "N806", "N811"]  # E501: handled by black; E712: SQLAlchemy requires == True; N806/N811: naming conventions in tests/imports
 
 [tool.mypy]
 python_version = "3.9"

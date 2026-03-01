@@ -1,8 +1,6 @@
 import json
 from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
-from typing_extensions import override
-
 from litellm._logging import verbose_logger
 from litellm.integrations.opentelemetry_utils.base_otel_llm_obs_attributes import (
     BaseLLMObsOTELAttributes,
@@ -10,6 +8,7 @@ from litellm.integrations.opentelemetry_utils.base_otel_llm_obs_attributes impor
 )
 from litellm.litellm_core_utils.safe_json_dumps import safe_dumps
 from litellm.types.utils import StandardLoggingPayload
+from typing_extensions import override
 
 if TYPE_CHECKING:
     from opentelemetry.trace import Span
@@ -103,9 +102,7 @@ def _set_tool_attributes(span: "Span", optional_params: dict):
             if not function:
                 continue
             prefix = f"{SpanAttributes.LLM_TOOLS}.{idx}"
-            safe_set_attribute(
-                span, f"{prefix}.{SpanAttributes.TOOL_NAME}", function.get("name")
-            )
+            safe_set_attribute(span, f"{prefix}.{SpanAttributes.TOOL_NAME}", function.get("name"))
             safe_set_attribute(
                 span,
                 f"{prefix}.{SpanAttributes.TOOL_DESCRIPTION}",
@@ -179,8 +176,12 @@ def _set_response_attributes(span: "Span", response_obj):
                         message_content = getattr(first_content, "text", "")
                     message_role = getattr(item, "role", "assistant")
                     safe_set_attribute(span, SpanAttributes.OUTPUT_VALUE, message_content)
-                    safe_set_attribute(span, f"{prefix}.{MessageAttributes.MESSAGE_CONTENT}", message_content)
-                    safe_set_attribute(span, f"{prefix}.{MessageAttributes.MESSAGE_ROLE}", message_role)
+                    safe_set_attribute(
+                        span, f"{prefix}.{MessageAttributes.MESSAGE_CONTENT}", message_content
+                    )
+                    safe_set_attribute(
+                        span, f"{prefix}.{MessageAttributes.MESSAGE_ROLE}", message_role
+                    )
 
     usage = response_obj and response_obj.get("usage")
     if usage:
@@ -193,12 +194,12 @@ def _set_response_attributes(span: "Span", response_obj):
             safe_set_attribute(span, SpanAttributes.LLM_TOKEN_COUNT_PROMPT, prompt_tokens)
         reasoning_tokens = usage.get("output_tokens_details", {}).get("reasoning_tokens")
         if reasoning_tokens:
-            safe_set_attribute(span, SpanAttributes.LLM_TOKEN_COUNT_COMPLETION_DETAILS_REASONING, reasoning_tokens)
+            safe_set_attribute(
+                span, SpanAttributes.LLM_TOKEN_COUNT_COMPLETION_DETAILS_REASONING, reasoning_tokens
+            )
 
 
-def set_attributes(
-    span: "Span", kwargs, response_obj, attributes: Type[BaseLLMObsOTELAttributes]
-):
+def set_attributes(span: "Span", kwargs, response_obj, attributes: Type[BaseLLMObsOTELAttributes]):
     """
     Populates span with OpenInference-compliant LLM attributes for Arize and Phoenix tracing.
     """
@@ -219,11 +220,7 @@ def set_attributes(
         if standard_logging_payload is None:
             raise ValueError("standard_logging_object not found in kwargs")
 
-        metadata = (
-            standard_logging_payload.get("metadata")
-            if standard_logging_payload
-            else None
-        )
+        metadata = standard_logging_payload.get("metadata") if standard_logging_payload else None
         if metadata is not None:
             safe_set_attribute(span, SpanAttributes.METADATA, safe_dumps(metadata))
 
@@ -231,7 +228,9 @@ def set_attributes(
             safe_set_attribute(span, SpanAttributes.LLM_MODEL_NAME, kwargs.get("model"))
 
         safe_set_attribute(span, "llm.request.type", standard_logging_payload["call_type"])
-        safe_set_attribute(span, SpanAttributes.LLM_PROVIDER, litellm_params.get("custom_llm_provider", "Unknown"))
+        safe_set_attribute(
+            span, SpanAttributes.LLM_PROVIDER, litellm_params.get("custom_llm_provider", "Unknown")
+        )
 
         if optional_params.get("max_tokens"):
             safe_set_attribute(span, "llm.request.max_tokens", optional_params.get("max_tokens"))
@@ -250,18 +249,20 @@ def set_attributes(
         if response_obj and response_obj.get("model"):
             safe_set_attribute(span, "llm.response.model", response_obj.get("model"))
 
-        safe_set_attribute(span, SpanAttributes.OPENINFERENCE_SPAN_KIND, OpenInferenceSpanKindValues.LLM.value)
+        safe_set_attribute(
+            span, SpanAttributes.OPENINFERENCE_SPAN_KIND, OpenInferenceSpanKindValues.LLM.value
+        )
         attributes.set_messages(span, kwargs)
 
         _set_tool_attributes(span=span, optional_params=optional_params)
 
         model_params = (
-            standard_logging_payload.get("model_parameters")
-            if standard_logging_payload
-            else None
+            standard_logging_payload.get("model_parameters") if standard_logging_payload else None
         )
         if model_params:
-            safe_set_attribute(span, SpanAttributes.LLM_INVOCATION_PARAMETERS, safe_dumps(model_params))
+            safe_set_attribute(
+                span, SpanAttributes.LLM_INVOCATION_PARAMETERS, safe_dumps(model_params)
+            )
             if model_params.get("user"):
                 user_id = model_params.get("user")
                 if user_id is not None:
@@ -270,8 +271,6 @@ def set_attributes(
         _set_response_attributes(span=span, response_obj=response_obj)
 
     except Exception as e:
-        verbose_logger.error(
-            f"[Arize/Phoenix] Failed to set OpenInference span attributes: {e}"
-        )
+        verbose_logger.error(f"[Arize/Phoenix] Failed to set OpenInference span attributes: {e}")
         if hasattr(span, "record_exception"):
             span.record_exception(e)

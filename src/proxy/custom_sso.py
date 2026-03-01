@@ -13,7 +13,6 @@ Flow:
 """
 
 from fastapi_sso.sso.base import OpenID
-
 from litellm.proxy._types import LitellmUserRoles, SSOUserDefinedValues
 from litellm.proxy.management_endpoints.internal_user_endpoints import user_info
 
@@ -24,9 +23,7 @@ async def custom_sso_handler(userIDPInfo: OpenID) -> SSOUserDefinedValues:
         print(f"userIDPInfo: {userIDPInfo}")  # noqa
 
         if userIDPInfo.id is None:
-            raise ValueError(
-                f"No ID found for user. userIDPInfo.id is None {userIDPInfo}"
-            )
+            raise ValueError(f"No ID found for user. userIDPInfo.id is None {userIDPInfo}")
 
         # check if user exists in litellm proxy DB
         _user_info = await user_info(user_id=userIDPInfo.id)

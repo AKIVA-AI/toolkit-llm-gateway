@@ -26,9 +26,6 @@ from litellm.types.utils import (
     Function,
     HiddenParams,
     ImageResponse,
-)
-from litellm.types.utils import Logprobs as TextCompletionLogprobs
-from litellm.types.utils import (
     Message,
     ModelResponse,
     ModelResponseStream,
@@ -41,6 +38,7 @@ from litellm.types.utils import (
     TranscriptionUsageTokensObject,
     Usage,
 )
+from litellm.types.utils import Logprobs as TextCompletionLogprobs
 
 from .get_headers import get_response_headers
 
@@ -82,9 +80,7 @@ def convert_tool_call_to_json_mode(
         convert_tool_call_to_json_mode=convert_tool_call_to_json_mode,
     ):
         # to support 'json_schema' logic on older models
-        json_mode_content_str: Optional[str] = tool_calls[0]["function"].get(
-            "arguments"
-        )
+        json_mode_content_str: Optional[str] = tool_calls[0]["function"].get("arguments")
         if json_mode_content_str is not None:
             message = litellm.Message(content=json_mode_content_str)
             finish_reason = "stop"
@@ -166,9 +162,7 @@ async def convert_to_streaming_response_async(response_object: Optional[dict] = 
         model_response_object.id = response_object["id"]
 
     if "created" in response_object:
-        model_response_object.created = _safe_convert_created_field(
-            response_object["created"]
-        )
+        model_response_object.created = _safe_convert_created_field(response_object["created"])
 
     if "system_fingerprint" in response_object:
         model_response_object.system_fingerprint = response_object["system_fingerprint"]
@@ -216,9 +210,7 @@ def convert_to_streaming_response(response_object: Optional[dict] = None):
         model_response_object.id = response_object["id"]
 
     if "created" in response_object:
-        model_response_object.created = _safe_convert_created_field(
-            response_object["created"]
-        )
+        model_response_object.created = _safe_convert_created_field(response_object["created"])
 
     if "system_fingerprint" in response_object:
         model_response_object.system_fingerprint = response_object["system_fingerprint"]
@@ -268,9 +260,7 @@ def _handle_invalid_parallel_tool_calls(
 
         shift = 0
         for i, replacement in replacements.items():
-            tool_calls[:] = (
-                tool_calls[: i + shift] + replacement + tool_calls[i + shift + 1 :]
-            )
+            tool_calls[:] = tool_calls[: i + shift] + replacement + tool_calls[i + shift + 1 :]
             shift += len(replacement)
 
         return tool_calls
@@ -363,9 +353,7 @@ class LiteLLMResponseObjectHandler:
 
         text_completion_response["choices"] = choices_list
         text_completion_response["usage"] = response.get("usage", None)
-        text_completion_response._hidden_params = HiddenParams(
-            **response._hidden_params
-        )
+        text_completion_response._hidden_params = HiddenParams(**response._hidden_params)
         return text_completion_response
 
     @staticmethod
@@ -384,9 +372,7 @@ class LiteLLMResponseObjectHandler:
 
 
 def _should_convert_tool_call_to_json_mode(
-    tool_calls: Optional[
-        Union[List[ChatCompletionMessageToolCall], List[DatabricksTool]]
-    ] = None,
+    tool_calls: Optional[Union[List[ChatCompletionMessageToolCall], List[DatabricksTool]]] = None,
     convert_tool_call_to_json_mode: Optional[bool] = None,
 ) -> bool:
     """
@@ -455,8 +441,7 @@ def convert_to_model_response_object(  # noqa: PLR0915
 
     try:
         if response_type == "completion" and (
-            model_response_object is None
-            or isinstance(model_response_object, ModelResponse)
+            model_response_object is None or isinstance(model_response_object, ModelResponse)
         ):
             if response_object is None or model_response_object is None:
                 raise Exception("Error in response object format")
@@ -477,9 +462,7 @@ def convert_to_model_response_object(  # noqa: PLR0915
                     for _tc in tool_calls:
                         _openai_tc = ChatCompletionMessageToolCall(**_tc)
                         _openai_tool_calls.append(_openai_tc)
-                    fixed_tool_calls = _handle_invalid_parallel_tool_calls(
-                        _openai_tool_calls
-                    )
+                    fixed_tool_calls = _handle_invalid_parallel_tool_calls(_openai_tool_calls)
 
                     if fixed_tool_calls is not None:
                         tool_calls = fixed_tool_calls
@@ -491,9 +474,9 @@ def convert_to_model_response_object(  # noqa: PLR0915
                     convert_tool_call_to_json_mode=convert_tool_call_to_json_mode,
                 ):
                     # to support 'json_schema' logic on older models
-                    json_mode_content_str: Optional[str] = tool_calls[0][
-                        "function"
-                    ].get("arguments")
+                    json_mode_content_str: Optional[str] = tool_calls[0]["function"].get(
+                        "arguments"
+                    )
                     if json_mode_content_str is not None:
                         message = litellm.Message(content=json_mode_content_str)
                         finish_reason = "stop"
@@ -505,9 +488,7 @@ def convert_to_model_response_object(  # noqa: PLR0915
                             provider_specific_fields[field] = choice["message"][field]
 
                     # Handle reasoning models that display `reasoning_content` within `content`
-                    reasoning_content, content = _extract_reasoning_content(
-                        choice["message"]
-                    )
+                    reasoning_content, content = _extract_reasoning_content(choice["message"])
 
                     # Handle thinking models that display `thinking_blocks` within `content`
                     thinking_blocks: Optional[
@@ -523,9 +504,7 @@ def convert_to_model_response_object(  # noqa: PLR0915
                         provider_specific_fields["thinking_blocks"] = thinking_blocks
 
                     if reasoning_content:
-                        provider_specific_fields["reasoning_content"] = (
-                            reasoning_content
-                        )
+                        provider_specific_fields["reasoning_content"] = reasoning_content
 
                     message = Message(
                         content=content,
@@ -543,11 +522,7 @@ def convert_to_model_response_object(  # noqa: PLR0915
                 if finish_reason is None:
                     # gpt-4 vision can return 'finish_reason' or 'finish_details'
                     finish_reason = choice.get("finish_details") or "stop"
-                if (
-                    finish_reason == "stop"
-                    and message.tool_calls
-                    and len(message.tool_calls) > 0
-                ):
+                if finish_reason == "stop" and message.tool_calls and len(message.tool_calls) > 0:
                     finish_reason = "tool_calls"
 
                 ## PROVIDER SPECIFIC FIELDS ##
@@ -581,20 +556,13 @@ def convert_to_model_response_object(  # noqa: PLR0915
                 model_response_object.id = response_object["id"] or str(uuid.uuid4())
 
             if "system_fingerprint" in response_object:
-                model_response_object.system_fingerprint = response_object[
-                    "system_fingerprint"
-                ]
+                model_response_object.system_fingerprint = response_object["system_fingerprint"]
 
             if "model" in response_object:
                 if model_response_object.model is None:
                     model_response_object.model = response_object["model"]
-                elif (
-                    "/" in model_response_object.model
-                    and response_object["model"] is not None
-                ):
-                    openai_compatible_provider = model_response_object.model.split("/")[
-                        0
-                    ]
+                elif "/" in model_response_object.model and response_object["model"] is not None:
+                    openai_compatible_provider = model_response_object.model.split("/")[0]
                     model_response_object.model = (
                         openai_compatible_provider + "/" + response_object["model"]
                     )
@@ -621,8 +589,7 @@ def convert_to_model_response_object(  # noqa: PLR0915
 
             return model_response_object
         elif response_type == "embedding" and (
-            model_response_object is None
-            or isinstance(model_response_object, EmbeddingResponse)
+            model_response_object is None or isinstance(model_response_object, EmbeddingResponse)
         ):
             if response_object is None:
                 raise Exception("Error in response object format")
@@ -656,8 +623,7 @@ def convert_to_model_response_object(  # noqa: PLR0915
 
             return model_response_object
         elif response_type == "image_generation" and (
-            model_response_object is None
-            or isinstance(model_response_object, ImageResponse)
+            model_response_object is None or isinstance(model_response_object, ImageResponse)
         ):
             if response_object is None:
                 raise Exception("Error in response object format")
@@ -688,19 +654,13 @@ def convert_to_model_response_object(  # noqa: PLR0915
 
             if "usage" in response_object and response_object["usage"] is not None:
                 tr_usage_object: Optional[
-                    Union[
-                        TranscriptionUsageDurationObject, TranscriptionUsageTokensObject
-                    ]
+                    Union[TranscriptionUsageDurationObject, TranscriptionUsageTokensObject]
                 ] = None
 
                 if response_object["usage"].get("type", None) == "duration":
-                    tr_usage_object = TranscriptionUsageDurationObject(
-                        **response_object["usage"]
-                    )
+                    tr_usage_object = TranscriptionUsageDurationObject(**response_object["usage"])
                 elif response_object["usage"].get("type", None) == "tokens":
-                    tr_usage_object = TranscriptionUsageTokensObject(
-                        **response_object["usage"]
-                    )
+                    tr_usage_object = TranscriptionUsageTokensObject(**response_object["usage"])
                 if tr_usage_object is not None:
                     setattr(model_response_object, "usage", tr_usage_object)
 
@@ -712,8 +672,7 @@ def convert_to_model_response_object(  # noqa: PLR0915
 
             return model_response_object
         elif response_type == "rerank" and (
-            model_response_object is None
-            or isinstance(model_response_object, RerankResponse)
+            model_response_object is None or isinstance(model_response_object, RerankResponse)
         ):
             if response_object is None:
                 raise Exception("Error in response object format")

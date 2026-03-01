@@ -5,7 +5,6 @@ from ..base_utils import BaseLLMModelInfo
 
 if TYPE_CHECKING:
     from httpx import URL, Headers, Response
-
     from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
     from litellm.types.utils import CostResponseTypes
 
@@ -39,16 +38,14 @@ class BasePassthroughConfig(BaseLLMModelInfo):
 
         import httpx
 
-        base = base_target_url.rstrip('/')
-        endpoint = endpoint.lstrip('/')
+        base = base_target_url.rstrip("/")
+        endpoint = endpoint.lstrip("/")
         full_url = f"{base}/{endpoint}"
 
         url = httpx.URL(full_url)
 
         if request_query_params:
-            url = url.copy_with(
-                query=urlencode(request_query_params).encode("ascii")
-            )
+            url = url.copy_with(query=urlencode(request_query_params).encode("ascii"))
 
         return url
 
@@ -97,9 +94,7 @@ class BasePassthroughConfig(BaseLLMModelInfo):
     ) -> "BaseLLMException":
         from litellm.llms.base_llm.chat.transformation import BaseLLMException
 
-        return BaseLLMException(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return BaseLLMException(status_code=status_code, message=error_message, headers=headers)
 
     def logging_non_streaming_response(
         self,

@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
@@ -21,8 +20,8 @@ class CohereRerankConfig(BaseRerankConfig):
         pass
 
     def get_complete_url(
-        self, 
-        api_base: Optional[str], 
+        self,
+        api_base: Optional[str],
         model: str,
         optional_params: Optional[dict] = None,
     ) -> str:
@@ -63,14 +62,16 @@ class CohereRerankConfig(BaseRerankConfig):
 
         No mapping required - returns all supported params
         """
-        return dict(OptionalRerankParams(
-            query=query,
-            documents=documents,
-            top_n=top_n,
-            rank_fields=rank_fields,
-            return_documents=return_documents,
-            max_chunks_per_doc=max_chunks_per_doc,
-        ))
+        return dict(
+            OptionalRerankParams(
+                query=query,
+                documents=documents,
+                top_n=top_n,
+                rank_fields=rank_fields,
+                return_documents=return_documents,
+                max_chunks_per_doc=max_chunks_per_doc,
+            )
+        )
 
     def validate_environment(
         self,
@@ -144,9 +145,7 @@ class CohereRerankConfig(BaseRerankConfig):
         try:
             raw_response_json = raw_response.json()
         except Exception:
-            raise CohereError(
-                message=raw_response.text, status_code=raw_response.status_code
-            )
+            raise CohereError(message=raw_response.text, status_code=raw_response.status_code)
 
         return RerankResponse(**raw_response_json)
 

@@ -53,9 +53,7 @@ class DailySpendUpdateQueue(BaseUpdateQueue):
 
     def __init__(self):
         super().__init__()
-        self.update_queue: asyncio.Queue[Dict[str, BaseDailySpendTransaction]] = (
-            asyncio.Queue()
-        )
+        self.update_queue: asyncio.Queue[Dict[str, BaseDailySpendTransaction]] = asyncio.Queue()
 
     async def add_update(self, update: Dict[str, BaseDailySpendTransaction]):
         """Enqueue an update."""
@@ -75,9 +73,7 @@ class DailySpendUpdateQueue(BaseUpdateQueue):
         updates: List[Dict[str, BaseDailySpendTransaction]] = (
             await self.flush_all_updates_from_in_memory_queue()
         )
-        aggregated_updates = self.get_aggregated_daily_spend_update_transactions(
-            updates
-        )
+        aggregated_updates = self.get_aggregated_daily_spend_update_transactions(updates)
         await self.update_queue.put(aggregated_updates)
 
     async def flush_and_get_aggregated_daily_spend_update_transactions(
@@ -86,9 +82,7 @@ class DailySpendUpdateQueue(BaseUpdateQueue):
         """Get all updates from the queue and return all updates aggregated by daily_transaction_key. Works for both user and team spend updates."""
         updates = await self.flush_all_updates_from_in_memory_queue()
         aggregated_daily_spend_update_transactions = (
-            DailySpendUpdateQueue.get_aggregated_daily_spend_update_transactions(
-                updates
-            )
+            DailySpendUpdateQueue.get_aggregated_daily_spend_update_transactions(updates)
         )
         verbose_proxy_logger.debug(
             "Aggregated daily spend update transactions: %s",
@@ -101,22 +95,16 @@ class DailySpendUpdateQueue(BaseUpdateQueue):
         updates: List[Dict[str, BaseDailySpendTransaction]],
     ) -> Dict[str, BaseDailySpendTransaction]:
         """Aggregate updates by daily_transaction_key."""
-        aggregated_daily_spend_update_transactions: Dict[
-            str, BaseDailySpendTransaction
-        ] = {}
+        aggregated_daily_spend_update_transactions: Dict[str, BaseDailySpendTransaction] = {}
         for _update in updates:
             for _key, payload in _update.items():
                 if _key in aggregated_daily_spend_update_transactions:
                     daily_transaction = aggregated_daily_spend_update_transactions[_key]
                     daily_transaction["spend"] += payload["spend"]
                     daily_transaction["prompt_tokens"] += payload["prompt_tokens"]
-                    daily_transaction["completion_tokens"] += payload[
-                        "completion_tokens"
-                    ]
+                    daily_transaction["completion_tokens"] += payload["completion_tokens"]
                     daily_transaction["api_requests"] += payload["api_requests"]
-                    daily_transaction["successful_requests"] += payload[
-                        "successful_requests"
-                    ]
+                    daily_transaction["successful_requests"] += payload["successful_requests"]
                     daily_transaction["failed_requests"] += payload["failed_requests"]
 
                     # Add optional metrics cache_read_input_tokens and cache_creation_input_tokens

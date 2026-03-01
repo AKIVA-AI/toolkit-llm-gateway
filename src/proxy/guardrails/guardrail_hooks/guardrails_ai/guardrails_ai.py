@@ -19,9 +19,8 @@ from typing import (
     Union,
 )
 
-from fastapi import HTTPException
-
 import litellm
+from fastapi import HTTPException
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import (
     CustomGuardrail,
@@ -182,12 +181,8 @@ class GuardrailsAI(CustomGuardrail):
                 text_input=text, request_data=data
             )
         else:
-            _result = await self.make_guardrails_ai_api_request(
-                llm_output=text, request_data=data
-            )
-            updated_text = (
-                _result.get("validatedOutput") or _result.get("rawLlmOutput") or text
-            )
+            _result = await self.make_guardrails_ai_api_request(llm_output=text, request_data=data)
+            updated_text = _result.get("validatedOutput") or _result.get("rawLlmOutput") or text
         data["messages"] = set_last_user_message(data["messages"], updated_text)
 
         return data
@@ -247,9 +242,7 @@ class GuardrailsAI(CustomGuardrail):
 
         response_str: str = get_content_from_model_response(response)
         if response_str is not None and len(response_str) > 0:
-            await self.make_guardrails_ai_api_request(
-                llm_output=response_str, request_data=data
-            )
+            await self.make_guardrails_ai_api_request(llm_output=response_str, request_data=data)
 
             add_guardrail_to_applied_guardrails_header(
                 request_data=data, guardrail_name=self.guardrail_name

@@ -8,7 +8,6 @@ More information on our website: https://endpoints.ai.cloud.ovh.net
 from typing import List, Optional, Union
 
 import httpx
-
 from litellm.litellm_core_utils.audio_utils.utils import process_audio_file
 from litellm.llms.base_llm.audio_transcription.transformation import (
     AudioTranscriptionRequestData,
@@ -152,5 +151,3 @@ class OVHCloudAudioTranscriptionConfig(BaseAudioTranscriptionConfig):
 
         response._hidden_params = response_json
         return response
-
-

@@ -67,9 +67,7 @@ def log_db_metrics(func):
                 and isinstance(args[1], dict)
             ):
                 passed_kwargs = args[1]
-                parent_otel_span = _get_parent_otel_span_from_kwargs(
-                    kwargs=passed_kwargs
-                )
+                parent_otel_span = _get_parent_otel_span_from_kwargs(kwargs=passed_kwargs)
                 if parent_otel_span is not None:
                     metadata = get_litellm_metadata_from_kwargs(kwargs=passed_kwargs)
 

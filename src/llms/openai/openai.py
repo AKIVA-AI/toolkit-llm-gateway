@@ -21,14 +21,8 @@ import httpx
 if TYPE_CHECKING:
     from aiohttp import ClientSession
 
-import openai
-from openai import AsyncOpenAI, OpenAI
-from openai.types.beta.assistant_deleted import AssistantDeleted
-from openai.types.file_deleted import FileDeleted
-from pydantic import BaseModel
-from typing_extensions import overload
-
 import litellm
+import openai
 from litellm import LlmProviders
 from litellm._logging import verbose_logger
 from litellm.constants import DEFAULT_MAX_RETRIES
@@ -49,6 +43,11 @@ from litellm.utils import (
     ProviderConfigManager,
     convert_to_model_response_object,
 )
+from openai import AsyncOpenAI, OpenAI
+from openai.types.beta.assistant_deleted import AssistantDeleted
+from openai.types.file_deleted import FileDeleted
+from pydantic import BaseModel
+from typing_extensions import overload
 
 from ...types.llms.openai import *
 from ..base import BaseLLM
@@ -367,9 +366,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
             if not isinstance(max_retries, int):
                 raise OpenAIError(
                     status_code=422,
-                    message="max retries must be an int. Passed in value: {}".format(
-                        max_retries
-                    ),
+                    message="max retries must be an int. Passed in value: {}".format(max_retries),
                 )
             cached_client = self.get_cached_openai_client(
                 client_initialization_params=client_initialization_params,
@@ -377,9 +374,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
             )
 
             if cached_client:
-                if isinstance(cached_client, OpenAI) or isinstance(
-                    cached_client, AsyncOpenAI
-                ):
+                if isinstance(cached_client, OpenAI) or isinstance(cached_client, AsyncOpenAI):
                     return cached_client
             if is_async:
                 _new_client: Union[OpenAI, AsyncOpenAI] = AsyncOpenAI(
@@ -433,10 +428,8 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
         """
         start_time = time.time()
         try:
-            raw_response = (
-                await openai_aclient.chat.completions.with_raw_response.create(
-                    **data, timeout=timeout
-                )
+            raw_response = await openai_aclient.chat.completions.with_raw_response.create(
+                **data, timeout=timeout
             )
             end_time = time.time()
 
@@ -548,9 +541,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
         try:
             fake_stream: bool = False
             inference_params = optional_params.copy()
-            stream_options: Optional[dict] = inference_params.pop(
-                "stream_options", None
-            )
+            stream_options: Optional[dict] = inference_params.pop("stream_options", None)
             stream: Optional[bool] = inference_params.pop("stream", False)
             provider_config: Optional[BaseConfig] = None
 
@@ -572,9 +563,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
             if model is None or messages is None:
                 raise OpenAIError(status_code=422, message="Missing model or messages")
 
-            if not isinstance(timeout, float) and not isinstance(
-                timeout, httpx.Timeout
-            ):
+            if not isinstance(timeout, float) and not isinstance(timeout, httpx.Timeout):
                 raise OpenAIError(
                     status_code=422,
                     message="Timeout needs to be a float or httpx.Timeout",
@@ -654,9 +643,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
                         )
                     else:
                         if not isinstance(max_retries, int):
-                            raise OpenAIError(
-                                status_code=422, message="max retries must be an int"
-                            )
+                            raise OpenAIError(status_code=422, message="max retries must be an int")
                         openai_client: OpenAI = self._get_openai_client(  # type: ignore
                             is_async=False,
                             api_key=api_key,
@@ -737,22 +724,16 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
                             new_messages.append(messages[i])
                             if messages[i]["role"] == messages[i + 1]["role"]:
                                 if messages[i]["role"] == "user":
-                                    new_messages.append(
-                                        {"role": "assistant", "content": ""}
-                                    )
+                                    new_messages.append({"role": "assistant", "content": ""})
                                 else:
                                     new_messages.append({"role": "user", "content": ""})
                         new_messages.append(messages[-1])
                         messages = new_messages
-                    elif (
-                        "Last message must have role `user`" in str(e)
-                    ) and messages is not None:
+                    elif ("Last message must have role `user`" in str(e)) and messages is not None:
                         new_messages = messages
                         new_messages.append({"role": "user", "content": ""})
                         messages = new_messages
-                    elif "unknown field: parameter index is not a valid field" in str(
-                        e
-                    ):
+                    elif "unknown field: parameter index is not a valid field" in str(e):
                         litellm.remove_index_from_tool_calls(messages=messages)
                     else:
                         raise e
@@ -824,9 +805,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
                     input=data["messages"],
                     api_key=openai_aclient.api_key,
                     additional_args={
-                        "headers": {
-                            "Authorization": f"Bearer {openai_aclient.api_key}"
-                        },
+                        "headers": {"Authorization": f"Bearer {openai_aclient.api_key}"},
                         "api_base": openai_aclient._base_url._uri_reference,
                         "acompletion": True,
                         "complete_input_dict": data,
@@ -903,9 +882,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
         stream_options: Optional[dict] = None,
     ):
         data["stream"] = True
-        data.update(
-            self.get_stream_options(stream_options=stream_options, api_base=api_base)
-        )
+        data.update(self.get_stream_options(stream_options=stream_options, api_base=api_base))
 
         openai_client: OpenAI = self._get_openai_client(  # type: ignore
             is_async=False,
@@ -974,9 +951,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
             headers=headers or {},
         )
         data["stream"] = True
-        data.update(
-            self.get_stream_options(stream_options=stream_options, api_base=api_base)
-        )
+        data.update(self.get_stream_options(stream_options=stream_options, api_base=api_base))
         for _ in range(2):
             try:
                 openai_aclient: AsyncOpenAI = self._get_openai_client(  # type: ignore
@@ -1065,9 +1040,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
                             body=exception_body,
                         )
 
-    def get_stream_options(
-        self, stream_options: Optional[dict], api_base: Optional[str]
-    ) -> dict:
+    def get_stream_options(self, stream_options: Optional[dict], api_base: Optional[str]) -> dict:
         """
         Pass `stream_options` to the data dict for OpenAI requests
         """
@@ -1195,9 +1168,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
             error_response = getattr(e, "response", None)
             if error_headers is None and error_response:
                 error_headers = getattr(error_response, "headers", None)
-            raise OpenAIError(
-                status_code=status_code, message=error_text, headers=error_headers
-            )
+            raise OpenAIError(status_code=status_code, message=error_text, headers=error_headers)
 
     def embedding(  # type: ignore
         self,
@@ -1283,9 +1254,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
             error_response = getattr(e, "response", None)
             if error_headers is None and error_response:
                 error_headers = getattr(error_response, "headers", None)
-            raise OpenAIError(
-                status_code=status_code, message=error_text, headers=error_headers
-            )
+            raise OpenAIError(status_code=status_code, message=error_text, headers=error_headers)
 
     async def aimage_generation(
         self,
@@ -1407,9 +1376,7 @@ class OpenAIChatCompletion(BaseLLM, BaseOpenAILLM):
                 original_response=str(e),
             )
             if hasattr(e, "status_code"):
-                raise OpenAIError(
-                    status_code=getattr(e, "status_code", 500), message=str(e)
-                )
+                raise OpenAIError(status_code=getattr(e, "status_code", 500), message=str(e))
             else:
                 raise OpenAIError(status_code=500, message=str(e))
 
@@ -1607,9 +1574,7 @@ class OpenAIFilesAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[Union[OpenAI, AsyncOpenAI]] = None,
-    ) -> Union[
-        HttpxBinaryResponseContent, Coroutine[Any, Any, HttpxBinaryResponseContent]
-    ]:
+    ) -> Union[HttpxBinaryResponseContent, Coroutine[Any, Any, HttpxBinaryResponseContent]]:
         openai_client: Optional[Union[OpenAI, AsyncOpenAI]] = self.get_openai_client(
             api_key=api_key,
             api_base=api_base,
@@ -2103,28 +2068,28 @@ class OpenAIAssistantsAPI(BaseLLM):
 
     @overload
     def get_assistants(
-        self, 
+        self,
         api_key: Optional[str],
         api_base: Optional[str],
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[AsyncOpenAI],
-        aget_assistants: Literal[True], 
+        aget_assistants: Literal[True],
     ) -> Coroutine[None, None, AsyncCursorPage[Assistant]]:
         ...
 
     @overload
     def get_assistants(
-        self, 
+        self,
         api_key: Optional[str],
         api_base: Optional[str],
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[OpenAI],
-        aget_assistants: Optional[Literal[False]], 
-    ) -> SyncCursorPage[Assistant]: 
+        aget_assistants: Optional[Literal[False]],
+    ) -> SyncCursorPage[Assistant]:
         ...
 
     # fmt: on
@@ -2327,7 +2292,7 @@ class OpenAIAssistantsAPI(BaseLLM):
 
     @overload
     def add_message(
-        self, 
+        self,
         thread_id: str,
         message_data: dict,
         api_key: Optional[str],
@@ -2336,13 +2301,13 @@ class OpenAIAssistantsAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[AsyncOpenAI],
-        a_add_message: Literal[True], 
+        a_add_message: Literal[True],
     ) -> Coroutine[None, None, OpenAIMessage]:
         ...
 
     @overload
     def add_message(
-        self, 
+        self,
         thread_id: str,
         message_data: dict,
         api_key: Optional[str],
@@ -2351,8 +2316,8 @@ class OpenAIAssistantsAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[OpenAI],
-        a_add_message: Optional[Literal[False]], 
-    ) -> OpenAIMessage: 
+        a_add_message: Optional[Literal[False]],
+    ) -> OpenAIMessage:
         ...
 
     # fmt: on
@@ -2428,7 +2393,7 @@ class OpenAIAssistantsAPI(BaseLLM):
 
     @overload
     def get_messages(
-        self, 
+        self,
         thread_id: str,
         api_key: Optional[str],
         api_base: Optional[str],
@@ -2436,13 +2401,13 @@ class OpenAIAssistantsAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[AsyncOpenAI],
-        aget_messages: Literal[True], 
+        aget_messages: Literal[True],
     ) -> Coroutine[None, None, AsyncCursorPage[OpenAIMessage]]:
         ...
 
     @overload
     def get_messages(
-        self, 
+        self,
         thread_id: str,
         api_key: Optional[str],
         api_base: Optional[str],
@@ -2450,8 +2415,8 @@ class OpenAIAssistantsAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[OpenAI],
-        aget_messages: Optional[Literal[False]], 
-    ) -> SyncCursorPage[OpenAIMessage]: 
+        aget_messages: Optional[Literal[False]],
+    ) -> SyncCursorPage[OpenAIMessage]:
         ...
 
     # fmt: on
@@ -2526,7 +2491,7 @@ class OpenAIAssistantsAPI(BaseLLM):
 
     @overload
     def create_thread(
-        self, 
+        self,
         metadata: Optional[dict],
         api_key: Optional[str],
         api_base: Optional[str],
@@ -2535,13 +2500,13 @@ class OpenAIAssistantsAPI(BaseLLM):
         organization: Optional[str],
         messages: Optional[Iterable[OpenAICreateThreadParamsMessage]],
         client: Optional[AsyncOpenAI],
-        acreate_thread: Literal[True], 
+        acreate_thread: Literal[True],
     ) -> Coroutine[None, None, Thread]:
         ...
 
     @overload
     def create_thread(
-        self, 
+        self,
         metadata: Optional[dict],
         api_key: Optional[str],
         api_base: Optional[str],
@@ -2550,8 +2515,8 @@ class OpenAIAssistantsAPI(BaseLLM):
         organization: Optional[str],
         messages: Optional[Iterable[OpenAICreateThreadParamsMessage]],
         client: Optional[OpenAI],
-        acreate_thread: Optional[Literal[False]], 
-    ) -> Thread: 
+        acreate_thread: Optional[Literal[False]],
+    ) -> Thread:
         ...
 
     # fmt: on
@@ -2635,7 +2600,7 @@ class OpenAIAssistantsAPI(BaseLLM):
 
     @overload
     def get_thread(
-        self, 
+        self,
         thread_id: str,
         api_key: Optional[str],
         api_base: Optional[str],
@@ -2643,13 +2608,13 @@ class OpenAIAssistantsAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[AsyncOpenAI],
-        aget_thread: Literal[True], 
+        aget_thread: Literal[True],
     ) -> Coroutine[None, None, Thread]:
         ...
 
     @overload
     def get_thread(
-        self, 
+        self,
         thread_id: str,
         api_key: Optional[str],
         api_base: Optional[str],
@@ -2657,8 +2622,8 @@ class OpenAIAssistantsAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client: Optional[OpenAI],
-        aget_thread: Optional[Literal[False]], 
-    ) -> Thread: 
+        aget_thread: Optional[Literal[False]],
+    ) -> Thread:
         ...
 
     # fmt: on
@@ -2794,7 +2759,7 @@ class OpenAIAssistantsAPI(BaseLLM):
 
     @overload
     def run_thread(
-        self, 
+        self,
         thread_id: str,
         assistant_id: str,
         additional_instructions: Optional[str],
@@ -2809,14 +2774,14 @@ class OpenAIAssistantsAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client,
-        arun_thread: Literal[True], 
+        arun_thread: Literal[True],
         event_handler: Optional[AssistantEventHandler],
     ) -> Coroutine[None, None, Run]:
         ...
 
     @overload
     def run_thread(
-        self, 
+        self,
         thread_id: str,
         assistant_id: str,
         additional_instructions: Optional[str],
@@ -2831,9 +2796,9 @@ class OpenAIAssistantsAPI(BaseLLM):
         max_retries: Optional[int],
         organization: Optional[str],
         client,
-        arun_thread: Optional[Literal[False]], 
+        arun_thread: Optional[Literal[False]],
         event_handler: Optional[AssistantEventHandler],
-    ) -> Run: 
+    ) -> Run:
         ...
 
     # fmt: on

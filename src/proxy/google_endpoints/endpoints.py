@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, Request, Response, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
-
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import UserAPIKeyAuth, user_api_key_auth
-
 from litellm.proxy.common_utils.http_parsing_utils import _read_request_body
 from litellm.types.llms.vertex_ai import TokenCountDetailsResponse
 
@@ -16,22 +14,20 @@ router = APIRouter(
     "/v1beta/models/{model_name:path}:generateContent",
     dependencies=[Depends(user_api_key_auth)],
 )
-@router.post(
-    "/models/{model_name:path}:generateContent", dependencies=[Depends(user_api_key_auth)]
-)
+@router.post("/models/{model_name:path}:generateContent", dependencies=[Depends(user_api_key_auth)])
 async def google_generate_content(
     request: Request,
     model_name: str,
     fastapi_response: Response,
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
 ):
-    from litellm.proxy.proxy_server import llm_router, general_settings, proxy_config, version
     from litellm.proxy.litellm_pre_call_utils import add_litellm_data_to_request
+    from litellm.proxy.proxy_server import general_settings, llm_router, proxy_config, version
 
     data = await _read_request_body(request=request)
     if "model" not in data:
         data["model"] = model_name
-    
+
     # Add user authentication metadata for cost tracking
     data = await add_litellm_data_to_request(
         data=data,
@@ -41,7 +37,7 @@ async def google_generate_content(
         general_settings=general_settings,
         version=version,
     )
-    
+
     # call router
     if llm_router is None:
         raise HTTPException(status_code=500, detail="Router not initialized")
@@ -63,8 +59,8 @@ async def google_stream_generate_content(
     fastapi_response: Response,
     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
 ):
-    from litellm.proxy.proxy_server import llm_router, general_settings, proxy_config, version
     from litellm.proxy.litellm_pre_call_utils import add_litellm_data_to_request
+    from litellm.proxy.proxy_server import general_settings, llm_router, proxy_config, version
 
     data = await _read_request_body(request=request)
 

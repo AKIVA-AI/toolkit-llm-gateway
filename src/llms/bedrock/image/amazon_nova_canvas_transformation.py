@@ -1,8 +1,7 @@
 import types
 from typing import Any, Dict, List, Optional
 
-from openai.types.image import Image
-
+from litellm.llms.bedrock.common_utils import get_cached_model_info
 from litellm.types.llms.bedrock import (
     AmazonNovaCanvasColorGuidedGenerationParams,
     AmazonNovaCanvasColorGuidedRequest,
@@ -14,8 +13,8 @@ from litellm.types.llms.bedrock import (
     AmazonNovaCanvasTextToImageRequest,
     AmazonNovaCanvasTextToImageResponse,
 )
-from litellm.llms.bedrock.common_utils import get_cached_model_info
 from litellm.types.utils import ImageResponse
+from openai.types.image import Image
 
 
 class AmazonNovaCanvasConfig:
@@ -103,9 +102,9 @@ class AmazonNovaCanvasConfig:
                 imageGenerationConfig=image_generation_config_typed,
             )
         if task_type == "COLOR_GUIDED_GENERATION":
-            color_guided_generation_params: Dict[
-                str, Any
-            ] = image_generation_config.pop("colorGuidedGenerationParams", {})
+            color_guided_generation_params: Dict[str, Any] = image_generation_config.pop(
+                "colorGuidedGenerationParams", {}
+            )
             color_guided_generation_params = {
                 "text": text,
                 **color_guided_generation_params,
@@ -134,9 +133,7 @@ class AmazonNovaCanvasConfig:
                 imageGenerationConfig=image_generation_config_typed,
             )
         if task_type == "INPAINTING":
-            inpainting_params: Dict[str, Any] = image_generation_config.pop(
-                "inpaintingParams", {}
-            )
+            inpainting_params: Dict[str, Any] = image_generation_config.pop("inpaintingParams", {})
             inpainting_params = {"text": text, **inpainting_params}
             try:
                 inpainting_params_typed = AmazonNovaCanvasInpaintingParams(
@@ -171,9 +168,7 @@ class AmazonNovaCanvasConfig:
         _size = non_default_params.get("size")
         if _size is not None:
             width, height = _size.split("x")
-            optional_params["width"], optional_params["height"] = int(width), int(
-                height
-            )
+            optional_params["width"], optional_params["height"] = int(width), int(height)
         if non_default_params.get("n") is not None:
             optional_params["numberOfImages"] = non_default_params.get("n")
         if non_default_params.get("quality") is not None:

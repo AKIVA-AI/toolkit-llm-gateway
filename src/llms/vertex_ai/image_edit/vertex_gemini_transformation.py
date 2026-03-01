@@ -5,10 +5,8 @@ from io import BufferedReader, BytesIO
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 
 import httpx
-from httpx._types import RequestFiles
-
 import litellm
-
+from httpx._types import RequestFiles
 from litellm.images.utils import ImageEditRequestUtils
 from litellm.llms.base_llm.image_edit.transformation import BaseImageEditConfig
 from litellm.llms.vertex_ai.gemini.vertex_and_google_ai_studio_gemini import VertexLLM
@@ -28,9 +26,10 @@ else:
 class VertexAIGeminiImageEditConfig(BaseImageEditConfig, VertexLLM):
     """
     Vertex AI Gemini Image Edit Configuration
-    
+
     Uses generateContent API for Gemini models on Vertex AI
     """
+
     SUPPORTED_PARAMS: List[str] = ["size"]
 
     def __init__(self) -> None:
@@ -146,23 +145,18 @@ class VertexAIGeminiImageEditConfig(BaseImageEditConfig, VertexLLM):
             raise ValueError("Vertex AI Gemini image edit requires at least one image.")
 
         # Correct format for Vertex AI Gemini image editing
-        contents = {
-            "role": "USER",
-            "parts": inline_parts + [{"text": prompt}]
-        }
+        contents = {"role": "USER", "parts": inline_parts + [{"text": prompt}]}
 
         request_body: Dict[str, Any] = {"contents": contents}
 
         # Generation config with proper structure for image editing
-        generation_config: Dict[str, Any] = {
-            "response_modalities": ["IMAGE"]
-        }
+        generation_config: Dict[str, Any] = {"response_modalities": ["IMAGE"]}
 
         # Add image-specific configuration
         image_config: Dict[str, Any] = {}
         if "aspectRatio" in image_edit_optional_request_params:
             image_config["aspect_ratio"] = image_edit_optional_request_params["aspectRatio"]
-        
+
         if image_config:
             generation_config["image_config"] = image_config
 

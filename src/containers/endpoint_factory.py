@@ -43,13 +43,13 @@ def _load_endpoints_config() -> Dict:
 def create_sync_endpoint_function(endpoint_config: Dict) -> Callable:
     """
     Create a sync SDK function from endpoint config.
-    
+
     Uses the generic container handler instead of individual handler methods.
     """
     endpoint_name = endpoint_config["name"]
     response_type = RESPONSE_TYPES.get(endpoint_config["response_type"])
     path_params = endpoint_config.get("path_params", [])
-    
+
     @client
     def endpoint_func(
         timeout: int = 600,
@@ -126,7 +126,7 @@ def create_async_endpoint_function(
     endpoint_config: Dict,
 ) -> Callable:
     """Create an async SDK function that wraps the sync function."""
-    
+
     @client
     async def async_endpoint_func(
         timeout: int = 600,
@@ -176,21 +176,21 @@ def create_async_endpoint_function(
 def generate_container_endpoints() -> Dict[str, Callable]:
     """
     Generate all container endpoint functions from the JSON config.
-    
+
     Returns a dict mapping function names to their implementations.
     """
     config = _load_endpoints_config()
     endpoints = {}
-    
+
     for endpoint_config in config["endpoints"]:
         # Create sync function
         sync_func = create_sync_endpoint_function(endpoint_config)
         endpoints[endpoint_config["name"]] = sync_func
-        
+
         # Create async function
         async_func = create_async_endpoint_function(sync_func, endpoint_config)
         endpoints[endpoint_config["async_name"]] = async_func
-    
+
     return endpoints
 
 

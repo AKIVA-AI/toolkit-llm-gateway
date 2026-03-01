@@ -257,7 +257,7 @@ class KeysManagementClient:
         url = f"{self._base_url}/key/update"
 
         data: Dict[str, Any] = {"key": key}
-        
+
         if key_alias is not None:
             data["key_alias"] = key_alias
         if user_id is not None:
@@ -283,8 +283,9 @@ class KeysManagementClient:
         except Exception:
             raise Exception(f"Error updating key: {response_text}")
 
-
-    def info(self, key: str, return_request: bool = False) -> Union[Dict[str, Any], requests.Request]:
+    def info(
+        self, key: str, return_request: bool = False
+    ) -> Union[Dict[str, Any], requests.Request]:
         """
         Get information about API keys.
 

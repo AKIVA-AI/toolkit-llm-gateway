@@ -29,7 +29,9 @@ async def arerank(
     model: str,
     query: str,
     documents: List[Union[str, Dict[str, Any]]],
-    custom_llm_provider: Optional[Literal["cohere", "together_ai", "deepinfra", "fireworks_ai", "voyage"]] = None,
+    custom_llm_provider: Optional[
+        Literal["cohere", "together_ai", "deepinfra", "fireworks_ai", "voyage"]
+    ] = None,
     top_n: Optional[int] = None,
     rank_fields: Optional[List[str]] = None,
     return_documents: Optional[bool] = None,
@@ -113,9 +115,7 @@ def rerank(  # noqa: PLR0915
             "max_chunks_per_doc": max_chunks_per_doc,
             "max_tokens_per_doc": max_tokens_per_doc,
         }
-        present_version_params = [
-            k for k, v in unique_version_params.items() if v is not None
-        ]
+        present_version_params = [k for k, v in unique_version_params.items() if v is not None]
 
         (
             model,
@@ -129,13 +129,11 @@ def rerank(  # noqa: PLR0915
             api_key=optional_params.api_key,
         )
 
-        rerank_provider_config: BaseRerankConfig = (
-            ProviderConfigManager.get_provider_rerank_config(
-                model=model,
-                provider=litellm.LlmProviders(_custom_llm_provider),
-                api_base=optional_params.api_base,
-                present_version_params=present_version_params,
-            )
+        rerank_provider_config: BaseRerankConfig = ProviderConfigManager.get_provider_rerank_config(
+            model=model,
+            provider=litellm.LlmProviders(_custom_llm_provider),
+            api_base=optional_params.api_base,
+            present_version_params=present_version_params,
         )
 
         optional_rerank_params: Dict = get_optional_rerank_params(
@@ -175,11 +173,12 @@ def rerank(  # noqa: PLR0915
         )
 
         # Implement rerank logic here based on the custom_llm_provider
-        if _custom_llm_provider == litellm.LlmProviders.COHERE or _custom_llm_provider == litellm.LlmProviders.LITELLM_PROXY:
+        if (
+            _custom_llm_provider == litellm.LlmProviders.COHERE
+            or _custom_llm_provider == litellm.LlmProviders.LITELLM_PROXY
+        ):
             # Implement Cohere rerank logic
-            api_key: Optional[str] = (
-                dynamic_api_key or optional_params.api_key or litellm.api_key
-            )
+            api_key: Optional[str] = dynamic_api_key or optional_params.api_key or litellm.api_key
 
             api_base: Optional[str] = (
                 dynamic_api_base
@@ -371,9 +370,7 @@ def rerank(  # noqa: PLR0915
         elif _custom_llm_provider == litellm.LlmProviders.HOSTED_VLLM:
             # Implement Hosted VLLM rerank logic
             api_key = (
-                dynamic_api_key
-                or optional_params.api_key
-                or get_secret_str("HOSTED_VLLM_API_KEY")
+                dynamic_api_key or optional_params.api_key or get_secret_str("HOSTED_VLLM_API_KEY")
             )
 
             api_base = (
@@ -404,15 +401,11 @@ def rerank(  # noqa: PLR0915
 
         elif _custom_llm_provider == litellm.LlmProviders.DEEPINFRA:
             api_key = (
-                dynamic_api_key
-                or optional_params.api_key
-                or get_secret_str("DEEPINFRA_API_KEY")
+                dynamic_api_key or optional_params.api_key or get_secret_str("DEEPINFRA_API_KEY")
             )
 
             api_base = (
-                dynamic_api_base
-                or optional_params.api_base
-                or get_secret_str("DEEPINFRA_API_BASE")
+                dynamic_api_base or optional_params.api_base or get_secret_str("DEEPINFRA_API_BASE")
             )
 
             if api_base is None:
@@ -473,9 +466,7 @@ def rerank(  # noqa: PLR0915
             )
 
             api_base = (
-                dynamic_api_base
-                or optional_params.api_base
-                or get_secret_str("VOYAGE_API_BASE")
+                dynamic_api_base or optional_params.api_base or get_secret_str("VOYAGE_API_BASE")
             )
 
             response = base_llm_http_handler.rerank(

@@ -159,9 +159,7 @@ def init_rds_client(
     return client
 
 
-def generate_iam_auth_token(
-    db_host, db_port, db_user, client: Optional[Any] = None
-) -> str:
+def generate_iam_auth_token(db_host, db_port, db_user, client: Optional[Any] = None) -> str:
     from urllib.parse import quote
 
     if client is None:
@@ -179,9 +177,7 @@ def generate_iam_auth_token(
     else:
         boto_client = client
 
-    token = boto_client.generate_db_auth_token(
-        DBHostname=db_host, Port=db_port, DBUsername=db_user
-    )
+    token = boto_client.generate_db_auth_token(DBHostname=db_host, Port=db_port, DBUsername=db_user)
     cleaned_token = quote(token, safe="")
 
     return cleaned_token

@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 
 import httpx
 from httpx._types import RequestFiles
-
 from litellm.images.utils import ImageEditRequestUtils
 from litellm.llms.base_llm.image_edit.transformation import BaseImageEditConfig
 from litellm.secret_managers.main import get_secret_str
@@ -97,9 +96,7 @@ class GeminiImageEditConfig(BaseImageEditConfig):
         generation_config: Dict[str, Any] = {}
 
         if "aspectRatio" in image_edit_optional_request_params:
-            generation_config["aspectRatio"] = image_edit_optional_request_params[
-                "aspectRatio"
-            ]
+            generation_config["aspectRatio"] = image_edit_optional_request_params["aspectRatio"]
 
         if generation_config:
             request_body["generationConfig"] = generation_config

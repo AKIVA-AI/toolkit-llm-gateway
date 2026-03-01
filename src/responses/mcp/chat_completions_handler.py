@@ -69,9 +69,7 @@ def _build_call_args_from_context(call_context: Dict[str, Any]) -> Dict[str, Any
     """Build kwargs for `acompletion` from the `completion` call context."""
 
     call_args = {
-        key: call_context.get(key)
-        for key in _CHAT_COMPLETION_CALL_ARG_KEYS
-        if key in call_context
+        key: call_context.get(key) for key in _CHAT_COMPLETION_CALL_ARG_KEYS if key in call_context
     }
     additional_kwargs = dict(call_context.get("kwargs") or {})
     call_args.update(additional_kwargs)
@@ -103,9 +101,7 @@ async def handle_chat_completion_with_mcp(
 
     tools_for_mcp = cast(Optional[Iterable[ToolParam]], tools)
 
-    if not LiteLLM_Proxy_MCP_Handler._should_use_litellm_mcp_gateway(
-        tools=tools_for_mcp
-    ):
+    if not LiteLLM_Proxy_MCP_Handler._should_use_litellm_mcp_gateway(tools=tools_for_mcp):
         return None
 
     mcp_tools, _ = LiteLLM_Proxy_MCP_Handler._parse_mcp_tools(tools)
@@ -156,9 +152,7 @@ async def handle_chat_completion_with_mcp(
     if mock_tool_calls is not None:
         initial_call_args["mock_tool_calls"] = mock_tool_calls
 
-    initial_response = await _call_acompletion_internal(
-        completion_callable, **initial_call_args
-    )
+    initial_response = await _call_acompletion_internal(completion_callable, **initial_call_args)
     if not isinstance(initial_response, ModelResponse):
         return initial_response
 

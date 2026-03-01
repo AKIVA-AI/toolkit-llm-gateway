@@ -8,9 +8,7 @@ from ...openai.transcriptions.whisper_transformation import (
 from ..common_utils import FireworksAIMixin
 
 
-class FireworksAIAudioTranscriptionConfig(
-    FireworksAIMixin, OpenAIWhisperAudioTranscriptionConfig
-):
+class FireworksAIAudioTranscriptionConfig(FireworksAIMixin, OpenAIWhisperAudioTranscriptionConfig):
     def get_supported_openai_params(
         self, model: str
     ) -> List[OpenAIAudioTranscriptionOptionalParams]:

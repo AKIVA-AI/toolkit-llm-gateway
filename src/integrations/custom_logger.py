@@ -13,8 +13,6 @@ from typing import (
     Union,
 )
 
-from pydantic import BaseModel
-
 from litellm._logging import verbose_logger
 from litellm.caching.caching import DualCache
 from litellm.constants import DEFAULT_MAX_RECURSE_DEPTH_SENSITIVE_DATA_MASKER
@@ -31,10 +29,9 @@ from litellm.types.utils import (
     StandardCallbackDynamicParams,
     StandardLoggingPayload,
 )
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
-    from opentelemetry.trace import Span as _Span
-
     from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
     from litellm.proxy._types import UserAPIKeyAuth
     from litellm.types.mcp import (
@@ -43,6 +40,7 @@ if TYPE_CHECKING:
         MCPPreCallResponseObject,
     )
     from litellm.types.router import PreRoutingHookResponse
+    from opentelemetry.trace import Span as _Span
 
     Span = Union[_Span, Any]
 else:
@@ -288,17 +286,13 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
 
     #### ADAPTERS #### Allow calling 100+ LLMs in custom format - https://github.com/BerriAI/litellm/pulls
 
-    def translate_completion_input_params(
-        self, kwargs
-    ) -> Optional[ChatCompletionRequest]:
+    def translate_completion_input_params(self, kwargs) -> Optional[ChatCompletionRequest]:
         """
         Translates the input params, from the provider's native format to the litellm.completion() format.
         """
         pass
 
-    def translate_completion_output_params(
-        self, response: ModelResponse
-    ) -> Optional[BaseModel]:
+    def translate_completion_output_params(self, response: ModelResponse) -> Optional[BaseModel]:
         """
         Translates the output params, from the OpenAI format to the custom format.
         """
@@ -365,9 +359,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
         """For masking logged request/response. Return a modified version of the request/result."""
         return kwargs, result
 
-    def logging_hook(
-        self, kwargs: dict, result: Any, call_type: str
-    ) -> Tuple[dict, Any]:
+    def logging_hook(self, kwargs: dict, result: Any, call_type: str) -> Tuple[dict, Any]:
         """For masking logged request/response. Return a modified version of the request/result."""
         return kwargs, result
 
@@ -409,9 +401,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
         except Exception:
             print_verbose(f"Custom Logger Error - {traceback.format_exc()}")
 
-    async def async_log_input_event(
-        self, model, messages, kwargs, print_verbose, callback_func
-    ):
+    async def async_log_input_event(self, model, messages, kwargs, print_verbose, callback_func):
         try:
             kwargs["model"] = model
             kwargs["messages"] = messages
@@ -423,9 +413,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
         except Exception:
             print_verbose(f"Custom Logger Error - {traceback.format_exc()}")
 
-    def log_event(
-        self, kwargs, response_obj, start_time, end_time, print_verbose, callback_func
-    ):
+    def log_event(self, kwargs, response_obj, start_time, end_time, print_verbose, callback_func):
         # Method definition
         try:
             kwargs["log_event_type"] = "post_api_call"
@@ -526,9 +514,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
             else text
         )
 
-    def _select_metadata_field(
-        self, request_kwargs: Optional[Dict] = None
-    ) -> Optional[str]:
+    def _select_metadata_field(self, request_kwargs: Optional[Dict] = None) -> Optional[str]:
         """
         Select the metadata field to use for logging
 
@@ -560,9 +546,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
 
         from litellm import Choices, Message, ModelResponse
 
-        turn_off_message_logging: bool = getattr(
-            self, "turn_off_message_logging", False
-        )
+        turn_off_message_logging: bool = getattr(self, "turn_off_message_logging", False)
 
         if turn_off_message_logging is False:
             return model_call_details
@@ -579,9 +563,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
         standard_logging_object_copy = copy(standard_logging_object)
 
         if standard_logging_object_copy.get("messages") is not None:
-            standard_logging_object_copy["messages"] = [
-                Message(content=redacted_str).model_dump()
-            ]
+            standard_logging_object_copy["messages"] = [Message(content=redacted_str).model_dump()]
 
         if standard_logging_object_copy.get("response") is not None:
             response = standard_logging_object_copy["response"]
@@ -598,10 +580,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
                             if isinstance(output_item["content"], list):
                                 # Redact text in content items
                                 for content_item in output_item["content"]:
-                                    if (
-                                        isinstance(content_item, dict)
-                                        and "text" in content_item
-                                    ):
+                                    if isinstance(content_item, dict) and "text" in content_item:
                                         content_item["text"] = redacted_str
                 standard_logging_object_copy["response"] = response_copy
             else:
@@ -612,9 +591,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
                 model_response_dict = model_response.model_dump()
                 standard_logging_object_copy["response"] = model_response_dict
 
-        model_call_details_copy["standard_logging_object"] = (
-            standard_logging_object_copy
-        )
+        model_call_details_copy["standard_logging_object"] = standard_logging_object_copy
         return model_call_details_copy
 
     async def get_proxy_server_request_from_cold_storage_with_object_key(
@@ -654,9 +631,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
         except Exception as e:
             from litellm._logging import verbose_logger
 
-            verbose_logger.debug(
-                f"Error in handle_callback_failure for {callback_name}: {str(e)}"
-            )
+            verbose_logger.debug(f"Error in handle_callback_failure for {callback_name}: {str(e)}")
 
     async def _strip_base64_from_messages(
         self,
@@ -675,14 +650,10 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
         """
         raw_messages: Any = payload.get("messages", [])
         messages: List[Any] = raw_messages if isinstance(raw_messages, list) else []
-        verbose_logger.debug(
-            f"[CustomLogger] Stripping base64 from {len(messages)} messages"
-        )
+        verbose_logger.debug(f"[CustomLogger] Stripping base64 from {len(messages)} messages")
 
         if messages:
-            payload["messages"] = self._process_messages(
-                messages=messages, max_depth=max_depth
-            )
+            payload["messages"] = self._process_messages(messages=messages, max_depth=max_depth)
 
         total_items = 0
         for m in payload.get("messages", []) or []:
@@ -713,14 +684,10 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
         """
         raw_messages: Any = payload.get("messages", [])
         messages: List[Any] = raw_messages if isinstance(raw_messages, list) else []
-        verbose_logger.debug(
-            f"[CustomLogger] Stripping base64 from {len(messages)} messages"
-        )
+        verbose_logger.debug(f"[CustomLogger] Stripping base64 from {len(messages)} messages")
 
         if messages:
-            payload["messages"] = self._process_messages(
-                messages=messages, max_depth=max_depth
-            )
+            payload["messages"] = self._process_messages(messages=messages, max_depth=max_depth)
 
         total_items = 0
         for m in payload.get("messages", []) or []:
@@ -757,8 +724,7 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
 
         if isinstance(value, list):
             return [
-                self._redact_base64(value=v, depth=depth + 1, max_depth=max_depth)
-                for v in value
+                self._redact_base64(value=v, depth=depth + 1, max_depth=max_depth) for v in value
             ]
 
         if isinstance(value, dict):
@@ -792,14 +758,10 @@ class CustomLogger:  # https://docs.litellm.ai/docs/observability/custom_callbac
                 cleaned: List[Any] = []
                 for c in contents:
                     if self._should_keep_content(content=c):
-                        cleaned.append(
-                            self._redact_base64(value=c, max_depth=max_depth)
-                        )
+                        cleaned.append(self._redact_base64(value=c, max_depth=max_depth))
                 msg["content"] = cleaned
             else:
-                msg["content"] = self._redact_base64(
-                    value=contents, max_depth=max_depth
-                )
+                msg["content"] = self._redact_base64(value=contents, max_depth=max_depth)
 
             for key, val in list(msg.items()):
                 if key != "content":

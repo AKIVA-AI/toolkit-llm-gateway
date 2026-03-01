@@ -1,11 +1,10 @@
 from typing import Any, Coroutine, Optional, Union, cast
 
 import httpx
-from openai import AsyncAzureOpenAI, AzureOpenAI
-from openai.types.file_deleted import FileDeleted
-
 from litellm._logging import verbose_logger
 from litellm.types.llms.openai import *
+from openai import AsyncAzureOpenAI, AzureOpenAI
+from openai.types.file_deleted import FileDeleted
 
 from ..common_utils import BaseAzureLLM
 
@@ -28,7 +27,7 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
     def _prepare_create_file_data(create_file_data: CreateFileRequest) -> dict[str, Any]:
         """
         Prepare create_file_data for OpenAI SDK.
-        
+
         Removes expires_after if None to match SDK's Omit pattern.
         SDK expects file_create_params.ExpiresAfter | Omit, but FileExpiresAfter works at runtime.
         """
@@ -59,15 +58,15 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
         client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = None,
         litellm_params: Optional[dict] = None,
     ) -> Union[OpenAIFileObject, Coroutine[Any, Any, OpenAIFileObject]]:
-        openai_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
-            litellm_params=litellm_params or {},
-            api_key=api_key,
-            api_base=api_base,
-            api_version=api_version,
-            client=client,
-            _is_async=_is_async,
+        openai_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_azure_openai_client(
+                litellm_params=litellm_params or {},
+                api_key=api_key,
+                api_base=api_base,
+                api_version=api_version,
+                client=client,
+                _is_async=_is_async,
+            )
         )
         if openai_client is None:
             raise ValueError(
@@ -79,9 +78,7 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
                 raise ValueError(
                     "AzureOpenAI client is not an instance of AsyncAzureOpenAI. Make sure you passed an AsyncAzureOpenAI client."
                 )
-            return self.acreate_file(
-                create_file_data=create_file_data, openai_client=openai_client
-            )
+            return self.acreate_file(create_file_data=create_file_data, openai_client=openai_client)
         response = cast(AzureOpenAI, openai_client).files.create(**self._prepare_create_file_data(create_file_data))  # type: ignore[arg-type]
         return OpenAIFileObject(**response.model_dump())
 
@@ -104,18 +101,16 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
         api_version: Optional[str] = None,
         client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = None,
         litellm_params: Optional[dict] = None,
-    ) -> Union[
-        HttpxBinaryResponseContent, Coroutine[Any, Any, HttpxBinaryResponseContent]
-    ]:
-        openai_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
-            litellm_params=litellm_params or {},
-            api_key=api_key,
-            api_base=api_base,
-            api_version=api_version,
-            client=client,
-            _is_async=_is_async,
+    ) -> Union[HttpxBinaryResponseContent, Coroutine[Any, Any, HttpxBinaryResponseContent]]:
+        openai_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_azure_openai_client(
+                litellm_params=litellm_params or {},
+                api_key=api_key,
+                api_base=api_base,
+                api_version=api_version,
+                client=client,
+                _is_async=_is_async,
+            )
         )
         if openai_client is None:
             raise ValueError(
@@ -131,9 +126,7 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
                 file_content_request=file_content_request,
                 openai_client=openai_client,
             )
-        response = cast(AzureOpenAI, openai_client).files.content(
-            **file_content_request
-        )
+        response = cast(AzureOpenAI, openai_client).files.content(**file_content_request)
 
         return HttpxBinaryResponseContent(response=response.response)
 
@@ -157,15 +150,15 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
         client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = None,
         litellm_params: Optional[dict] = None,
     ):
-        openai_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
-            litellm_params=litellm_params or {},
-            api_key=api_key,
-            api_base=api_base,
-            api_version=api_version,
-            client=client,
-            _is_async=_is_async,
+        openai_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_azure_openai_client(
+                litellm_params=litellm_params or {},
+                api_key=api_key,
+                api_base=api_base,
+                api_version=api_version,
+                client=client,
+                _is_async=_is_async,
+            )
         )
         if openai_client is None:
             raise ValueError(
@@ -209,15 +202,15 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
         client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = None,
         litellm_params: Optional[dict] = None,
     ):
-        openai_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
-            litellm_params=litellm_params or {},
-            api_key=api_key,
-            api_base=api_base,
-            api_version=api_version,
-            client=client,
-            _is_async=_is_async,
+        openai_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_azure_openai_client(
+                litellm_params=litellm_params or {},
+                api_key=api_key,
+                api_base=api_base,
+                api_version=api_version,
+                client=client,
+                _is_async=_is_async,
+            )
         )
         if openai_client is None:
             raise ValueError(
@@ -263,15 +256,15 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
         client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = None,
         litellm_params: Optional[dict] = None,
     ):
-        openai_client: Optional[
-            Union[AzureOpenAI, AsyncAzureOpenAI]
-        ] = self.get_azure_openai_client(
-            litellm_params=litellm_params or {},
-            api_key=api_key,
-            api_base=api_base,
-            api_version=api_version,
-            client=client,
-            _is_async=_is_async,
+        openai_client: Optional[Union[AzureOpenAI, AsyncAzureOpenAI]] = (
+            self.get_azure_openai_client(
+                litellm_params=litellm_params or {},
+                api_key=api_key,
+                api_base=api_base,
+                api_version=api_version,
+                client=client,
+                _is_async=_is_async,
+            )
         )
         if openai_client is None:
             raise ValueError(

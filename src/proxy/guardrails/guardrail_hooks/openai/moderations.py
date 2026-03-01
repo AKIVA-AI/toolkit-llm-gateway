@@ -16,7 +16,6 @@ from typing import (
 )
 
 from fastapi import HTTPException
-
 from litellm._logging import verbose_proxy_logger
 from litellm.integrations.custom_guardrail import (
     CustomGuardrail,
@@ -73,7 +72,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             supported_event_hooks=supported_event_hooks,
             **kwargs,
         )
-        
+
         self.async_handler = get_async_httpx_client(
             llm_provider=httpxSpecialProvider.GuardrailCallback
         )
@@ -81,10 +80,14 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
         # Store configuration
         self.api_key = api_key or self._get_api_key()
         self.api_base = api_base or "https://api.openai.com/v1"
-        self.model: Literal["omni-moderation-latest", "text-moderation-latest"] = model or "omni-moderation-latest"
+        self.model: Literal["omni-moderation-latest", "text-moderation-latest"] = (
+            model or "omni-moderation-latest"
+        )
 
         if not self.api_key:
-            raise ValueError("OpenAI Moderation: api_key is required. Set OPENAI_API_KEY environment variable or pass it in configuration.")
+            raise ValueError(
+                "OpenAI Moderation: api_key is required. Set OPENAI_API_KEY environment variable or pass it in configuration."
+            )
 
         verbose_proxy_logger.debug(
             f"Initialized OpenAI Moderation Guardrail: {guardrail_name} with model: {self.model}"
@@ -96,7 +99,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
 
         import litellm
         from litellm.secret_managers.main import get_secret_str
-        
+
         return (
             os.environ.get("OPENAI_API_KEY")
             or litellm.api_key
@@ -104,21 +107,14 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             or get_secret_str("OPENAI_API_KEY")
         )
 
-    async def async_make_request(
-        self, input_text: str
-    ) -> "OpenAIModerationResponse":
+    async def async_make_request(self, input_text: str) -> "OpenAIModerationResponse":
         """
         Make a request to the OpenAI Moderation API.
         """
-        request_body = {
-            "model": self.model,
-            "input": input_text
-        }
-        
-        verbose_proxy_logger.debug(
-            "OpenAI Moderation guard request: %s", request_body
-        )
-        
+        request_body = {"model": self.model, "input": input_text}
+
+        verbose_proxy_logger.debug("OpenAI Moderation guard request: %s", request_body)
+
         response = await self.async_handler.post(
             url=f"{self.api_base}/moderations",
             headers={
@@ -128,10 +124,8 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             json=request_body,
         )
 
-        verbose_proxy_logger.debug(
-            "OpenAI Moderation guard response: %s", response.json()
-        )
-        
+        verbose_proxy_logger.debug("OpenAI Moderation guard response: %s", response.json())
+
         if response.status_code != 200:
             raise HTTPException(
                 status_code=response.status_code,
@@ -142,6 +136,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             )
 
         from litellm.types.llms.openai import OpenAIModerationResponse
+
         return OpenAIModerationResponse(**response.json())
 
     def _check_moderation_result(self, moderation_response: "OpenAIModerationResponse") -> None:
@@ -166,10 +161,9 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             }
 
             verbose_proxy_logger.warning(
-                "OpenAI Moderation: Content flagged for violations: %s", 
-                violation_details
+                "OpenAI Moderation: Content flagged for violations: %s", violation_details
             )
-            
+
             raise HTTPException(
                 status_code=400,
                 detail={
@@ -205,7 +199,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             "OpenAI Moderation: Running pre-call prompt scan, on call_type: %s",
             call_type,
         )
-        
+
         # Skip moderation calls to avoid infinite recursion
         if call_type == "moderation":
             return data
@@ -222,17 +216,15 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             verbose_proxy_logger.debug(
                 f"OpenAI Moderation: User prompt: {user_prompt[:100]}..."  # Log first 100 chars for debugging
             )
-            
+
             moderation_response = await self.async_make_request(
                 input_text=user_prompt,
             )
-            
+
             # Check if content is flagged and raise exception if needed
             self._check_moderation_result(moderation_response)
         else:
-            verbose_proxy_logger.warning(
-                "OpenAI Moderation: No user prompt found"
-            )
+            verbose_proxy_logger.warning("OpenAI Moderation: No user prompt found")
 
         return data
 
@@ -243,7 +235,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
         user_api_key_dict: "UserAPIKeyAuth",
         call_type: Literal[
             "completion",
-            "embeddings", 
+            "embeddings",
             "image_generation",
             "moderation",
             "audio_transcription",
@@ -260,7 +252,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             "OpenAI Moderation: Running moderation hook, on call_type: %s",
             call_type,
         )
-        
+
         # Skip moderation calls to avoid infinite recursion
         if call_type == "moderation":
             return data
@@ -277,7 +269,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             moderation_response = await self.async_make_request(
                 input_text=user_prompt,
             )
-            
+
             # Check if content is flagged and raise exception if needed
             self._check_moderation_result(moderation_response)
 
@@ -295,9 +287,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
 
         Raises HTTPException if response should be blocked.
         """
-        verbose_proxy_logger.debug(
-            "OpenAI Moderation: Running post-call response scan"
-        )
+        verbose_proxy_logger.debug("OpenAI Moderation: Running post-call response scan")
 
         # Extract response text for moderation
         response_text = self._extract_response_text(response)
@@ -305,11 +295,11 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             verbose_proxy_logger.debug(
                 f"OpenAI Moderation: Response text: {response_text[:100]}..."  # Log first 100 chars
             )
-            
+
             moderation_response = await self.async_make_request(
                 input_text=response_text,
             )
-            
+
             # Check if content is flagged and raise exception if needed
             self._check_moderation_result(moderation_response)
 
@@ -333,9 +323,7 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
         from litellm.main import stream_chunk_builder
         from litellm.types.utils import TextCompletionResponse
 
-        verbose_proxy_logger.debug(
-            "OpenAI Moderation: Running streaming response scan"
-        )
+        verbose_proxy_logger.debug("OpenAI Moderation: Running streaming response scan")
 
         # Collect all chunks to process them together
         all_chunks: List["ModelResponseStream"] = []
@@ -343,14 +331,14 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             all_chunks.append(chunk)
 
         # Assemble the complete response from chunks
-        assembled_model_response: Optional[
-            Union["ModelResponse", TextCompletionResponse]
-        ] = stream_chunk_builder(
-            chunks=all_chunks,
+        assembled_model_response: Optional[Union["ModelResponse", TextCompletionResponse]] = (
+            stream_chunk_builder(
+                chunks=all_chunks,
+            )
         )
 
         if isinstance(assembled_model_response, (type(None), TextCompletionResponse)):
-            # If we can't assemble a ModelResponse or it's a text completion, 
+            # If we can't assemble a ModelResponse or it's a text completion,
             # just yield the original chunks without moderation
             verbose_proxy_logger.warning(
                 "OpenAI Moderation: Could not assemble ModelResponse from chunks, skipping moderation"
@@ -365,19 +353,17 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
             verbose_proxy_logger.debug(
                 f"OpenAI Moderation: Streaming response text: {response_text[:100]}..."  # Log first 100 chars
             )
-            
+
             # Make moderation request - this will raise HTTPException if content is flagged
             moderation_response = await self.async_make_request(
                 input_text=response_text,
             )
-            
+
             # Check if content is flagged and raise exception if needed
             self._check_moderation_result(moderation_response)
 
         # If we reach here, content passed moderation - yield the original chunks
-        mock_response = MockResponseIterator(
-            model_response=assembled_model_response
-        )
+        mock_response = MockResponseIterator(model_response=assembled_model_response)
 
         # Return the reconstructed stream
         async for chunk in mock_response:
@@ -387,34 +373,34 @@ class OpenAIModerationGuardrail(OpenAIGuardrailBase, CustomGuardrail):
         """
         Extract text content from the model response for moderation.
         """
-        if not hasattr(response, 'choices') or not response.choices:
+        if not hasattr(response, "choices") or not response.choices:
             return None
 
         response_texts = []
         for choice in response.choices:
             try:
                 # Try to get content from message (chat completion)
-                message = getattr(choice, 'message', None)
+                message = getattr(choice, "message", None)
                 if message:
-                    content = getattr(message, 'content', None)
+                    content = getattr(message, "content", None)
                     if content and isinstance(content, str):
                         response_texts.append(content)
                         continue
-                
+
                 # Try to get text (text completion)
-                text = getattr(choice, 'text', None)
+                text = getattr(choice, "text", None)
                 if text and isinstance(text, str):
                     response_texts.append(text)
                     continue
-                
+
                 # Try to get content from delta (streaming)
-                delta = getattr(choice, 'delta', None)
+                delta = getattr(choice, "delta", None)
                 if delta:
-                    content = getattr(delta, 'content', None)
+                    content = getattr(delta, "content", None)
                     if content and isinstance(content, str):
                         response_texts.append(content)
                         continue
-                        
+
             except (AttributeError, TypeError):
                 # Skip choices that don't have expected attributes
                 continue

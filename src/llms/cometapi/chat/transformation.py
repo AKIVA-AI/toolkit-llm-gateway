@@ -8,7 +8,6 @@ Documentation: [CometAPI Documentation Link]
 from typing import Any, AsyncIterator, Iterator, List, Optional, Tuple, Union
 
 import httpx
-
 from litellm.llms.base_llm.base_model_iterator import BaseModelResponseIterator
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.types.llms.openai import AllMessageValues, ChatCompletionToolParam
@@ -21,11 +20,11 @@ from ..common_utils import CometAPIException
 class CometAPIConfig(OpenAIGPTConfig):
     """
     CometAPI configuration class, inherits from OpenAIGPTConfig
-    
+
     Since CometAPI is OpenAI-compatible API, we inherit from OpenAIGPTConfig
     and only need to override necessary methods to handle CometAPI-specific features
     """
-    
+
     def map_openai_params(
         self,
         non_default_params: dict,
@@ -47,10 +46,10 @@ class CometAPIConfig(OpenAIGPTConfig):
         # custom_param = non_default_params.pop("custom_param", None)
         # if custom_param is not None:
         #     extra_body["custom_param"] = custom_param
-        
+
         if extra_body:
             mapped_openai_params["extra_body"] = extra_body
-        
+
         return mapped_openai_params
 
     def remove_cache_control_flag_from_messages_and_tools(
@@ -63,9 +62,7 @@ class CometAPIConfig(OpenAIGPTConfig):
         Remove cache control flags from messages and tools if not supported
         """
         # For CometAPI, use default behavior (remove cache control)
-        return super().remove_cache_control_flag_from_messages_and_tools(
-            model, messages, tools
-        )
+        return super().remove_cache_control_flag_from_messages_and_tools(model, messages, tools)
 
     def transform_request(
         self,
@@ -129,10 +126,7 @@ class CometAPIConfig(OpenAIGPTConfig):
         return f"{api_base}/{endpoint}"
 
     def get_error_class(
-        self, 
-        error_message: str, 
-        status_code: int, 
-        headers: Union[dict, httpx.Headers]
+        self, error_message: str, status_code: int, headers: Union[dict, httpx.Headers]
     ) -> BaseLLMException:
         """
         Return CometAPI-specific error class
@@ -163,7 +157,7 @@ class CometAPIChatCompletionStreamingHandler(BaseModelResponseIterator):
     """
     Handler for CometAPI streaming chat completion responses
     """
-    
+
     def chunk_parser(self, chunk: dict) -> ModelResponseStream:
         """
         Parse individual chunks from streaming response
@@ -188,7 +182,7 @@ class CometAPIChatCompletionStreamingHandler(BaseModelResponseIterator):
                 if "delta" in choice and "reasoning" in choice["delta"]:
                     choice["delta"]["reasoning_content"] = choice["delta"].get("reasoning")
                 new_choices.append(choice)
-            
+
             return ModelResponseStream(
                 id=chunk["id"],
                 object="chat.completion.chunk",

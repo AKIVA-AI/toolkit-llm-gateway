@@ -1,7 +1,6 @@
 from typing import List, Optional, Union
 
 from httpx._models import Headers
-
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 from litellm.llms.openai.chat.gpt_transformation import OpenAIGPTConfig
 
@@ -60,6 +59,4 @@ class MaritalkConfig(OpenAIGPTConfig):
     def get_error_class(
         self, error_message: str, status_code: int, headers: Union[dict, Headers]
     ) -> BaseLLMException:
-        return MaritalkError(
-            status_code=status_code, message=error_message, headers=headers
-        )
+        return MaritalkError(status_code=status_code, message=error_message, headers=headers)

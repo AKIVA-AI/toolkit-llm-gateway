@@ -2,7 +2,6 @@ import json
 from typing import Any, List, Literal, Optional, Tuple, Union, cast
 
 import httpx
-
 import litellm
 from litellm._uuid import uuid
 from litellm.constants import RESPONSE_FORMAT_TOOL_NAME
@@ -122,8 +121,7 @@ class FireworksAIConfig(OpenAIGPTConfig):
     ) -> dict:
         supported_openai_params = self.get_supported_openai_params(model=model)
         is_tools_set = any(
-            param == "tools" and value is not None
-            for param, value in non_default_params.items()
+            param == "tools" and value is not None for param, value in non_default_params.items()
         )
 
         for param, value in non_default_params.items():
@@ -135,9 +133,7 @@ class FireworksAIConfig(OpenAIGPTConfig):
                     # pass through the value of tool choice
                     optional_params["tool_choice"] = value
             elif param == "response_format":
-                if (
-                    is_tools_set
-                ):  # fireworks ai doesn't support tools and response_format together
+                if is_tools_set:  # fireworks ai doesn't support tools and response_format together
                     optional_params = self._add_response_format_to_tools(
                         optional_params=optional_params,
                         value=value,
@@ -177,9 +173,7 @@ class FireworksAIConfig(OpenAIGPTConfig):
         if isinstance(content["image_url"], str):
             content["image_url"] = f"{content['image_url']}#transform=inline"
         elif isinstance(content["image_url"], dict):
-            content["image_url"][
-                "url"
-            ] = f"{content['image_url']['url']}#transform=inline"
+            content["image_url"]["url"] = f"{content['image_url']['url']}#transform=inline"
         return content
 
     def _transform_tools(
@@ -272,11 +266,7 @@ class FireworksAIConfig(OpenAIGPTConfig):
 
         Relevant Issue: https://github.com/BerriAI/litellm/issues/7209#issuecomment-2813208780
         """
-        if (
-            tool_calls is not None
-            and message.content is not None
-            and message.tool_calls is None
-        ):
+        if tool_calls is not None and message.content is not None and message.tool_calls is None:
             try:
                 function = Function(**json.loads(message.content))
                 if function.name != RESPONSE_FORMAT_TOOL_NAME and function.name in [
@@ -339,9 +329,7 @@ class FireworksAIConfig(OpenAIGPTConfig):
 
         ## FIREWORKS AI sends tool calls in the content field instead of tool_calls
         for choice in response.choices:
-            cast(
-                Choices, choice
-            ).message = self._handle_message_content_with_tool_calls(
+            cast(Choices, choice).message = self._handle_message_content_with_tool_calls(
                 message=cast(Choices, choice).message,
                 tool_calls=optional_params.get("tools", None),
             )

@@ -13,41 +13,15 @@ from typing import (
     Union,
 )
 
-import httpx
-from openai import Omit
 from openai._legacy_response import (
     HttpxBinaryResponseContent as _HttpxBinaryResponseContent,
 )
-from openai.lib.streaming._assistants import (
-    AssistantEventHandler,
-    AssistantStreamManager,
-    AsyncAssistantEventHandler,
-    AsyncAssistantStreamManager,
-)
-from openai.pagination import AsyncCursorPage, SyncCursorPage
-from openai.types import Batch, EmbeddingCreateParams, FileObject
-from openai.types.beta.assistant import Assistant
-from openai.types.beta.assistant_tool_param import AssistantToolParam
-from openai.types.beta.thread_create_params import (
-    Message as OpenAICreateThreadParamsMessage,
-)
-from openai.types.beta.threads.message import Message as OpenAIMessage
-from openai.types.beta.threads.message_content import MessageContent
-from openai.types.beta.threads.run import Run
 from openai.types.chat import ChatCompletionChunk
-from openai.types.chat.chat_completion_audio_param import ChatCompletionAudioParam
 from openai.types.chat.chat_completion_content_part_input_audio_param import (
     ChatCompletionContentPartInputAudioParam,
 )
-from openai.types.chat.chat_completion_modality import ChatCompletionModality
-from openai.types.chat.chat_completion_prediction_content_param import (
-    ChatCompletionPredictionContentParam,
-)
-from openai.types.embedding import Embedding as OpenAIEmbedding
-from openai.types.fine_tuning.fine_tuning_job import FineTuningJob
 from openai.types.responses.response import (
     IncompleteDetails,
-    Response,
     ResponseOutputItem,
     Tool,
     ToolChoice,
@@ -55,13 +29,19 @@ from openai.types.responses.response import (
 
 # Handle OpenAI SDK version compatibility for Text type
 try:
-    from openai.types.responses.response_create_params import ( Text as ResponseText ) # type: ignore[attr-defined] # fmt: skip # isort: skip
+    from openai.types.responses.response_create_params import ( Text as ResponseText )  # type: ignore[attr-defined] # fmt: skip # isort: skip
 except (ImportError, AttributeError):
     # Fall back to the concrete config type available in all SDK versions
     from openai.types.responses.response_text_config_param import (
         ResponseTextConfigParam as ResponseText,
     )
 
+from litellm.types.llms.base import BaseLiteLLMOpenAIResponseObject
+from litellm.types.responses.main import (
+    GenericResponseOutputItem,
+    OutputFunctionToolCall,
+    OutputImageGenerationCall,
+)
 from openai.types.responses.response_create_params import (
     Reasoning,
     ResponseIncludable,
@@ -72,13 +52,6 @@ from openai.types.responses.response_create_params import (
 from openai.types.responses.response_function_tool_call import ResponseFunctionToolCall
 from pydantic import BaseModel, ConfigDict, Discriminator, PrivateAttr
 from typing_extensions import Annotated, Dict, Required, TypedDict, override
-
-from litellm.types.llms.base import BaseLiteLLMOpenAIResponseObject
-from litellm.types.responses.main import (
-    GenericResponseOutputItem,
-    OutputFunctionToolCall,
-    OutputImageGenerationCall,
-)
 
 FileContent = Union[IO[bytes], bytes, PathLike]
 
@@ -351,11 +324,12 @@ CREATE_FILE_REQUESTS_PURPOSE = Literal["assistants", "batch", "fine-tune"]
 class FileExpiresAfter(TypedDict):
     """
     File expiration policy
-    
+
     Properties:
         anchor: Anchor timestamp after which the expiration policy applies. Supported anchors: created_at.
         seconds: The number of seconds after the anchor time that the file will expire. Must be between 3600 (1 hour) and 2592000 (30 days).
     """
+
     anchor: Required[Literal["created_at"]]
     seconds: Required[int]
 
@@ -458,6 +432,7 @@ class ListBatchRequest(TypedDict, total=False):
 # OpenAI Batch Result Types
 class OpenAIErrorBody(TypedDict, total=False):
     """Error body in OpenAI batch response format."""
+
     error: Dict[str, str]
 
 
@@ -693,9 +668,7 @@ class ChatCompletionUserMessage(OpenAIChatCompletionUserMessage, total=False):
 class OpenAIChatCompletionAssistantMessage(TypedDict, total=False):
     role: Required[Literal["assistant"]]
     content: Optional[
-        Union[
-            str, Iterable[Union[ChatCompletionTextObject, ChatCompletionThinkingBlock]]
-        ]
+        Union[str, Iterable[Union[ChatCompletionTextObject, ChatCompletionThinkingBlock]]]
     ]
     name: Optional[str]
     tool_calls: Optional[List[ChatCompletionAssistantToolCall]]
@@ -908,9 +881,7 @@ class ChatCompletionDeltaChunk(TypedDict, total=False):
     role: str
 
 
-ChatCompletionAssistantContentValue = (
-    str  # keep as var, used in stream_chunk_builder as well
-)
+ChatCompletionAssistantContentValue = str  # keep as var, used in stream_chunk_builder as well
 
 
 class ChatCompletionResponseMessage(TypedDict, total=False):
@@ -945,9 +916,7 @@ class Hyperparameters(BaseModel):
     learning_rate_multiplier: Optional[Union[str, float]] = (
         None  # Scaling factor for the learning rate
     )
-    n_epochs: Optional[Union[str, int]] = (
-        None  # "The number of epochs to train the model for"
-    )
+    n_epochs: Optional[Union[str, int]] = None  # "The number of epochs to train the model for"
 
 
 class FineTuningJobCreate(BaseModel):
@@ -992,9 +961,7 @@ class FineTuningJobCreate(BaseModel):
 class LiteLLMFineTuningJobCreate(FineTuningJobCreate):
     custom_llm_provider: Optional[Literal["openai", "azure", "vertex_ai"]] = None
 
-    model_config = {
-        "extra": "allow"
-    }  # This allows the model to accept additional fields
+    model_config = {"extra": "allow"}  # This allows the model to accept additional fields
 
 
 AllEmbeddingInputValues = Union[str, List[str], List[int], List[List[int]]]
@@ -1157,9 +1124,7 @@ class ResponsesAPIResponse(BaseLiteLLMOpenAIResponseObject):
     parallel_tool_calls: Optional[bool] = None
     temperature: Optional[float] = None
     tool_choice: Optional[ToolChoice] = None
-    tools: Optional[
-        Union[List[Tool], List[ResponseFunctionToolCall], List[Dict[str, Any]]]
-    ] = None
+    tools: Optional[Union[List[Tool], List[ResponseFunctionToolCall], List[Dict[str, Any]]]] = None
     top_p: Optional[float] = None
     max_output_tokens: Optional[int] = None
     previous_response_id: Optional[str] = None
@@ -1907,6 +1872,7 @@ class OpenAIChatCompletionResponse(TypedDict, total=False):
 # OpenAI Batch Result Types (defined after OpenAIChatCompletionResponse for forward reference)
 class OpenAIBatchResponse(TypedDict, total=False):
     """Response wrapper in OpenAI batch result format."""
+
     status_code: int
     request_id: str
     body: Union[OpenAIChatCompletionResponse, OpenAIErrorBody]
@@ -1914,6 +1880,7 @@ class OpenAIBatchResponse(TypedDict, total=False):
 
 class OpenAIBatchResult(TypedDict, total=False):
     """OpenAI batch result format."""
+
     custom_id: str
     response: OpenAIBatchResponse
 

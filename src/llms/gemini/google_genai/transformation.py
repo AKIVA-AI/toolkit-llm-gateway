@@ -5,7 +5,6 @@ Transformation for Calling Google models in their native format.
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Union, cast
 
 import httpx
-
 import litellm
 from litellm.litellm_core_utils.litellm_logging import Logging as LiteLLMLoggingObj
 from litellm.llms.base_llm.google_genai.transformation import (
@@ -106,9 +105,7 @@ class GoogleGenAIConfig(BaseGoogleGenAIGenerateContentConfig, VertexLLM):
             Mapped parameters for the provider
         """
         _generate_content_config_dict: Dict[str, Any] = {}
-        supported_google_genai_params = (
-            self.get_supported_generate_content_optional_params(model)
-        )
+        supported_google_genai_params = self.get_supported_generate_content_optional_params(model)
         for param, value in generate_content_config_dict.items():
             if param in supported_google_genai_params:
                 _generate_content_config_dict[param] = value
@@ -125,9 +122,7 @@ class GoogleGenAIConfig(BaseGoogleGenAIGenerateContentConfig, VertexLLM):
             "Content-Type": "application/json",
         }
         # Use the passed api_key first, then fall back to litellm_params and environment
-        gemini_api_key = api_key or self._get_google_ai_studio_api_key(
-            dict(litellm_params or {})
-        )
+        gemini_api_key = api_key or self._get_google_ai_studio_api_key(dict(litellm_params or {}))
         if gemini_api_key is not None:
             default_headers[self.XGOOGLE_API_KEY] = gemini_api_key
         if headers is not None:
@@ -206,8 +201,8 @@ class GoogleGenAIConfig(BaseGoogleGenAIGenerateContentConfig, VertexLLM):
         """
         Sync version of get_auth_token_and_url.
         """
-        vertex_credentials, vertex_project, vertex_location = (
-            self._get_common_auth_components(litellm_params)
+        vertex_credentials, vertex_project, vertex_location = self._get_common_auth_components(
+            litellm_params
         )
 
         _auth_header, vertex_project = self._ensure_access_token(
@@ -245,8 +240,8 @@ class GoogleGenAIConfig(BaseGoogleGenAIGenerateContentConfig, VertexLLM):
         Returns:
             Tuple of headers and API base
         """
-        vertex_credentials, vertex_project, vertex_location = (
-            self._get_common_auth_components(litellm_params)
+        vertex_credentials, vertex_project, vertex_location = self._get_common_auth_components(
+            litellm_params
         )
 
         _auth_header, vertex_project = await self._ensure_access_token_async(
@@ -329,7 +324,9 @@ class GoogleGenAIConfig(BaseGoogleGenAIGenerateContentConfig, VertexLLM):
         """
         if "candidates" in response:
             for candidate in response["candidates"]:
-                if "citationMetadata" in candidate and isinstance(candidate["citationMetadata"], dict):
+                if "citationMetadata" in candidate and isinstance(
+                    candidate["citationMetadata"], dict
+                ):
                     citation_metadata = candidate["citationMetadata"]
                     # Transform citationSources to citations to match expected schema
                     if "citationSources" in citation_metadata:

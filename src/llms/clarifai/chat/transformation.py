@@ -1,14 +1,13 @@
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 import httpx
-
+from litellm.llms.base_llm.chat.transformation import BaseLLMException
+from litellm.llms.openai.common_utils import OpenAIError
 from litellm.secret_managers.main import get_secret_str
-from litellm.types.utils import ModelResponse
 from litellm.types.llms.openai import (
     AllMessageValues,
 )
-from litellm.llms.openai.common_utils import OpenAIError
-from litellm.llms.base_llm.chat.transformation import BaseLLMException
+from litellm.types.utils import ModelResponse
 
 from ...openai.chat.gpt_transformation import OpenAIGPTConfig
 
@@ -25,6 +24,7 @@ class ClarifaiConfig(OpenAIGPTConfig):
     Configuration class for Clarifai chat completions.
     Since Clarifai is OpenAI-compatible, we extend OpenAIGPTConfig.
     """
+
     def get_supported_openai_params(self, model: str) -> list:
         """
         Get the supported OpenAI params for the given model
@@ -42,18 +42,15 @@ class ClarifaiConfig(OpenAIGPTConfig):
             "frequency_penalty",
             "stream_options",
         ]
-    
+
     @staticmethod
     def get_api_key(api_key: Optional[str] = None) -> Optional[str]:
-        return (
-            api_key
-            or get_secret_str("CLARIFAI_API_KEY")
-        )
-        
+        return api_key or get_secret_str("CLARIFAI_API_KEY")
+
     @staticmethod
     def get_api_base(api_base: Optional[str] = None) -> Optional[str]:
         return api_base or "https://api.clarifai.com/v2/ext/openai/v1"
-    
+
     @staticmethod
     def get_base_model(model: Optional[str] = None) -> Optional[str]:
         if model:
@@ -72,11 +69,11 @@ class ClarifaiConfig(OpenAIGPTConfig):
         api_base = api_base or "https://api.clarifai.com/v2/ext/openai/v1"
         dynamic_api_key = api_key or get_secret_str("CLARIFAI_API_KEY") or ""
         return api_base, dynamic_api_key
-    
+
     def transform_request(self, model, messages, optional_params, litellm_params, headers):
         model = self.get_base_model(model) or model
         return super().transform_request(model, messages, optional_params, litellm_params, headers)
-    
+
     def transform_response(
         self,
         model: str,
@@ -95,7 +92,7 @@ class ClarifaiConfig(OpenAIGPTConfig):
         Transform the Clarifai response to a standard ModelResponse.
         Since Clarifai is OpenAI-compatible, we use OpenAI response transformation.
         """
-        ## Logging 
+        ## Logging
         logging_obj.post_call(
             input=messages,
             api_key=api_key,
@@ -111,9 +108,9 @@ class ClarifaiConfig(OpenAIGPTConfig):
                 message=f"Failed to parse Clarifai response: {str(e)}",
                 headers=raw_response.headers,
             ) from e
-        
+
         response = ModelResponse(**completion_response)
-        
+
         if response.model is not None:
             response.model = "clarifai/" + model
 

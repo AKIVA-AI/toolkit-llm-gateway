@@ -140,10 +140,7 @@ def _is_choice_non_empty(choice: Any) -> bool:
             if extra_field_name == "index" and extra_field_value == 0:
 
                 continue
-            if (
-                extra_field_name in {"finish_reason", "logprobs"}
-                and extra_field_value is None
-            ):
+            if extra_field_name in {"finish_reason", "logprobs"} and extra_field_value is None:
 
                 continue
             if extra_field_name == "delta":

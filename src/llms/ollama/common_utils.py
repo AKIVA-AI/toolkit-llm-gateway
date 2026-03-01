@@ -1,15 +1,12 @@
 from typing import List, Optional, Union
 
 import httpx
-
 from litellm import verbose_logger
 from litellm.llms.base_llm.chat.transformation import BaseLLMException
 
 
 class OllamaError(BaseLLMException):
-    def __init__(
-        self, status_code: int, message: str, headers: Union[dict, httpx.Headers]
-    ):
+    def __init__(self, status_code: int, message: str, headers: Union[dict, httpx.Headers]):
         super().__init__(status_code=status_code, message=message, headers=headers)
 
 
@@ -27,9 +24,7 @@ def _convert_image(image):
     try:
         from PIL import Image
     except Exception:
-        raise Exception(
-            "ollama image conversion failed please run `pip install Pillow`"
-        )
+        raise Exception("ollama image conversion failed please run `pip install Pillow`")
 
     orig = image
     if image.startswith("data:"):
@@ -71,7 +66,6 @@ class OllamaModelInfo(BaseLLMModelInfo):
             or get_secret_str("OLLAMA_API_KEY")
         )
 
-
     @staticmethod
     def get_api_base(api_base: Optional[str] = None) -> str:
         from litellm.secret_managers.main import get_secret_str
@@ -86,7 +80,7 @@ class OllamaModelInfo(BaseLLMModelInfo):
 
         base = self.get_api_base(api_base)
         api_key = self.get_api_key()
-        headers = { "Authorization": f"Bearer {api_key}" } if api_key else {}
+        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
 
         names: set[str] = set()
         try:
@@ -95,11 +89,7 @@ class OllamaModelInfo(BaseLLMModelInfo):
             data = resp.json()
             # Expecting a dict with a 'models' list
             models_list = []
-            if (
-                isinstance(data, dict)
-                and "models" in data
-                and isinstance(data["models"], list)
-            ):
+            if isinstance(data, dict) and "models" in data and isinstance(data["models"], list):
                 models_list = data["models"]
             elif isinstance(data, list):
                 models_list = data
@@ -119,9 +109,7 @@ class OllamaModelInfo(BaseLLMModelInfo):
                 static = models_by_provider.get("ollama", []) or []
                 return [f"ollama/{m}" for m in static]
             except Exception as e1:
-                verbose_logger.warning(
-                    f"Error retrieving static ollama models as fallback: {e1}"
-                )
+                verbose_logger.warning(f"Error retrieving static ollama models as fallback: {e1}")
                 return []
         # assemble full model names
         result = sorted(names)

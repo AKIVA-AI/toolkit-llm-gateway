@@ -1,10 +1,9 @@
 from typing import Optional, Union
 
 import httpx
-from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
-
 from litellm.llms.azure.common_utils import BaseAzureLLM
 from litellm.llms.openai.fine_tuning.handler import OpenAIFineTuningAPI
+from openai import AsyncAzureOpenAI, AsyncOpenAI, AzureOpenAI, OpenAI
 
 
 class AzureOpenAIFineTuningAPI(OpenAIFineTuningAPI, BaseAzureLLM):
@@ -19,13 +18,18 @@ class AzureOpenAIFineTuningAPI(OpenAIFineTuningAPI, BaseAzureLLM):
         timeout: Union[float, httpx.Timeout],
         max_retries: Optional[int],
         organization: Optional[str],
-        client: Optional[
-            Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]
-        ] = None,
+        client: Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI]] = None,
         _is_async: bool = False,
         api_version: Optional[str] = None,
         litellm_params: Optional[dict] = None,
-    ) -> Optional[Union[OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI,]]:
+    ) -> Optional[
+        Union[
+            OpenAI,
+            AsyncOpenAI,
+            AzureOpenAI,
+            AsyncAzureOpenAI,
+        ]
+    ]:
         # Override to use Azure-specific client initialization
         if isinstance(client, OpenAI) or isinstance(client, AsyncOpenAI):
             client = None

@@ -15,7 +15,6 @@ All /budget management endpoints
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
-
 from litellm.litellm_core_utils.duration_parser import duration_in_seconds
 from litellm.proxy._types import *
 from litellm.proxy.auth.user_api_key_auth import user_api_key_auth
@@ -138,9 +137,7 @@ async def info_budget(data: BudgetRequest):
     if len(data.budgets) == 0:
         raise HTTPException(
             status_code=400,
-            detail={
-                "error": f"Specify list of budget id's to query. Passed in={data.budgets}"
-            },
+            detail={"error": f"Specify list of budget id's to query. Passed in={data.budgets}"},
         )
     response = await prisma_client.db.litellm_budgettable.find_many(
         where={"budget_id": {"in": data.budgets}},
@@ -290,8 +287,6 @@ async def delete_budget(
             },
         )
 
-    response = await prisma_client.db.litellm_budgettable.delete(
-        where={"budget_id": data.id}
-    )
+    response = await prisma_client.db.litellm_budgettable.delete(where={"budget_id": data.id})
 
     return response

@@ -9,4 +9,3 @@ This package contains Toolkit-specific enhancements:
 """
 
 __version__ = "1.0.0"
-

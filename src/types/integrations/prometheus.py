@@ -1,12 +1,11 @@
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Literal, Optional, Tuple, Union
-
-from pydantic import BaseModel, Field
-from typing_extensions import Annotated
+from typing import Dict, List, Literal, Optional, Tuple
 
 import litellm
+from pydantic import BaseModel, Field
+from typing_extensions import Annotated
 
 
 def _sanitize_prometheus_label_name(label: str) -> str:
@@ -392,9 +391,7 @@ class PrometheusMetricLabels:
 
     litellm_api_key_max_budget_metric = litellm_remaining_api_key_budget_metric
 
-    litellm_api_key_budget_remaining_hours_metric = (
-        litellm_remaining_api_key_budget_metric
-    )
+    litellm_api_key_budget_remaining_hours_metric = litellm_remaining_api_key_budget_metric
 
     # Add deployment metrics
     litellm_deployment_failure_responses = [
@@ -460,18 +457,12 @@ class PrometheusMetricLabels:
         return default_labels + custom_labels
 
 
-from typing import List, Optional
-
-from pydantic import BaseModel, Field
+from typing import List
 
 
 class UserAPIKeyLabelValues(BaseModel):
-    end_user: Annotated[
-        Optional[str], Field(..., alias=UserAPIKeyLabelNames.END_USER.value)
-    ] = None
-    user: Annotated[
-        Optional[str], Field(..., alias=UserAPIKeyLabelNames.USER.value)
-    ] = None
+    end_user: Annotated[Optional[str], Field(..., alias=UserAPIKeyLabelNames.END_USER.value)] = None
+    user: Annotated[Optional[str], Field(..., alias=UserAPIKeyLabelNames.USER.value)] = None
     user_email: Annotated[
         Optional[str], Field(..., alias=UserAPIKeyLabelNames.USER_EMAIL.value)
     ] = None
@@ -481,9 +472,7 @@ class UserAPIKeyLabelValues(BaseModel):
     api_key_alias: Annotated[
         Optional[str], Field(..., alias=UserAPIKeyLabelNames.API_KEY_ALIAS.value)
     ] = None
-    team: Annotated[
-        Optional[str], Field(..., alias=UserAPIKeyLabelNames.TEAM.value)
-    ] = None
+    team: Annotated[Optional[str], Field(..., alias=UserAPIKeyLabelNames.TEAM.value)] = None
     team_alias: Annotated[
         Optional[str], Field(..., alias=UserAPIKeyLabelNames.TEAM_ALIAS.value)
     ] = None
@@ -503,12 +492,8 @@ class UserAPIKeyLabelValues(BaseModel):
     ] = None
     tags: List[str] = []
     custom_metadata_labels: Dict[str, str] = {}
-    model_id: Annotated[
-        Optional[str], Field(..., alias=UserAPIKeyLabelNames.MODEL_ID.value)
-    ] = None
-    api_base: Annotated[
-        Optional[str], Field(..., alias=UserAPIKeyLabelNames.API_BASE.value)
-    ] = None
+    model_id: Annotated[Optional[str], Field(..., alias=UserAPIKeyLabelNames.MODEL_ID.value)] = None
+    api_base: Annotated[Optional[str], Field(..., alias=UserAPIKeyLabelNames.API_BASE.value)] = None
     api_provider: Annotated[
         Optional[str], Field(..., alias=UserAPIKeyLabelNames.API_PROVIDER.value)
     ] = None
@@ -524,18 +509,14 @@ class UserAPIKeyLabelValues(BaseModel):
     fallback_model: Annotated[
         Optional[str], Field(..., alias=UserAPIKeyLabelNames.FALLBACK_MODEL.value)
     ] = None
-    route: Annotated[
-        Optional[str], Field(..., alias=UserAPIKeyLabelNames.ROUTE.value)
-    ] = None
+    route: Annotated[Optional[str], Field(..., alias=UserAPIKeyLabelNames.ROUTE.value)] = None
 
 
 class PrometheusMetricsConfig(BaseModel):
     """Configuration for filtering Prometheus metrics"""
 
     group: str = Field(..., description="Group name for this set of metrics")
-    metrics: List[str] = Field(
-        ..., description="List of metric names to include in this group"
-    )
+    metrics: List[str] = Field(..., description="List of metric names to include in this group")
     include_labels: Optional[List[str]] = Field(
         None,
         description="List of labels to include for these metrics. If None, includes all default labels.",

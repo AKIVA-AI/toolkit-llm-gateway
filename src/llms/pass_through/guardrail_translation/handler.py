@@ -40,15 +40,11 @@ class PassThroughEndpointHandler(BaseTranslation):
         if litellm_logging_obj is None:
             return None
 
-        passthrough_config = getattr(
-            litellm_logging_obj, "passthrough_guardrails_config", None
-        )
+        passthrough_config = getattr(litellm_logging_obj, "passthrough_guardrails_config", None)
         if not passthrough_config or not guardrail_name:
             return None
 
-        return PassthroughGuardrailHandler.get_settings(
-            passthrough_config, guardrail_name
-        )
+        return PassthroughGuardrailHandler.get_settings(passthrough_config, guardrail_name)
 
     def _extract_text_for_guardrail(
         self,
@@ -84,9 +80,7 @@ class PassThroughEndpointHandler(BaseTranslation):
             for k, v in data.items()
             if not k.startswith("_") and k not in ("metadata", "litellm_logging_obj")
         }
-        verbose_proxy_logger.debug(
-            "PassThroughEndpointHandler: Using full payload for guardrail"
-        )
+        verbose_proxy_logger.debug("PassThroughEndpointHandler: Using full payload for guardrail")
         return safe_dumps(payload_to_check)
 
     async def process_input_messages(
@@ -167,9 +161,7 @@ class PassThroughEndpointHandler(BaseTranslation):
 
         # Create a request_data dict with response info and user API key metadata
         request_data: dict = (
-            {"response": response}
-            if not isinstance(response, dict)
-            else response.copy()
+            {"response": response} if not isinstance(response, dict) else response.copy()
         )
 
         # Add user API key metadata with prefixed keys

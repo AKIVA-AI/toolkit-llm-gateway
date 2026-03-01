@@ -1,9 +1,8 @@
 from typing import List, Literal, Optional, Union
 
+from litellm.types.utils import LiteLLMPydanticObjectBase
 from pydantic import Field
 from typing_extensions import TypedDict
-
-from litellm.types.utils import LiteLLMPydanticObjectBase
 
 
 class LiteLLM_UpperboundKeyGenerateParams(LiteLLMPydanticObjectBase):
@@ -25,6 +24,7 @@ class LiteLLM_UpperboundKeyGenerateParams(LiteLLMPydanticObjectBase):
     max_parallel_requests: Optional[int] = None
     tpm_limit: Optional[int] = None
     rpm_limit: Optional[int] = None
+
 
 class MicrosoftGraphAPIUserGroupDirectoryObject(TypedDict, total=False):
     """Model for Microsoft Graph API directory object"""
