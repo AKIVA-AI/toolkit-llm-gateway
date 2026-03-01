@@ -79,7 +79,7 @@ jobs:
         pip install black ruff mypy
     
     - name: Run Black
-      run: black --check src tests
+      run: black --check src/toolkit_extensions tests
 
     - name: Run Ruff
       run: ruff check src/toolkit_extensions tests
