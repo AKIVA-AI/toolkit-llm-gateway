@@ -44,8 +44,8 @@ pip install -r requirements.txt
 
 1. **Clone Repository:**
 ```bash
-git clone <your-repo-url>
-cd <repo-root>/enterprise-tools/oss/llm-gateway
+git clone https://github.com/AKIVA-AI/toolkit-llm-gateway.git
+cd toolkit-llm-gateway
 ```
 
 2. **Install Dependencies:**

@@ -74,17 +74,21 @@
 ### Installation
 
 ```bash
-# Install core package
-pip install toolkit-llm-gateway
+# Clone the repository
+git clone https://github.com/AKIVA-AI/toolkit-llm-gateway.git
+cd toolkit-llm-gateway
+
+# Install core package (editable mode)
+pip install -e .
 
 # Install with proxy server
-pip install "toolkit-llm-gateway[proxy]"
+pip install -e ".[proxy]"
 
 # Install with analytics
-pip install "toolkit-llm-gateway[analytics]"
+pip install -e ".[analytics]"
 
-# Install everything
-pip install "toolkit-llm-gateway[all]"
+# Install everything (proxy + analytics + dev tools)
+pip install -e ".[all]"
 ```
 
 ### Basic Usage (Python SDK)
@@ -219,15 +223,24 @@ print(f"Cost: ${response._hidden_params.get('response_cost', 0):.4f}")
 
 ### API Key Management
 
+API keys are managed via the proxy's REST API while the gateway is running:
+
 ```bash
 # Create API key for user
-toolkit-gateway create-key --user alice@company.com --teams data-science --budget 100
+curl -X POST http://localhost:8000/key/generate \
+  -H "Authorization: Bearer <master-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "alice@company.com", "team_id": "data-science", "max_budget": 100}'
 
 # List keys
-toolkit-gateway list-keys
+curl http://localhost:8000/key/info \
+  -H "Authorization: Bearer <master-key>"
 
-# Revoke key
-toolkit-gateway revoke-key <key_id>
+# Delete key
+curl -X POST http://localhost:8000/key/delete \
+  -H "Authorization: Bearer <master-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"keys": ["<key_to_delete>"]}'
 ```
 
 ---

@@ -6,11 +6,14 @@ Sends budget alerts to external systems via webhooks.
 import hashlib
 import hmac
 import json
+import logging
 import time
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from enum import Enum
 import httpx
+
+logger = logging.getLogger(__name__)
 
 from sqlalchemy import Column, String, Integer, Text, DateTime, Boolean
 from sqlalchemy.orm import Session
@@ -19,6 +22,10 @@ from toolkit_extensions.database.connection import Base, get_session
 from toolkit_extensions.database.models import BudgetAlert
 from toolkit_extensions.budget_manager import get_budget_manager
 
+
+# ---------------------------------------------------------------------------
+# Database Models & Enums
+# ---------------------------------------------------------------------------
 
 class WebhookProvider(str, Enum):
     """Webhook provider types"""
@@ -79,10 +86,14 @@ class WebhookDelivery(Base):
     delivered_at = Column(DateTime, default=datetime.utcnow)
 
 
+# ---------------------------------------------------------------------------
+# AlertWebhookManager - CRUD & Delivery Orchestration
+# ---------------------------------------------------------------------------
+
 class AlertWebhookManager:
     """
     Manages alert webhook delivery.
-    
+
     Features:
     - Multiple webhook providers (Slack, Discord, Teams, generic)
     - Configurable retry logic
@@ -90,10 +101,12 @@ class AlertWebhookManager:
     - Delivery tracking and stats
     - Alert filtering by type, team, user
     """
-    
+
     def __init__(self):
         self.budget_manager = get_budget_manager()
-    
+
+    # -- Webhook CRUD ---------------------------------------------------------
+
     def register_webhook(
         self,
         name: str,
@@ -220,6 +233,8 @@ class AlertWebhookManager:
                 for w in webhooks
             ]
     
+    # -- Alert Delivery -------------------------------------------------------
+
     def deliver_pending_alerts(self) -> Dict[str, int]:
         """
         Deliver all pending alerts to configured webhooks.
@@ -347,6 +362,7 @@ class AlertWebhookManager:
             return success
         
         except Exception as e:
+            logger.error("Webhook delivery failed for %s: %s", webhook["id"], e, exc_info=True)
             # Log delivery failure
             self._log_delivery(
                 delivery_id=delivery_id,
@@ -368,6 +384,8 @@ class AlertWebhookManager:
             
             return False
     
+    # -- Provider-Specific Payload Builders -----------------------------------
+
     def _build_payload(self, provider: str, alert: Dict) -> Dict:
         """Build provider-specific payload"""
         if provider == WebhookProvider.SLACK:
@@ -484,6 +502,8 @@ class AlertWebhookManager:
             ],
         }
     
+    # -- Internal Helpers (signing, logging, stats) ---------------------------
+
     def _sign_payload(self, payload: Dict, secret: str) -> str:
         """Create HMAC signature for payload"""
         payload_bytes = json.dumps(payload, sort_keys=True).encode()
@@ -557,7 +577,9 @@ class AlertWebhookManager:
             }
 
 
-# Global webhook manager instance
+# ---------------------------------------------------------------------------
+# Global Singleton
+# ---------------------------------------------------------------------------
 _alert_webhook_manager: Optional[AlertWebhookManager] = None
 
 

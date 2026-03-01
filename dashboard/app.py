@@ -8,10 +8,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
 from datetime import datetime, timedelta
 from typing import Optional
+import logging
 import os
 import sys
+
+logger = logging.getLogger(__name__)
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -21,12 +25,51 @@ from toolkit_extensions.budget_manager import BudgetManager
 from toolkit_extensions.alert_webhooks import AlertWebhookManager
 from toolkit_extensions.database.connection import init_database, DatabaseConfig
 
+# ---------------------------------------------------------------------------
+# API Key Authentication
+# ---------------------------------------------------------------------------
+# Set DASHBOARD_API_KEY env var to require authentication on /api/* endpoints.
+# If not set, a warning is logged and the dashboard runs without auth (dev mode).
+# ---------------------------------------------------------------------------
+DASHBOARD_API_KEY = os.getenv("DASHBOARD_API_KEY")
+
+if not DASHBOARD_API_KEY:
+    logger.warning(
+        "DASHBOARD_API_KEY is not set. Dashboard API endpoints are unauthenticated. "
+        "Set DASHBOARD_API_KEY env var for production use."
+    )
+
+# Paths that do not require authentication
+_PUBLIC_PATHS = frozenset({"/", "/health", "/docs", "/openapi.json", "/redoc"})
+
+
+class APIKeyAuthMiddleware(BaseHTTPMiddleware):
+    """Require a valid API key for /api/* endpoints when DASHBOARD_API_KEY is set."""
+
+    async def dispatch(self, request: Request, call_next):
+        if DASHBOARD_API_KEY and request.url.path.startswith("/api/"):
+            api_key = (
+                request.headers.get("X-API-Key")
+                or request.query_params.get("api_key")
+            )
+            if api_key != DASHBOARD_API_KEY:
+                logger.warning("Rejected unauthenticated request to %s", request.url.path)
+                return JSONResponse(
+                    {"success": False, "error": "Invalid or missing API key"},
+                    status_code=401,
+                )
+        return await call_next(request)
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Toolkit LLM Gateway Dashboard",
     description="Analytics dashboard for LLM cost tracking and budgets",
     version="1.0.0"
 )
+
+# Add API key auth middleware
+app.add_middleware(APIKeyAuthMiddleware)
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="dashboard/static"), name="static")
@@ -64,6 +107,7 @@ async def get_summary(days: int = 30):
             "data": summary
         })
     except Exception as e:
+        logger.exception("API error: %s", e)
         return JSONResponse({
             "success": False,
             "error": str(e)
@@ -80,6 +124,7 @@ async def get_cost_by_model(limit: int = 10):
             "data": data
         })
     except Exception as e:
+        logger.exception("API error: %s", e)
         return JSONResponse({
             "success": False,
             "error": str(e)
@@ -96,6 +141,7 @@ async def get_cost_by_user(limit: int = 10):
             "data": data
         })
     except Exception as e:
+        logger.exception("API error: %s", e)
         return JSONResponse({
             "success": False,
             "error": str(e)
@@ -112,6 +158,7 @@ async def get_cost_by_team(limit: int = 10):
             "data": data
         })
     except Exception as e:
+        logger.exception("API error: %s", e)
         return JSONResponse({
             "success": False,
             "error": str(e)
@@ -149,6 +196,7 @@ async def get_time_series(
             "data": data
         })
     except Exception as e:
+        logger.exception("API error: %s", e)
         return JSONResponse({
             "success": False,
             "error": str(e)
@@ -165,6 +213,7 @@ async def get_performance():
             "data": stats
         })
     except Exception as e:
+        logger.exception("API error: %s", e)
         return JSONResponse({
             "success": False,
             "error": str(e)
@@ -182,6 +231,7 @@ async def get_budgets():
             "data": []  # TODO: Implement get_all_budgets method
         })
     except Exception as e:
+        logger.exception("API error: %s", e)
         return JSONResponse({
             "success": False,
             "error": str(e)
@@ -204,6 +254,7 @@ async def get_webhooks():
             "data": webhooks
         })
     except Exception as e:
+        logger.exception("API error: %s", e)
         return JSONResponse({
             "success": False,
             "error": str(e)

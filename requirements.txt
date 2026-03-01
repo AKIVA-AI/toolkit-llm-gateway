@@ -20,6 +20,6 @@ fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 jinja2>=3.1.0
 
-# Testing
-pytest>=7.0.0
-pytest-cov>=4.1.0
+# Testing (install separately for dev: pip install -e ".[dev]")
+# pytest>=7.0.0
+# pytest-cov>=4.1.0

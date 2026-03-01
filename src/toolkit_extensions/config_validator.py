@@ -85,6 +85,13 @@ class ConfigValidator:
             description="Secret key for signing webhooks and sessions"
         ),
         
+        # Dashboard Security (RECOMMENDED)
+        ConfigVar(
+            name="DASHBOARD_API_KEY",
+            level=ConfigLevel.RECOMMENDED,
+            description="API key for authenticating dashboard /api/* requests. If unset, dashboard runs without auth."
+        ),
+
         # Optional Features
         ConfigVar(
             name="REDIS_URL",

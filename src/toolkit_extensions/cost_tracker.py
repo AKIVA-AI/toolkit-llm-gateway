@@ -3,6 +3,7 @@ Cost tracking middleware for Toolkit LLM Gateway
 
 Intercepts LLM requests and logs costs to database.
 """
+import logging
 import time
 from datetime import datetime
 from decimal import Decimal
@@ -11,6 +12,8 @@ from uuid import uuid4
 
 from toolkit_extensions.database.connection import get_session
 from toolkit_extensions.database.models import LLMRequest, User, Team, Project
+
+logger = logging.getLogger(__name__)
 
 
 class CostTracker:
@@ -101,7 +104,7 @@ class CostTracker:
         
         except Exception as e:
             # Log error but don't fail the request
-            print(f"Error tracking request: {e}")
+            logger.error("Error tracking request: %s", e, exc_info=True)
             return None
     
     def _get_user_id(self, session, email: str) -> Optional[str]:
@@ -224,7 +227,7 @@ class CostTrackingMiddleware:
             )
         
         except Exception as e:
-            print(f"Error in cost tracking middleware: {e}")
+            logger.error("Error in cost tracking middleware: %s", e, exc_info=True)
             return None
     
     def track_error(
