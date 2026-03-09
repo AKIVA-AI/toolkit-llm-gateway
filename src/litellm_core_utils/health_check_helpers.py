@@ -12,7 +12,6 @@ TEST_PDF_URL = "data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9U
 
 
 class HealthCheckHelpers:
-
     @staticmethod
     async def ahealth_check_wildcard_models(
         model: str,

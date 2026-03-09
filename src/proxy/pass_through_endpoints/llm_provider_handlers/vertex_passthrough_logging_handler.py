@@ -39,7 +39,6 @@ EndpointType = Any
 
 
 class VertexPassthroughLoggingHandler:
-
     @staticmethod
     def vertex_passthrough_handler(
         httpx_response: httpx.Response,
@@ -185,7 +184,6 @@ class VertexPassthroughLoggingHandler:
                 "kwargs": kwargs,
             }
         elif "search" in url_route:
-
             litellm_vs_response = vertex_search_api_config.transform_search_vector_store_response(
                 response=httpx_response,
                 litellm_logging_obj=logging_obj,

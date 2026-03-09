@@ -235,7 +235,8 @@ async def create_batch(  # noqa: PLR0915
             else:
                 # SCENARIO 3: Fallback to custom_llm_provider (uses env variables)
                 response = await litellm.acreate_batch(
-                    custom_llm_provider=custom_llm_provider, **_create_batch_data  # type: ignore
+                    custom_llm_provider=custom_llm_provider,
+                    **_create_batch_data,  # type: ignore
                 )
 
         ### CALL HOOKS ### - modify outgoing data
@@ -367,7 +368,8 @@ async def retrieve_batch(
 
             # Retrieve batch using model credentials
             response = await litellm.aretrieve_batch(
-                custom_llm_provider=credentials["custom_llm_provider"], **data  # type: ignore
+                custom_llm_provider=credentials["custom_llm_provider"],
+                **data,  # type: ignore
             )
 
             # Re-encode all IDs in the response
@@ -413,7 +415,8 @@ async def retrieve_batch(
                 or "openai"
             )
             response = await litellm.aretrieve_batch(
-                custom_llm_provider=custom_llm_provider, **data  # type: ignore
+                custom_llm_provider=custom_llm_provider,
+                **data,  # type: ignore
             )
 
         ### CALL HOOKS ### - modify outgoing data
@@ -581,7 +584,9 @@ async def list_batches(
 
         ## POST CALL HOOKS ###
         _response = await proxy_logging_obj.post_call_success_hook(
-            data=data, user_api_key_dict=user_api_key_dict, response=response  # type: ignore
+            data=data,
+            user_api_key_dict=user_api_key_dict,
+            response=response,  # type: ignore
         )
         if _response is not None and type(response) is type(_response):
             response = _response
@@ -702,7 +707,8 @@ async def cancel_batch(
 
             # Cancel batch using model credentials
             response = await litellm.acancel_batch(
-                custom_llm_provider=credentials["custom_llm_provider"], **data  # type: ignore
+                custom_llm_provider=credentials["custom_llm_provider"],
+                **data,  # type: ignore
             )
 
             verbose_proxy_logger.debug(
@@ -729,7 +735,6 @@ async def cancel_batch(
 
         # SCENARIO 3: Fallback to custom_llm_provider (uses env variables)
         else:
-
             custom_llm_provider = provider or data.pop("custom_llm_provider", None) or "openai"
             _cancel_batch_data = CancelBatchRequest(batch_id=batch_id, **data)
             response = await litellm.acancel_batch(

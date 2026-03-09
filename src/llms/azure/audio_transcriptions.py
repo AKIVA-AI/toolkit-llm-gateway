@@ -92,7 +92,12 @@ class AzureAudioTranscription(AzureChatCompletion):
             original_response=stringified_response,
         )
         hidden_params = {"model": model, "custom_llm_provider": "azure"}
-        final_response: TranscriptionResponse = convert_to_model_response_object(response_object=stringified_response, model_response_object=model_response, hidden_params=hidden_params, response_type="audio_transcription")  # type: ignore
+        final_response: TranscriptionResponse = convert_to_model_response_object(
+            response_object=stringified_response,
+            model_response_object=model_response,
+            hidden_params=hidden_params,
+            response_type="audio_transcription",
+        )  # type: ignore
         return final_response
 
     async def async_audio_transcriptions(

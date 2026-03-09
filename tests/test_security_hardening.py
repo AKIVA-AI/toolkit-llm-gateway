@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hmac
-import time
 
 from toolkit_extensions.security import APIKeyManager
 

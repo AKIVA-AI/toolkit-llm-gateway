@@ -1,4 +1,4 @@
-﻿"""
+"""
 Cost analytics API for Toolkit LLM Gateway
 
 Provides rich analytics and insights into LLM spending.

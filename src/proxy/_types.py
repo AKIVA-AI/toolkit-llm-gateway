@@ -3298,9 +3298,9 @@ class ProviderBudgetResponse(LiteLLMPydanticObjectBase):
     Maps provider names to their budget configs.
     """
 
-    providers: Dict[str, ProviderBudgetResponseObject] = (
-        {}
-    )  # Dictionary mapping provider names to their budget configurations
+    providers: Dict[
+        str, ProviderBudgetResponseObject
+    ] = {}  # Dictionary mapping provider names to their budget configurations
 
 
 class ProxyStateVariables(TypedDict):

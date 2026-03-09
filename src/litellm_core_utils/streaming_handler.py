@@ -135,9 +135,7 @@ class CustomStreamWrapper:
             True if self.check_send_stream_usage(self.stream_options) else False
         )
         self.tool_call = False
-        self.chunks: List = (
-            []
-        )  # keep track of the returned chunks - used for calculating the input/output tokens for stream options
+        self.chunks: List = []  # keep track of the returned chunks - used for calculating the input/output tokens for stream options
         self.is_function_call = self.check_is_function_call(logging_obj=logging_obj)
         self.created: Optional[int] = None
 
@@ -589,7 +587,9 @@ class CustomStreamWrapper:
     ):
         _model = self.model
         _received_llm_provider = self.custom_llm_provider
-        _logging_obj_llm_provider = self.logging_obj.model_call_details.get("custom_llm_provider", None)  # type: ignore
+        _logging_obj_llm_provider = self.logging_obj.model_call_details.get(
+            "custom_llm_provider", None
+        )  # type: ignore
         if (
             _received_llm_provider == "openai"
             and _received_llm_provider != _logging_obj_llm_provider

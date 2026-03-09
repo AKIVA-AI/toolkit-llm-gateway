@@ -96,7 +96,6 @@ class BytezChatConfig(BaseConfig):
         all_params = {**non_default_params, **optional_params}
 
         for key, value in all_params.items():
-
             alias = self.openai_to_bytez_param_map.get(key)
 
             if alias is False:
@@ -387,7 +386,6 @@ def adapt_messages_to_bytez_standard(messages: List[Dict]):
     new_messages = []
 
     for message in messages:
-
         role = message["role"]
         content: list = message["content"]
 
@@ -427,7 +425,6 @@ def _adapt_string_only_content_to_lists(messages: List[Dict]):
     new_messages = []
 
     for message in messages:
-
         role = message.get("role")
         content = message.get("content")
 
@@ -440,7 +437,6 @@ def _adapt_string_only_content_to_lists(messages: List[Dict]):
             new_content.append(content)
 
         elif isinstance(content, list):
-
             new_content_items = []
             for content_item in content:
                 if isinstance(content_item, str):

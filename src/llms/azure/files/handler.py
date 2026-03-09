@@ -42,7 +42,9 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
         openai_client: AsyncAzureOpenAI,
     ) -> OpenAIFileObject:
         verbose_logger.debug("create_file_data=%s", create_file_data)
-        response = await openai_client.files.create(**self._prepare_create_file_data(create_file_data))  # type: ignore[arg-type]
+        response = await openai_client.files.create(
+            **self._prepare_create_file_data(create_file_data)
+        )  # type: ignore[arg-type]
         verbose_logger.debug("create_file_response=%s", response)
         return OpenAIFileObject(**response.model_dump())
 
@@ -79,7 +81,9 @@ class AzureOpenAIFilesAPI(BaseAzureLLM):
                     "AzureOpenAI client is not an instance of AsyncAzureOpenAI. Make sure you passed an AsyncAzureOpenAI client."
                 )
             return self.acreate_file(create_file_data=create_file_data, openai_client=openai_client)
-        response = cast(AzureOpenAI, openai_client).files.create(**self._prepare_create_file_data(create_file_data))  # type: ignore[arg-type]
+        response = cast(AzureOpenAI, openai_client).files.create(
+            **self._prepare_create_file_data(create_file_data)
+        )  # type: ignore[arg-type]
         return OpenAIFileObject(**response.model_dump())
 
     async def afile_content(

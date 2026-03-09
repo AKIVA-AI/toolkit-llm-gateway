@@ -175,7 +175,9 @@ async def add_new_member(
             isinstance(existing_user_row, list) and len(existing_user_row) == 0
         ):
             new_user_defaults["teams"] = [team_id]
-            _returned_user = await prisma_client.insert_data(data=new_user_defaults, table_name="user")  # type: ignore
+            _returned_user = await prisma_client.insert_data(
+                data=new_user_defaults, table_name="user"
+            )  # type: ignore
 
             if _returned_user is not None:
                 returned_user = LiteLLM_UserTable(**_returned_user.model_dump())

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Tests for security module
 """
 
@@ -83,7 +83,7 @@ class TestRateLimiter:
         # First 3 requests should succeed
         for i in range(3):
             result = limiter.check_rate_limit("client1")
-            assert result["allowed"], f"Request {i+1} should be allowed"
+            assert result["allowed"], f"Request {i + 1} should be allowed"
 
         # 4th request should be blocked
         result = limiter.check_rate_limit("client1")

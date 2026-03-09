@@ -203,7 +203,9 @@ class ProxyInitializationHelpers:
                 super().__init__()
 
                 _endpoint_str = f"curl --location 'http://0.0.0.0:{port}/chat/completions' \\"
-                curl_command = _endpoint_str + """
+                curl_command = (
+                    _endpoint_str
+                    + """
                 --header 'Content-Type: application/json' \\
                 --data ' {
                 "model": "gpt-3.5-turbo",
@@ -216,6 +218,7 @@ class ProxyInitializationHelpers:
                 }'
                 \n
                 """
+                )
                 print()  # noqa
                 print(  # noqa
                     '\033[1;34mLiteLLM: Test your local proxy with: "litellm --test" This runs an openai.ChatCompletion request to your proxy [In a new terminal tab]\033[0m\n'

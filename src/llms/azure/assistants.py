@@ -204,7 +204,8 @@ class AzureAssistantsAPI(BaseAzureLLM):
         )
 
         thread_message: OpenAIMessage = await openai_client.beta.threads.messages.create(  # type: ignore
-            thread_id, **message_data  # type: ignore
+            thread_id,
+            **message_data,  # type: ignore
         )
 
         response_obj: Optional[OpenAIMessage] = None
@@ -292,7 +293,8 @@ class AzureAssistantsAPI(BaseAzureLLM):
         )
 
         thread_message: OpenAIMessage = openai_client.beta.threads.messages.create(  # type: ignore
-            thread_id, **message_data  # type: ignore
+            thread_id,
+            **message_data,  # type: ignore
         )
 
         response_obj: Optional[OpenAIMessage] = None

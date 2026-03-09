@@ -388,9 +388,9 @@ class RedisSemanticCache(BaseCache):
 
             # handle results / cache hit
             if not results:
-                kwargs.setdefault("metadata", {})[
-                    "semantic-similarity"
-                ] = 0.0  # TODO why here but not above??
+                kwargs.setdefault("metadata", {})["semantic-similarity"] = (
+                    0.0  # TODO why here but not above??
+                )
                 return None
 
             cache_hit = results[0]

@@ -330,7 +330,9 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
             ## MERGE CONSECUTIVE ASSISTANT CONTENT ##
             while msg_i < len(messages) and messages[msg_i]["role"] == "assistant":
                 if isinstance(messages[msg_i], BaseModel):
-                    msg_dict: Union[ChatCompletionAssistantMessage, dict] = messages[msg_i].model_dump()  # type: ignore
+                    msg_dict: Union[ChatCompletionAssistantMessage, dict] = messages[
+                        msg_i
+                    ].model_dump()  # type: ignore
                 else:
                     msg_dict = messages[msg_i]  # type: ignore
                 assistant_msg = ChatCompletionAssistantMessage(**msg_dict)  # type: ignore
@@ -399,7 +401,8 @@ def _gemini_convert_messages_with_history(  # noqa: PLR0915
             tool_call_message_roles = ["tool", "function"]
             if msg_i < len(messages) and messages[msg_i]["role"] in tool_call_message_roles:
                 _part = convert_to_gemini_tool_call_result(
-                    messages[msg_i], last_message_with_tool_calls  # type: ignore
+                    messages[msg_i],
+                    last_message_with_tool_calls,  # type: ignore
                 )
                 msg_i += 1
                 # Handle both single part and list of parts (for Computer Use with images)
@@ -461,7 +464,8 @@ def _transform_request_body(
         )
         if supports_response_schema is False:
             user_response_schema_message = response_schema_prompt(
-                model=model, response_schema=optional_params.get("response_schema")  # type: ignore
+                model=model,
+                response_schema=optional_params.get("response_schema"),  # type: ignore
             )
             messages.append({"role": "user", "content": user_response_schema_message})
             optional_params.pop("response_schema")

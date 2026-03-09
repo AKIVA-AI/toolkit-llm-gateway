@@ -196,7 +196,9 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
     ) -> ContentPartDoneEvent:
 
         text = getattr(litellm_complete_object.choices[0].message, "content", "") or ""  # type: ignore
-        reasoning_content = getattr(litellm_complete_object.choices[0].message, "reasoning_content", "") or ""  # type: ignore
+        reasoning_content = (
+            getattr(litellm_complete_object.choices[0].message, "reasoning_content", "") or ""
+        )  # type: ignore
         annotations = getattr(litellm_complete_object.choices[0].message, "annotations", None)  # type: ignore
 
         part: Optional[PART_UNION_TYPES] = None
@@ -406,7 +408,6 @@ class LiteLLMCompletionStreamingIterator(ResponsesAPIStreamingIterator):
                 self.sent_annotation_events = True
                 # Store annotation events to emit them one by one
                 if not hasattr(self, "_pending_annotation_events"):
-
                     response_annotations = LiteLLMCompletionResponsesConfig._transform_chat_completion_annotations_to_response_output_annotations(
                         annotations=annotations
                     )

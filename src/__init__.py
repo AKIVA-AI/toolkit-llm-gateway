@@ -193,15 +193,15 @@ datadog_use_v1: Optional[bool] = False  # if you want to use v1 datadog logged p
 gcs_pub_sub_use_v1: Optional[bool] = False  # if you want to use v1 gcs pubsub logged payload
 generic_api_use_v1: Optional[bool] = False  # if you want to use v1 generic api logged payload
 argilla_transformation_object: Optional[Dict[str, Any]] = None
-_async_input_callback: List[Union[str, Callable, CustomLogger]] = (
-    []
-)  # internal variable - async custom callbacks are routed here.
-_async_success_callback: List[Union[str, Callable, CustomLogger]] = (
-    []
-)  # internal variable - async custom callbacks are routed here.
-_async_failure_callback: List[Union[str, Callable, CustomLogger]] = (
-    []
-)  # internal variable - async custom callbacks are routed here.
+_async_input_callback: List[
+    Union[str, Callable, CustomLogger]
+] = []  # internal variable - async custom callbacks are routed here.
+_async_success_callback: List[
+    Union[str, Callable, CustomLogger]
+] = []  # internal variable - async custom callbacks are routed here.
+_async_failure_callback: List[
+    Union[str, Callable, CustomLogger]
+] = []  # internal variable - async custom callbacks are routed here.
 pre_call_rules: List[Callable] = []
 post_call_rules: List[Callable] = []
 turn_off_message_logging: Optional[bool] = False
@@ -324,12 +324,8 @@ enable_loadbalancing_on_batch_endpoints: Optional[bool] = None
 enable_caching_on_provider_specific_optional_params: bool = (
     False  # feature-flag for caching on optional params - e.g. 'top_k'
 )
-caching: bool = (
-    False  # Not used anymore, will be removed in next MAJOR release - https://github.com/BerriAI/litellm/discussions/648
-)
-caching_with_models: bool = (
-    False  # # Not used anymore, will be removed in next MAJOR release - https://github.com/BerriAI/litellm/discussions/648
-)
+caching: bool = False  # Not used anymore, will be removed in next MAJOR release - https://github.com/BerriAI/litellm/discussions/648
+caching_with_models: bool = False  # # Not used anymore, will be removed in next MAJOR release - https://github.com/BerriAI/litellm/discussions/648
 cache: Optional[Cache] = None  # cache object <- use this - https://docs.litellm.ai/docs/caching
 default_in_memory_ttl: Optional[float] = None
 default_redis_ttl: Optional[float] = None
@@ -386,9 +382,7 @@ custom_prometheus_metadata_labels: List[str] = []
 custom_prometheus_tags: List[str] = []
 prometheus_metrics_config: Optional[List] = None
 disable_add_prefix_to_prompt: bool = False  # used by anthropic, to disable adding prefix to prompt
-disable_copilot_system_to_assistant: bool = (
-    False  # If false (default), converts all 'system' role messages to 'assistant' for GitHub Copilot compatibility. Set to true to disable this behavior.
-)
+disable_copilot_system_to_assistant: bool = False  # If false (default), converts all 'system' role messages to 'assistant' for GitHub Copilot compatibility. Set to true to disable this behavior.
 public_mcp_servers: Optional[List[str]] = None
 public_model_groups: Optional[List[str]] = None
 public_agent_groups: Optional[List[str]] = None
@@ -408,9 +402,7 @@ use_aiohttp_transport: bool = (
 aiohttp_trust_env: bool = False  # set to true to use HTTP_ Proxy settings
 disable_aiohttp_transport: bool = False  # Set this to true to use httpx instead
 disable_aiohttp_trust_env: bool = False  # When False, aiohttp will respect HTTP(S)_PROXY env vars
-force_ipv4: bool = (
-    False  # when True, litellm will force ipv4 for all LLM requests. Some users have seen httpx ConnectionError when using ipv6.
-)
+force_ipv4: bool = False  # when True, litellm will force ipv4 for all LLM requests. Some users have seen httpx ConnectionError when using ipv6.
 module_level_aclient = AsyncHTTPHandler(
     timeout=request_timeout, client_alias="module level aclient"
 )
@@ -441,9 +433,9 @@ output_parse_pii: bool = False
 from litellm.litellm_core_utils.get_model_cost_map import get_model_cost_map
 
 model_cost = get_model_cost_map(url=model_cost_map_url)
-cost_discount_config: Dict[str, float] = (
-    {}
-)  # Provider-specific cost discounts {"vertex_ai": 0.05} = 5% discount
+cost_discount_config: Dict[
+    str, float
+] = {}  # Provider-specific cost discounts {"vertex_ai": 0.05} = 5% discount
 custom_prompt_dict: Dict[str, dict] = {}
 check_provider_endpoint = False
 

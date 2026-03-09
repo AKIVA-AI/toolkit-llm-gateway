@@ -1,4 +1,4 @@
-﻿"""
+"""
 Integration tests for Toolkit LLM Gateway
 
 Tests end-to-end workflows across all components.

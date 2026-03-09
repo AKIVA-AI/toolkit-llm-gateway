@@ -415,12 +415,13 @@ class OllamaChatConfig(BaseConfig):
             model_response.choices[0].message = message  # type: ignore
             model_response.choices[0].finish_reason = "tool_calls"
         else:
-
             _message = litellm.Message(**response_json_message)
             model_response.choices[0].message = _message  # type: ignore
         model_response.created = int(time.time())
         model_response.model = "ollama_chat/" + model
-        prompt_tokens = response_json.get("prompt_eval_count", litellm.token_counter(messages=messages))  # type: ignore
+        prompt_tokens = response_json.get(
+            "prompt_eval_count", litellm.token_counter(messages=messages)
+        )  # type: ignore
         completion_tokens = response_json.get(
             "eval_count",
             litellm.token_counter(text=response_json["message"]["content"]),

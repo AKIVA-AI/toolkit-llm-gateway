@@ -147,7 +147,6 @@ class BedrockVectorStoreConfig(BaseVectorStoreConfig, BaseAWSLLM):
             if param == "max_num_results":
                 optional_params["numberOfResults"] = value
             elif param == "filters" and value is not None:
-
                 # map the openai filters to the aws kb filters format
                 # openai filters = {"key": <key>, "value": <value>, "operator": <operator>} OR {"and" | "or": [{"key": <key>, "value": <value>, "operator": <operator>}]}
                 # aws kb filters = {"operator": {"<key>": <value>}} OR {"andAll | orAll": [{"operator": {"<key>": <value>}}]}
@@ -209,9 +208,9 @@ class BedrockVectorStoreConfig(BaseVectorStoreConfig, BaseAWSLLM):
         retrieval_config: Dict[str, Any] = {}
         max_results = vector_store_search_optional_params.get("max_num_results")
         if max_results is not None:
-            retrieval_config.setdefault("vectorSearchConfiguration", {})[
-                "numberOfResults"
-            ] = max_results
+            retrieval_config.setdefault("vectorSearchConfiguration", {})["numberOfResults"] = (
+                max_results
+            )
         filters = vector_store_search_optional_params.get("filters")
         if filters is not None:
             retrieval_config.setdefault("vectorSearchConfiguration", {})["filter"] = filters

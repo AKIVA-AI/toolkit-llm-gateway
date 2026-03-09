@@ -329,8 +329,8 @@ def exception_type(  # type: ignore  # noqa: PLR0915
                     else:
                         message = str(original_exception)
 
-                if message is not None and isinstance(
-                    message, str
+                if (
+                    message is not None and isinstance(message, str)
                 ):  # done to prevent user-confusion. Relevant issue - https://github.com/BerriAI/litellm/issues/1414
                     message = message.replace("OPENAI", custom_llm_provider.upper())
                     message = message.replace(
@@ -1225,7 +1225,9 @@ def exception_type(  # type: ignore  # noqa: PLR0915
                         response=httpx.Response(
                             status_code=500,
                             content=str(original_exception),
-                            request=httpx.Request(method="completion", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                            request=httpx.Request(
+                                method="completion", url="https://github.com/BerriAI/litellm"
+                            ),  # type: ignore
                         ),
                         litellm_debug_info=extra_information,
                     )
@@ -1381,7 +1383,9 @@ def exception_type(  # type: ignore  # noqa: PLR0915
                             response=httpx.Response(
                                 status_code=500,
                                 content=str(original_exception),
-                                request=httpx.Request(method="completion", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                                request=httpx.Request(
+                                    method="completion", url="https://github.com/BerriAI/litellm"
+                                ),  # type: ignore
                             ),
                         )
                     if original_exception.status_code == 502:

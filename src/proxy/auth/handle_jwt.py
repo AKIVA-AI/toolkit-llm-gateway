@@ -1277,21 +1277,24 @@ class JWTAuthManager:
             )
 
         # Get other objects
-        user_object, org_object, end_user_object, team_membership_object = (
-            await JWTAuthManager.get_objects(
-                user_id=user_id,
-                user_email=user_email,
-                org_id=org_id,
-                end_user_id=end_user_id,
-                team_id=team_id,
-                valid_user_email=valid_user_email,
-                jwt_handler=jwt_handler,
-                prisma_client=prisma_client,
-                user_api_key_cache=user_api_key_cache,
-                parent_otel_span=parent_otel_span,
-                proxy_logging_obj=proxy_logging_obj,
-                route=route,
-            )
+        (
+            user_object,
+            org_object,
+            end_user_object,
+            team_membership_object,
+        ) = await JWTAuthManager.get_objects(
+            user_id=user_id,
+            user_email=user_email,
+            org_id=org_id,
+            end_user_id=end_user_id,
+            team_id=team_id,
+            valid_user_email=valid_user_email,
+            jwt_handler=jwt_handler,
+            prisma_client=prisma_client,
+            user_api_key_cache=user_api_key_cache,
+            parent_otel_span=parent_otel_span,
+            proxy_logging_obj=proxy_logging_obj,
+            route=route,
         )
 
         await JWTAuthManager.sync_user_role_and_teams(

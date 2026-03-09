@@ -153,7 +153,8 @@ class LiteLLMResponsesTransformationHandler(CompletionTransformationBridge):
                             "type": "message",
                             "role": role,
                             "content": self._convert_content_to_responses_format(
-                                content, role  # type: ignore
+                                content,
+                                role,  # type: ignore
                             ),
                         }
                     )
@@ -342,9 +343,7 @@ class LiteLLMResponsesTransformationHandler(CompletionTransformationBridge):
         reasoning_content: Optional[str] = None
 
         for item in raw_response.output:
-
             if isinstance(item, ResponseReasoningItem):
-
                 for summary_item in item.summary:
                     response_text = getattr(summary_item, "text", "")
                     reasoning_content = response_text if response_text else ""

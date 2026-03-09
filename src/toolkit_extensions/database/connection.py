@@ -1,4 +1,4 @@
-﻿"""
+"""
 Database connection management for Toolkit LLM Gateway
 """
 

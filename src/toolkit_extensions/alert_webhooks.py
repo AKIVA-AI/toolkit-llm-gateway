@@ -1,4 +1,4 @@
-﻿"""
+"""
 Alert webhook system for Toolkit LLM Gateway
 
 Sends budget alerts to external systems via webhooks.

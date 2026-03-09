@@ -1919,9 +1919,7 @@ def anthropic_messages_pt(  # noqa: PLR0915
                 ChatCompletionToolMessage,
                 ChatCompletionUserMessage,
                 ChatCompletionFunctionMessage,
-            ] = messages[
-                msg_i
-            ]  # type: ignore
+            ] = messages[msg_i]  # type: ignore
             if user_message_types_block["role"] == "user":
                 if isinstance(user_message_types_block["content"], list):
                     for m in user_message_types_block["content"]:

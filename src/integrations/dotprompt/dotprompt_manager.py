@@ -124,7 +124,6 @@ class DotpromptManager(CustomPromptManagement):
             raise ValueError("prompt_id is required for dotprompt manager")
 
         try:
-
             # Get the prompt template (versioned or base)
             template = self.prompt_manager.get_prompt(prompt_id=prompt_id, version=prompt_version)
             if template is None:

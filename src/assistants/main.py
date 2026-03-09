@@ -135,9 +135,7 @@ def get_assistants(
             aget_assistants=aget_assistants,  # type: ignore
         )  # type: ignore
     elif custom_llm_provider == "azure":
-        api_base = (
-            optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")
-        )  # type: ignore
+        api_base = optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")  # type: ignore
 
         api_version = (
             optional_params.api_version or litellm.api_version or get_secret("AZURE_API_VERSION")
@@ -179,7 +177,9 @@ def get_assistants(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
 
@@ -193,7 +193,9 @@ def get_assistants(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
 
@@ -333,9 +335,7 @@ def create_assistants(
             async_create_assistants=async_create_assistants,  # type: ignore
         )  # type: ignore
     elif custom_llm_provider == "azure":
-        api_base = (
-            optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")
-        )  # type: ignore
+        api_base = optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")  # type: ignore
 
         api_version = (
             optional_params.api_version or litellm.api_version or get_secret("AZURE_API_VERSION")
@@ -381,7 +381,9 @@ def create_assistants(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
     if response is None:
@@ -502,9 +504,7 @@ def delete_assistant(
             async_delete_assistants=async_delete_assistants,
         )
     elif custom_llm_provider == "azure":
-        api_base = (
-            optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")
-        )  # type: ignore
+        api_base = optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")  # type: ignore
 
         api_version = (
             optional_params.api_version or litellm.api_version or get_secret("AZURE_API_VERSION")
@@ -687,9 +687,7 @@ def create_thread(
             acreate_thread=acreate_thread,
         )
     elif custom_llm_provider == "azure":
-        api_base = (
-            optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")
-        )  # type: ignore
+        api_base = optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")  # type: ignore
 
         api_key = (
             optional_params.api_key
@@ -736,7 +734,9 @@ def create_thread(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
     return response  # type: ignore
@@ -841,9 +841,7 @@ def get_thread(
             aget_thread=aget_thread,
         )
     elif custom_llm_provider == "azure":
-        api_base = (
-            optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")
-        )  # type: ignore
+        api_base = optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")  # type: ignore
 
         api_version: Optional[str] = (
             optional_params.api_version or litellm.api_version or get_secret("AZURE_API_VERSION")
@@ -889,7 +887,9 @@ def get_thread(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
     return response  # type: ignore
@@ -1028,9 +1028,7 @@ def add_message(
             a_add_message=a_add_message,
         )
     elif custom_llm_provider == "azure":
-        api_base = (
-            optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")
-        )  # type: ignore
+        api_base = optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")  # type: ignore
 
         api_version: Optional[str] = (
             optional_params.api_version or litellm.api_version or get_secret("AZURE_API_VERSION")
@@ -1074,7 +1072,9 @@ def add_message(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
 
@@ -1187,9 +1187,7 @@ def get_messages(
             aget_messages=aget_messages,
         )
     elif custom_llm_provider == "azure":
-        api_base = (
-            optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")
-        )  # type: ignore
+        api_base = optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")  # type: ignore
 
         api_version: Optional[str] = (
             optional_params.api_version or litellm.api_version or get_secret("AZURE_API_VERSION")
@@ -1232,7 +1230,9 @@ def get_messages(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
 
@@ -1393,9 +1393,7 @@ def run_thread(
             event_handler=event_handler,
         )
     elif custom_llm_provider == "azure":
-        api_base = (
-            optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")
-        )  # type: ignore
+        api_base = optional_params.api_base or litellm.api_base or get_secret("AZURE_API_BASE")  # type: ignore
 
         api_version = (
             optional_params.api_version or litellm.api_version or get_secret("AZURE_API_VERSION")
@@ -1445,7 +1443,9 @@ def run_thread(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
     return response  # type: ignore

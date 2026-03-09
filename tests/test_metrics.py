@@ -3,7 +3,6 @@ Tests for metrics module
 """
 
 from toolkit_extensions.metrics import (
-    MetricType,
     MetricsCollector,
     get_metrics_collector,
     track_request,

@@ -84,8 +84,7 @@ try:
         ) -> trace_tree.WBTraceTree:
             """Resolves the request and response objects for `openai.Edit`."""
             request_str = (
-                f"\n\n**Instruction**: {request['instruction']}\n\n"
-                f"**Input**: {request['input']}\n"
+                f"\n\n**Instruction**: {request['instruction']}\n\n**Input**: {request['input']}\n"
             )
             choices = [f"\n\n**Edited**: {choice['text']}\n" for choice in response["choices"]]
 

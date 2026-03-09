@@ -151,9 +151,7 @@ class GroqChatConfig(OpenAILikeChatConfig):
         self, api_base: Optional[str], api_key: Optional[str]
     ) -> Tuple[Optional[str], Optional[str]]:
         # groq is openai compatible, we just need to set this to custom_openai and have the api_base be https://api.groq.com/openai/v1
-        api_base = (
-            api_base or get_secret_str("GROQ_API_BASE") or "https://api.groq.com/openai/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret_str("GROQ_API_BASE") or "https://api.groq.com/openai/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("GROQ_API_KEY")
         return api_base, dynamic_api_key
 

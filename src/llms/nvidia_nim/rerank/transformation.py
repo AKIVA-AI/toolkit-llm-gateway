@@ -237,7 +237,10 @@ class NvidiaNimRerankConfig(BaseRerankConfig):
 
         # Add Nvidia-specific truncate parameter if provided
         # This is passed through from non_default_params, not in base OptionalRerankParams
-        if "truncate" in optional_rerank_params and optional_rerank_params.get("truncate") is not None:  # type: ignore
+        if (
+            "truncate" in optional_rerank_params
+            and optional_rerank_params.get("truncate") is not None
+        ):  # type: ignore
             truncate_value = optional_rerank_params.get("truncate")  # type: ignore
             if truncate_value in ["NONE", "END"]:
                 request_data["truncate"] = truncate_value  # type: ignore

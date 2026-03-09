@@ -56,7 +56,7 @@ def get_compiled_pattern(pattern_name: str) -> Pattern:
     if pattern_name not in PREBUILT_PATTERNS:
         available_patterns = ", ".join(PREBUILT_PATTERNS.keys())
         raise ValueError(
-            f"Unknown pattern name: '{pattern_name}'. " f"Available patterns: {available_patterns}"
+            f"Unknown pattern name: '{pattern_name}'. Available patterns: {available_patterns}"
         )
 
     return re.compile(PREBUILT_PATTERNS[pattern_name], re.IGNORECASE)

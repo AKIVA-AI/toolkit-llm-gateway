@@ -1,4 +1,4 @@
-﻿"""
+"""
 Toolkit LLM Gateway - Database Layer
 
 SQLAlchemy models for cost tracking and budget management.

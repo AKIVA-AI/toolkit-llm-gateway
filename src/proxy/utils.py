@@ -349,7 +349,9 @@ class ProxyLogging:
                     or "outage_alerts" in self.alert_types
                     or "region_outage_alerts" in self.alert_types
                 ):
-                    litellm.logging_callback_manager.add_litellm_callback(self.slack_alerting_instance)  # type: ignore
+                    litellm.logging_callback_manager.add_litellm_callback(
+                        self.slack_alerting_instance
+                    )  # type: ignore
                 litellm.logging_callback_manager.add_litellm_success_callback(
                     self.slack_alerting_instance.response_taking_too_long_callback
                 )
@@ -391,11 +393,12 @@ class ProxyLogging:
         litellm.logging_callback_manager.add_litellm_callback(self.service_logging_obj)  # type: ignore
         for callback in litellm.callbacks:
             if isinstance(callback, str):
-
-                callback = litellm.litellm_core_utils.litellm_logging._init_custom_logger_compatible_class(  # type: ignore
-                    cast(_custom_logger_compatible_callbacks_literal, callback),
-                    internal_usage_cache=self.internal_usage_cache.dual_cache,
-                    llm_router=llm_router,
+                callback = (
+                    litellm.litellm_core_utils.litellm_logging._init_custom_logger_compatible_class(  # type: ignore
+                        cast(_custom_logger_compatible_callbacks_literal, callback),
+                        internal_usage_cache=self.internal_usage_cache.dual_cache,
+                        llm_router=llm_router,
+                    )
                 )
 
                 if callback is None:
@@ -817,7 +820,6 @@ class ProxyLogging:
             data.pop("prompt_id", None)
 
         if custom_logger and prompt_spec is not None:
-
             (
                 model,
                 messages,
@@ -1049,7 +1051,6 @@ class ProxyLogging:
                         call_type=call_type,
                     )
                 else:
-
                     guardrail_task = callback.async_moderation_hook(
                         data=data,
                         user_api_key_dict=user_api_key_auth_dict,  # type: ignore
@@ -1569,7 +1570,6 @@ class ProxyLogging:
         current_response = response
 
         for callback in litellm.callbacks:
-
             _callback: Optional[CustomLogger] = None
             if isinstance(callback, str):
                 _callback = (
@@ -2372,14 +2372,12 @@ class PrismaClient:
                 return new_spend_row
             elif table_name == "user_notification":
                 db_data = self.jsonify_object(data=data)
-                new_user_notification_row = (
-                    await self.db.litellm_usernotifications.upsert(  # type: ignore
-                        where={"request_id": data["request_id"]},
-                        data={
-                            "create": {**db_data},  # type: ignore
-                            "update": {},  # don't do anything if it already exists
-                        },
-                    )
+                new_user_notification_row = await self.db.litellm_usernotifications.upsert(  # type: ignore
+                    where={"request_id": data["request_id"]},
+                    data={
+                        "create": {**db_data},  # type: ignore
+                        "update": {},  # don't do anything if it already exists
+                    },
                 )
                 verbose_proxy_logger.info("Data Inserted into Model Request Table")
                 return new_user_notification_row

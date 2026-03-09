@@ -22,7 +22,6 @@ from ..embedding.transformation import VoyageError
 
 
 class VoyageRerankConfig(BaseRerankConfig):
-
     def get_supported_cohere_rerank_params(self, model: str) -> list:
         return ["query", "documents", "top_n", "return_documents"]
 

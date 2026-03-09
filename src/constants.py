@@ -127,7 +127,8 @@ DEFAULT_SSL_CIPHERS = os.getenv(
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-ECDSA-AES128-GCM-SHA256:"
     # Priority 3: Additional modern ciphers (good balance)
-    "ECDHE-RSA-CHACHA20-POLY1305:" "ECDHE-ECDSA-CHACHA20-POLY1305:"
+    "ECDHE-RSA-CHACHA20-POLY1305:"
+    "ECDHE-ECDSA-CHACHA20-POLY1305:"
     # Priority 4: Widely compatible fallbacks (slower but universally supported)
     "ECDHE-RSA-AES256-SHA384:"  # Common fallback
     "ECDHE-RSA-AES128-SHA256:"  # Very widely supported

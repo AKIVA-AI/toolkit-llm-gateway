@@ -215,7 +215,9 @@ def create_file(
                 create_file_data=_create_file_request,
             )
         elif custom_llm_provider == "azure":
-            api_base = optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")  # type: ignore
+            api_base = (
+                optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")
+            )  # type: ignore
             api_version = (
                 optional_params.api_version
                 or litellm.api_version
@@ -282,7 +284,9 @@ def create_file(
                 response=httpx.Response(
                     status_code=400,
                     content="Unsupported provider",
-                    request=httpx.Request(method="create_file", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="create_file", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
         return response
@@ -397,7 +401,9 @@ def file_retrieve(
                 organization=organization,
             )
         elif custom_llm_provider == "azure":
-            api_base = optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")  # type: ignore
+            api_base = (
+                optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")
+            )  # type: ignore
             api_version = (
                 optional_params.api_version
                 or litellm.api_version
@@ -437,7 +443,9 @@ def file_retrieve(
                 response=httpx.Response(
                     status_code=400,
                     content="Unsupported provider",
-                    request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="create_thread", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
 
@@ -561,7 +569,9 @@ def file_delete(
                 organization=organization,
             )
         elif custom_llm_provider == "azure":
-            api_base = optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")  # type: ignore
+            api_base = (
+                optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")
+            )  # type: ignore
             api_version = (
                 optional_params.api_version
                 or litellm.api_version
@@ -603,7 +613,9 @@ def file_delete(
                 response=httpx.Response(
                     status_code=400,
                     content="Unsupported provider",
-                    request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="create_thread", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
         return cast(FileDeleted, response)
@@ -718,7 +730,9 @@ def file_list(
                 organization=organization,
             )
         elif custom_llm_provider == "azure":
-            api_base = optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")  # type: ignore
+            api_base = (
+                optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")
+            )  # type: ignore
             api_version = (
                 optional_params.api_version
                 or litellm.api_version
@@ -758,7 +772,9 @@ def file_list(
                 response=httpx.Response(
                     status_code=400,
                     content="Unsupported provider",
-                    request=httpx.Request(method="file_list", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="file_list", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
         return response
@@ -906,7 +922,9 @@ def file_content(
                 organization=organization,
             )
         elif custom_llm_provider == "azure":
-            api_base = optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")  # type: ignore
+            api_base = (
+                optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")
+            )  # type: ignore
             api_version = (
                 optional_params.api_version
                 or litellm.api_version
@@ -983,7 +1001,9 @@ def file_content(
                 response=httpx.Response(
                     status_code=400,
                     content="Unsupported provider",
-                    request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="create_thread", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
         return response

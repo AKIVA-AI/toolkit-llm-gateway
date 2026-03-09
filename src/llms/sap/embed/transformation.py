@@ -90,7 +90,7 @@ class GenAIHubEmbeddingConfig(BaseEmbeddingConfig):
             for deployment in deployments.get("resources", []):
                 if deployment["scenarioId"] == "orchestration":
                     config_details = client.get(
-                        self.base_url + f'/lm/configurations/{deployment["configurationId"]}',
+                        self.base_url + f"/lm/configurations/{deployment['configurationId']}",
                         headers=self.headers,
                     ).json()
                     if config_details["executableId"] == "orchestration":

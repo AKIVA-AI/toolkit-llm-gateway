@@ -477,7 +477,9 @@ def function_setup(  # noqa: PLR0915
                 # check if callback is a string - e.g. "lago", "openmeter"
                 if isinstance(callback, str):
                     callback = litellm.litellm_core_utils.litellm_logging._init_custom_logger_compatible_class(  # type: ignore
-                        callback, internal_usage_cache=None, llm_router=None  # type: ignore
+                        callback,
+                        internal_usage_cache=None,
+                        llm_router=None,  # type: ignore
                     )
                     if callback is None or any(
                         isinstance(cb, type(callback)) for cb in litellm._async_success_callback
@@ -629,7 +631,6 @@ def function_setup(  # noqa: PLR0915
                 and isinstance(messages[0], dict)
                 and "content" in messages[0]
             ):
-
                 buffer = StringIO()
                 for m in messages:
                     content = m.get("content", "")
@@ -864,9 +865,7 @@ def post_call_processing(
                         isinstance(original_response, ModelResponse)
                         and len(original_response.choices) > 0
                     ):
-                        model_response: Optional[str] = original_response.choices[
-                            0
-                        ].message.content  # type: ignore
+                        model_response: Optional[str] = original_response.choices[0].message.content  # type: ignore
                         if model_response is not None:
                             ### POST-CALL RULES ###
                             rules_obj.post_call_rules(input=model_response, model=model)
@@ -1252,16 +1251,16 @@ def client(original_function):  # noqa: PLR0915
             print_verbose(
                 f"ASYNC kwargs[caching]: {kwargs.get('caching', False)}; litellm.cache: {litellm.cache}; kwargs.get('cache'): {kwargs.get('cache', None)}"
             )
-            _caching_handler_response: Optional[CachingHandlerResponse] = (
-                await _llm_caching_handler._async_get_cache(
-                    model=model or "",
-                    original_function=original_function,
-                    logging_obj=logging_obj,
-                    start_time=start_time,
-                    call_type=call_type,
-                    kwargs=kwargs,
-                    args=args,
-                )
+            _caching_handler_response: Optional[
+                CachingHandlerResponse
+            ] = await _llm_caching_handler._async_get_cache(
+                model=model or "",
+                original_function=original_function,
+                logging_obj=logging_obj,
+                start_time=start_time,
+                call_type=call_type,
+                kwargs=kwargs,
+                args=args,
             )
 
             if _caching_handler_response is not None:
@@ -1619,7 +1618,9 @@ def create_pretrained_tokenizer(identifier: str, revision="main", auth_token: Op
 
     try:
         tokenizer = Tokenizer.from_pretrained(
-            identifier, revision=revision, auth_token=auth_token  # type: ignore
+            identifier,
+            revision=revision,
+            auth_token=auth_token,  # type: ignore
         )
     except Exception as e:
         verbose_logger.error(
@@ -2975,11 +2976,7 @@ def pre_process_non_default_params(
         non_default_params, list
     ):  # fixes https://github.com/BerriAI/litellm/issues/4933
         tools = non_default_params["tools"]
-        for (
-            tool
-        ) in (
-            tools
-        ):  # clean out 'additionalProperties = False'. Causes vertexai/gemini OpenAI API Schema errors - https://github.com/langchain-ai/langchainjs/issues/5240
+        for tool in tools:  # clean out 'additionalProperties = False'. Causes vertexai/gemini OpenAI API Schema errors - https://github.com/langchain-ai/langchainjs/issues/5240
             tool_function = tool.get("function", {})
             parameters = tool_function.get("parameters", None)
             if parameters is not None:
@@ -4372,8 +4369,8 @@ def _get_potential_model_names(
             model=model, custom_llm_provider=custom_llm_provider
         )
         combined_stripped_model_name = stripped_model_name
-    elif custom_llm_provider and model.startswith(
-        custom_llm_provider + "/"
+    elif (
+        custom_llm_provider and model.startswith(custom_llm_provider + "/")
     ):  # handle case where custom_llm_provider is provided and model starts with custom_llm_provider
         split_model = model.split("/", 1)[1]
         combined_model_name = model
@@ -6610,7 +6607,6 @@ class ProviderConfigManager:
             if route == "v2":
                 return litellm.CohereV2ChatConfig()
             else:
-
                 return litellm.CohereChatConfig()
         elif litellm.LlmProviders.SNOWFLAKE == provider:
             return litellm.SnowflakeConfig()

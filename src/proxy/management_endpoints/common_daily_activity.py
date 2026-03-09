@@ -125,13 +125,11 @@ def update_breakdown_metrics(
                     ),
                 )
             )
-        breakdown.model_groups[record.model_group].api_key_breakdown[record.api_key].metrics = (
-            update_metrics(
-                breakdown.model_groups[record.model_group]
-                .api_key_breakdown[record.api_key]
-                .metrics,
-                record,
-            )
+        breakdown.model_groups[record.model_group].api_key_breakdown[
+            record.api_key
+        ].metrics = update_metrics(
+            breakdown.model_groups[record.model_group].api_key_breakdown[record.api_key].metrics,
+            record,
         )
 
     if record.mcp_namespaced_tool_name:

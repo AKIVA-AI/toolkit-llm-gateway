@@ -12,7 +12,6 @@ GRADIENT_AI_SERVERLESS_ENDPOINT = "https://inference.do-ai.run"
 
 
 class GradientAIConfig(OpenAILikeChatConfig):
-
     k: Optional[int] = None
     kb_filters: Optional[List[Dict]] = None
     filter_kb_content_by_query_metadata: Optional[bool] = None

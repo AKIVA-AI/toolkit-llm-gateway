@@ -1,4 +1,4 @@
-﻿"""
+"""
 Toolkit Extensions for LiteLLM Gateway
 
 This package contains Toolkit-specific enhancements:

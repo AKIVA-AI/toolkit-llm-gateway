@@ -8,7 +8,7 @@ Checks database connectivity, Redis (if configured), and LLM provider availabili
 import os
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError

@@ -439,7 +439,6 @@ class LiteLLMProxyRequestSetup:
                 team_id=user_api_key_dict.team_id,
             )  # handles aliases, wildcards, etc.
         ):
-
             _headers = LiteLLMProxyRequestSetup.add_headers_to_llm_call(headers, user_api_key_dict)
             if _headers != {}:
                 data["headers"] = _headers
@@ -568,9 +567,9 @@ class LiteLLMProxyRequestSetup:
             )
         )
         data[_metadata_variable_name].update(user_api_key_logged_metadata)
-        data[_metadata_variable_name][
-            "user_api_key"
-        ] = user_api_key_dict.api_key  # this is just the hashed token
+        data[_metadata_variable_name]["user_api_key"] = (
+            user_api_key_dict.api_key
+        )  # this is just the hashed token
 
         data[_metadata_variable_name]["user_api_end_user_max_budget"] = getattr(
             user_api_key_dict, "end_user_max_budget", None
@@ -929,18 +928,18 @@ async def add_litellm_data_to_request(  # noqa: PLR0915
     )
 
     # Team spend, budget - used by prometheus.py
-    data[_metadata_variable_name][
-        "user_api_key_team_max_budget"
-    ] = user_api_key_dict.team_max_budget
+    data[_metadata_variable_name]["user_api_key_team_max_budget"] = (
+        user_api_key_dict.team_max_budget
+    )
     data[_metadata_variable_name]["user_api_key_team_spend"] = user_api_key_dict.team_spend
     data[_metadata_variable_name]["user_api_key_request_route"] = user_api_key_dict.request_route
 
     # API Key spend, budget - used by prometheus.py
     data[_metadata_variable_name]["user_api_key_spend"] = user_api_key_dict.spend
     data[_metadata_variable_name]["user_api_key_max_budget"] = user_api_key_dict.max_budget
-    data[_metadata_variable_name][
-        "user_api_key_model_max_budget"
-    ] = user_api_key_dict.model_max_budget
+    data[_metadata_variable_name]["user_api_key_model_max_budget"] = (
+        user_api_key_dict.model_max_budget
+    )
 
     data[_metadata_variable_name]["user_api_key_metadata"] = user_api_key_dict.metadata
     _headers = dict(request.headers)

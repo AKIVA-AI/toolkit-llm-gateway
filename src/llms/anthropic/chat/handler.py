@@ -535,7 +535,9 @@ class ModelResponseIterator:
             usage_object=cast(dict, anthropic_usage_chunk), reasoning_content=None
         )
 
-    def _content_block_delta_helper(self, chunk: dict) -> Tuple[
+    def _content_block_delta_helper(
+        self, chunk: dict
+    ) -> Tuple[
         str,
         Optional[ChatCompletionToolCallChunk],
         List[Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]],

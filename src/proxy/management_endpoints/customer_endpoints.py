@@ -487,7 +487,9 @@ async def update_end_user(
             update_end_user_table_data["user_id"] = data.user_id  # type: ignore
             verbose_proxy_logger.debug("In update customer, user_id condition block.")
             response = await prisma_client.db.litellm_endusertable.update(
-                where={"user_id": data.user_id}, data=update_end_user_table_data, include={"litellm_budget_table": True}  # type: ignore
+                where={"user_id": data.user_id},
+                data=update_end_user_table_data,
+                include={"litellm_budget_table": True},  # type: ignore
             )
             if response is None:
                 raise ValueError(

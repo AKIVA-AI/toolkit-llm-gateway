@@ -396,17 +396,23 @@ class GitLabPromptManager(CustomPromptManagement):
             low = line.lower()
             if low.startswith("system:"):
                 if current_role and current_content:
-                    messages.append({"role": current_role, "content": "\n".join(current_content).strip()})  # type: ignore
+                    messages.append(
+                        {"role": current_role, "content": "\n".join(current_content).strip()}
+                    )  # type: ignore
                 current_role = "system"
                 current_content = [line[7:].strip()]
             elif low.startswith("user:"):
                 if current_role and current_content:
-                    messages.append({"role": current_role, "content": "\n".join(current_content).strip()})  # type: ignore
+                    messages.append(
+                        {"role": current_role, "content": "\n".join(current_content).strip()}
+                    )  # type: ignore
                 current_role = "user"
                 current_content = [line[5:].strip()]
             elif low.startswith("assistant:"):
                 if current_role and current_content:
-                    messages.append({"role": current_role, "content": "\n".join(current_content).strip()})  # type: ignore
+                    messages.append(
+                        {"role": current_role, "content": "\n".join(current_content).strip()}
+                    )  # type: ignore
                 current_role = "assistant"
                 current_content = [line[10:].strip()]
             else:

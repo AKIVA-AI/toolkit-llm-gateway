@@ -2288,9 +2288,9 @@ async def delete_team(
     team_rows: List[LiteLLM_TeamTable] = []
     for team_id in data.team_ids:
         try:
-            team_row_base: Optional[BaseModel] = (
-                await prisma_client.db.litellm_teamtable.find_unique(where={"team_id": team_id})
-            )
+            team_row_base: Optional[
+                BaseModel
+            ] = await prisma_client.db.litellm_teamtable.find_unique(where={"team_id": team_id})
             if team_row_base is None:
                 raise Exception
         except Exception:
@@ -2584,7 +2584,8 @@ async def block_team(
         raise Exception("No DB Connected.")
 
     record = await prisma_client.db.litellm_teamtable.update(
-        where={"team_id": data.team_id}, data={"blocked": True}  # type: ignore
+        where={"team_id": data.team_id},
+        data={"blocked": True},  # type: ignore
     )
 
     if record is None:
@@ -2625,7 +2626,8 @@ async def unblock_team(
         raise Exception("No DB Connected.")
 
     record = await prisma_client.db.litellm_teamtable.update(
-        where={"team_id": data.team_id}, data={"blocked": False}  # type: ignore
+        where={"team_id": data.team_id},
+        data={"blocked": False},  # type: ignore
     )
 
     if record is None:
@@ -2935,7 +2937,7 @@ async def list_team(
             verbose_proxy_logger.exception(team_exception)
             continue
     # Sort the responses by team_alias
-    returned_responses.sort(key=lambda x: (getattr(x, "team_alias", "") or ""))
+    returned_responses.sort(key=lambda x: getattr(x, "team_alias", "") or "")
 
     if organization_id is not None:
         if organization_id == SpecialManagementEndpointEnums.DEFAULT_ORGANIZATION.value:
@@ -2974,7 +2976,9 @@ async def get_paginated_teams(
 
         # Get paginated teams
         teams = await prisma_client.db.litellm_teamtable.find_many(
-            skip=skip, take=page_size, order={"team_alias": "asc"}  # Sort by team_alias
+            skip=skip,
+            take=page_size,
+            order={"team_alias": "asc"},  # Sort by team_alias
         )
         return teams, total_count
     except Exception as e:

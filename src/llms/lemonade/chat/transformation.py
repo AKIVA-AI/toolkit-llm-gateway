@@ -104,9 +104,7 @@ class LemonadeChatConfig(OpenAILikeChatConfig):
         self, api_base: Optional[str], api_key: Optional[str]
     ) -> Tuple[Optional[str], Optional[str]]:
         # lemonade is openai compatible, we just need to set this to custom_openai and have the api_base be lemonade's endpoint
-        api_base = (
-            api_base or get_secret_str("LEMONADE_API_BASE") or "http://localhost:8000/api/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret_str("LEMONADE_API_BASE") or "http://localhost:8000/api/v1"  # type: ignore
         # Lemonade doesn't check the key
         key = "lemonade"
         return api_base, key

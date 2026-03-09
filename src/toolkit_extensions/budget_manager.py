@@ -1,4 +1,4 @@
-﻿"""
+"""
 Budget management system for Toolkit LLM Gateway
 
 Enforces spending limits and generates alerts.

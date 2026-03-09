@@ -363,9 +363,7 @@ class Router:
 
         self.assistants_config = assistants_config
         self.search_tools = search_tools or []
-        self.deployment_names: List = (
-            []
-        )  # names of models under litellm_params. ex. azure/chatgpt-v-2
+        self.deployment_names: List = []  # names of models under litellm_params. ex. azure/chatgpt-v-2
         self.deployment_latency_map = {}
         ### CACHING ###
         cache_type: Literal["local", "redis", "redis-semantic", "s3", "disk"] = (
@@ -412,9 +410,9 @@ class Router:
         self.default_max_parallel_requests = default_max_parallel_requests
         self.provider_default_deployment_ids: List[str] = []
         self.pattern_router = PatternMatchRouter()
-        self.team_pattern_routers: Dict[str, PatternMatchRouter] = (
-            {}
-        )  # {"TEAM_ID": PatternMatchRouter}
+        self.team_pattern_routers: Dict[
+            str, PatternMatchRouter
+        ] = {}  # {"TEAM_ID": PatternMatchRouter}
         self.auto_routers: Dict[str, "AutoRouter"] = {}
 
         # Initialize model_group_alias early since it's used in set_model_list
@@ -436,9 +434,7 @@ class Router:
                 if "model" in m["litellm_params"]:
                     self.deployment_latency_map[m["litellm_params"]["model"]] = 0
         else:
-            self.model_list: List = (
-                []
-            )  # initialize an empty list - to allow _add_deployment and delete_deployment to work
+            self.model_list: List = []  # initialize an empty list - to allow _add_deployment and delete_deployment to work
 
         if allowed_fails is not None:
             self.allowed_fails = allowed_fails
@@ -449,9 +445,7 @@ class Router:
             cache=self.cache, default_cooldown_time=self.cooldown_time
         )
         self.disable_cooldowns = disable_cooldowns
-        self.failed_calls = (
-            InMemoryCache()
-        )  # cache to track failed call per deployment, if num failed calls within 1 minute > allowed fails, then add it to cooldown
+        self.failed_calls = InMemoryCache()  # cache to track failed call per deployment, if num failed calls within 1 minute > allowed fails, then add it to cooldown
 
         if num_retries is not None:
             self.num_retries = num_retries
@@ -502,9 +496,7 @@ class Router:
         self.success_calls: defaultdict = defaultdict(
             int
         )  # dict to store success_calls  made to each model
-        self.previous_models: List = (
-            []
-        )  # list to store failed calls (passed in as metadata to next call)
+        self.previous_models: List = []  # list to store failed calls (passed in as metadata to next call)
 
         # make Router.chat.completions.create compatible for openai.chat.completions.create
         default_litellm_params = default_litellm_params or {}
@@ -1355,7 +1347,9 @@ class Router:
 
         return FallbackStreamWrapper(stream_with_fallbacks())
 
-    async def _acompletion(self, model: str, messages: List[Dict[str, str]], **kwargs) -> Union[
+    async def _acompletion(
+        self, model: str, messages: List[Dict[str, str]], **kwargs
+    ) -> Union[
         ModelResponse,
         CustomStreamWrapper,
     ]:
@@ -1740,7 +1734,9 @@ class Router:
             _tasks = []
             for model in models:
                 # add each task but if the task fails
-                _tasks.append(_async_completion_no_exceptions(model=model, messages=messages, **kwargs))  # type: ignore
+                _tasks.append(
+                    _async_completion_no_exceptions(model=model, messages=messages, **kwargs)
+                )  # type: ignore
             response = await asyncio.gather(*_tasks)
             return response
         elif isinstance(messages, list) and all(isinstance(m, list) for m in messages):
@@ -1750,7 +1746,10 @@ class Router:
                     # Request Number X, Model Number Y
                     _tasks.append(
                         _async_completion_no_exceptions_return_idx(
-                            model=model, idx=idx, messages=message, **kwargs  # type: ignore
+                            model=model,
+                            idx=idx,
+                            messages=message,
+                            **kwargs,  # type: ignore
                         )
                     )
             responses = await asyncio.gather(*_tasks)
@@ -1844,7 +1843,9 @@ class Router:
             Wrapper around self.acompletion that catches exceptions and returns them as a result
             """
             try:
-                result = await self.acompletion(model=model, messages=messages, stream=stream, **kwargs)  # type: ignore
+                result = await self.acompletion(
+                    model=model, messages=messages, stream=stream, **kwargs
+                )  # type: ignore
                 return result
             except asyncio.CancelledError:
                 verbose_router_logger.debug(
@@ -2576,7 +2577,9 @@ class Router:
                     kwargs[k].update(v)
 
             # call via litellm.completion()
-            return litellm.text_completion(**{**data, "prompt": prompt, "caching": self.cache_responses, **kwargs})  # type: ignore
+            return litellm.text_completion(
+                **{**data, "prompt": prompt, "caching": self.cache_responses, **kwargs}
+            )  # type: ignore
         except Exception as e:
             raise e
 
@@ -4034,9 +4037,7 @@ class Router:
                     )
                     verbose_router_logger.info(
                         msg="Got 'ContextWindowExceededError'. No context_window_fallback set. Defaulting \
-                        to fallbacks, if available.{}".format(
-                            error_message
-                        )
+                        to fallbacks, if available.{}".format(error_message)
                     )
 
                     e.message += "\n{}".format(error_message)
@@ -4069,9 +4070,7 @@ class Router:
                     )
                     verbose_router_logger.info(
                         msg="Got 'ContentPolicyViolationError'. No content_policy_fallback set. Defaulting \
-                        to fallbacks, if available.{}".format(
-                            error_message
-                        )
+                        to fallbacks, if available.{}".format(error_message)
                     )
 
                     e.message += "\n{}".format(error_message)
@@ -4125,9 +4124,11 @@ class Router:
 
         if hasattr(original_exception, "message"):
             # add the available fallbacks to the exception
-            original_exception.message += ". Received Model Group={}\nAvailable Model Group Fallbacks={}".format(  # type: ignore
-                model_group,
-                fallback_model_group,
+            original_exception.message += (
+                ". Received Model Group={}\nAvailable Model Group Fallbacks={}".format(  # type: ignore
+                    model_group,
+                    fallback_model_group,
+                )
             )
             if len(fallback_failure_exception_str) > 0:
                 original_exception.message += (  # type: ignore
@@ -7550,7 +7551,8 @@ class Router:
 
         if self.routing_strategy == "least-busy" and self.leastbusy_logger is not None:
             deployment = self.leastbusy_logger.get_available_deployments(
-                model_group=model, healthy_deployments=healthy_deployments  # type: ignore
+                model_group=model,
+                healthy_deployments=healthy_deployments,  # type: ignore
             )
         elif self.routing_strategy == "simple-shuffle":
             # if users pass rpm or tpm, we do a random weighted pick - based on rpm/tpm

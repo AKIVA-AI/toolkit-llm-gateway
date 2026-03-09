@@ -93,7 +93,6 @@ def replace_model_in_jsonl(file_content: FileTypes, new_model_name: str) -> File
         elif isinstance(file_content_bytes, str):
             file_content_str = file_content_bytes
         else:
-
             return file_content
 
         # Parse JSONL properly, handling potential multiline JSON objects
@@ -115,7 +114,9 @@ def replace_model_in_jsonl(file_content: FileTypes, new_model_name: str) -> File
         # Reassemble the modified lines and return as bytes
         modified_file_content = "\n".join(modified_lines).encode("utf-8")
 
-        return InMemoryFile(modified_file_content, name="modified_file.jsonl", content_type="application/jsonl")  # type: ignore
+        return InMemoryFile(
+            modified_file_content, name="modified_file.jsonl", content_type="application/jsonl"
+        )  # type: ignore
 
     except (json.JSONDecodeError, UnicodeDecodeError, TypeError):
         # return the original file content if there is an error replacing the model name

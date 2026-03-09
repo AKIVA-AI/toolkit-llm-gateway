@@ -74,8 +74,9 @@ CREDENTIAL_VALUES: Final[List[CredentialsValue]] = [
     CredentialsValue(
         "auth_url",
         ("url",),
-        transform_fn=lambda url: url.rstrip("/")
-        + ("" if url.endswith(AUTH_ENDPOINT_SUFFIX) else AUTH_ENDPOINT_SUFFIX),
+        transform_fn=lambda url: (
+            url.rstrip("/") + ("" if url.endswith(AUTH_ENDPOINT_SUFFIX) else AUTH_ENDPOINT_SUFFIX)
+        ),
     ),
     CredentialsValue(
         "base_url",
@@ -86,8 +87,9 @@ CREDENTIAL_VALUES: Final[List[CredentialsValue]] = [
     CredentialsValue(
         "cert_url",
         ("certurl",),
-        transform_fn=lambda url: url.rstrip("/")
-        + ("" if url.endswith(AUTH_ENDPOINT_SUFFIX) else AUTH_ENDPOINT_SUFFIX),
+        transform_fn=lambda url: (
+            url.rstrip("/") + ("" if url.endswith(AUTH_ENDPOINT_SUFFIX) else AUTH_ENDPOINT_SUFFIX)
+        ),
     ),
     # file paths (kept for config compatibility)
     CredentialsValue("cert_file_path"),
@@ -198,7 +200,9 @@ def fetch_credentials(
 
     out: Dict[str, str] = {}
     for cred in CREDENTIAL_VALUES:
-        value = _resolve_value(cred, kwargs=kwargs, env=env, config=config, service_like=service_like)  # type: ignore
+        value = _resolve_value(
+            cred, kwargs=kwargs, env=env, config=config, service_like=service_like
+        )  # type: ignore
         if value is None:
             continue
         if cred.transform_fn:

@@ -2,14 +2,8 @@
 Tests for configuration validator module
 """
 
-import os
-
-import pytest
-
 from toolkit_extensions.config_validator import (
-    ConfigLevel,
     ConfigValidator,
-    ConfigVar,
     validate_config,
 )
 

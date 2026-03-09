@@ -425,10 +425,10 @@ class BedrockEmbedding(BaseAWSLLM):
             batch_data = []
             for i in input:
                 if model == "amazon.titan-embed-image-v1":
-                    transformed_request: (
-                        AmazonEmbeddingRequest
-                    ) = AmazonTitanMultimodalEmbeddingG1Config()._transform_request(
-                        input=i, inference_params=inference_params
+                    transformed_request: AmazonEmbeddingRequest = (
+                        AmazonTitanMultimodalEmbeddingG1Config()._transform_request(
+                            input=i, inference_params=inference_params
+                        )
                     )
                 elif model == "amazon.titan-embed-text-v1":
                     transformed_request = AmazonTitanG1Config()._transform_request(

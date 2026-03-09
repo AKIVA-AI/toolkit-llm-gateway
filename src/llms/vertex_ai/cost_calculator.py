@@ -100,8 +100,10 @@ def cost_per_character(
                 assert (
                     "input_cost_per_character_above_128k_tokens" in model_info
                     and model_info["input_cost_per_character_above_128k_tokens"] is not None
-                ), "model info for model={} does not have 'input_cost_per_character_above_128k_tokens'-pricing for > 128k tokens\nmodel_info={}".format(
-                    model, model_info
+                ), (
+                    "model info for model={} does not have 'input_cost_per_character_above_128k_tokens'-pricing for > 128k tokens\nmodel_info={}".format(
+                        model, model_info
+                    )
                 )
                 prompt_cost = (
                     prompt_characters * model_info["input_cost_per_character_above_128k_tokens"]
@@ -110,8 +112,10 @@ def cost_per_character(
                 assert (
                     "input_cost_per_character" in model_info
                     and model_info["input_cost_per_character"] is not None
-                ), "model info for model={} does not have 'input_cost_per_character'-pricing\nmodel_info={}".format(
-                    model, model_info
+                ), (
+                    "model info for model={} does not have 'input_cost_per_character'-pricing\nmodel_info={}".format(
+                        model, model_info
+                    )
                 )
                 prompt_cost = prompt_characters * model_info["input_cost_per_character"]
         except Exception as e:
@@ -143,8 +147,10 @@ def cost_per_character(
                 assert (
                     "output_cost_per_character_above_128k_tokens" in model_info
                     and model_info["output_cost_per_character_above_128k_tokens"] is not None
-                ), "model info for model={} does not have 'output_cost_per_character_above_128k_tokens' pricing\nmodel_info={}".format(
-                    model, model_info
+                ), (
+                    "model info for model={} does not have 'output_cost_per_character_above_128k_tokens' pricing\nmodel_info={}".format(
+                        model, model_info
+                    )
                 )
                 completion_cost = (
                     completion_tokens * model_info["output_cost_per_character_above_128k_tokens"]
@@ -153,8 +159,10 @@ def cost_per_character(
                 assert (
                     "output_cost_per_character" in model_info
                     and model_info["output_cost_per_character"] is not None
-                ), "model info for model={} does not have 'output_cost_per_character'-pricing\nmodel_info={}".format(
-                    model, model_info
+                ), (
+                    "model info for model={} does not have 'output_cost_per_character'-pricing\nmodel_info={}".format(
+                        model, model_info
+                    )
                 )
                 completion_cost = completion_characters * model_info["output_cost_per_character"]
         except Exception as e:

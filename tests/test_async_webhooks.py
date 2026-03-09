@@ -2,7 +2,6 @@
 Tests for async webhook delivery
 """
 
-import asyncio
 import os
 import tempfile
 from unittest.mock import AsyncMock, Mock, patch
@@ -10,7 +9,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import httpx
 import pytest
 
-from toolkit_extensions.alert_webhooks import AlertWebhookManager, WebhookProvider
+from toolkit_extensions.alert_webhooks import AlertWebhookManager
 from toolkit_extensions.budget_manager import BudgetManager, BudgetPeriod
 from toolkit_extensions.cost_tracker import CostTracker
 from toolkit_extensions.database.connection import DatabaseConfig, init_database
@@ -68,7 +67,7 @@ def _create_alert(budget_manager, cost_tracker):
 async def test_async_deliver_success(webhook_manager, budget_manager, cost_tracker):
     """Test async delivery succeeds."""
     alerts = _create_alert(budget_manager, cost_tracker)
-    webhook_id = webhook_manager.register_webhook(
+    webhook_manager.register_webhook(
         name="Test",
         url="https://example.com/webhook",
     )

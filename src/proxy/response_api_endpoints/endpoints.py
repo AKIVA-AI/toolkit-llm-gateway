@@ -107,7 +107,8 @@ async def responses_api(
 
         # Initialize polling handler with configured TTL (from global config)
         polling_handler = ResponsePollingHandler(
-            redis_cache=redis_usage_cache, ttl=polling_cache_ttl  # Global var set at startup
+            redis_cache=redis_usage_cache,
+            ttl=polling_cache_ttl,  # Global var set at startup
         )
 
         # Generate polling ID

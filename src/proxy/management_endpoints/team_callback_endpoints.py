@@ -126,7 +126,8 @@ async def add_team_callbacks(
         team_metadata_json = json.dumps(team_metadata)  # update team_metadata
 
         new_team_row = await prisma_client.db.litellm_teamtable.update(
-            where={"team_id": team_id}, data={"metadata": team_metadata_json}  # type: ignore
+            where={"team_id": team_id},
+            data={"metadata": team_metadata_json},  # type: ignore
         )
 
         return {
@@ -206,7 +207,8 @@ async def disable_team_logging(
 
         # Update team in database
         updated_team = await prisma_client.db.litellm_teamtable.update(
-            where={"team_id": team_id}, data={"metadata": team_metadata_json}  # type: ignore
+            where={"team_id": team_id},
+            data={"metadata": team_metadata_json},  # type: ignore
         )
 
         if updated_team is None:

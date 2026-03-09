@@ -826,10 +826,10 @@ async def _user_api_key_auth_builder(  # noqa: PLR0915
 
         if valid_token is None:
             if isinstance(api_key, str):  # if generated token, make sure it starts with sk-.
-                assert api_key.startswith(
-                    "sk-"
-                ), "LiteLLM Virtual Key expected. Received={}, expected to start with 'sk-'.".format(
-                    api_key
+                assert api_key.startswith("sk-"), (
+                    "LiteLLM Virtual Key expected. Received={}, expected to start with 'sk-'.".format(
+                        api_key
+                    )
                 )  # prevent token hashes from being used
             else:
                 verbose_logger.warning(
@@ -945,7 +945,6 @@ async def _user_api_key_auth_builder(  # noqa: PLR0915
 
             # Check 3. Check if user is in their team budget
             if valid_token.team_member_spend is not None:
-
                 if prisma_client is not None:
                     _cache_key = f"{valid_token.team_id}_{valid_token.user_id}"
 

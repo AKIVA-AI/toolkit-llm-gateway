@@ -1,4 +1,4 @@
-﻿"""
+"""
 Cost tracking middleware for Toolkit LLM Gateway
 
 Intercepts LLM requests and logs costs to database.

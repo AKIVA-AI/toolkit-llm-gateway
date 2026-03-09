@@ -7,7 +7,7 @@ on protected endpoints.
 
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional, Set
+from typing import List, Optional
 
 from toolkit_extensions.database.connection import get_session
 from toolkit_extensions.database.models import APIKey

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Toolkit LLM Gateway - Metrics and Monitoring
 
 Provides Prometheus-compatible metrics for monitoring.

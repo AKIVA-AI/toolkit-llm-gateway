@@ -270,7 +270,17 @@ def _get_cached_prometheus_logger():
 
 
 class Logging(LiteLLMLoggingBaseClass):
-    global supabaseClient, promptLayerLogger, weightsBiasesLogger, logfireLogger, capture_exception, add_breadcrumb, lunaryLogger, logfireLogger, prometheusLogger, slack_app
+    global \
+        supabaseClient, \
+        promptLayerLogger, \
+        weightsBiasesLogger, \
+        logfireLogger, \
+        capture_exception, \
+        add_breadcrumb, \
+        lunaryLogger, \
+        logfireLogger, \
+        prometheusLogger, \
+        slack_app
     custom_pricing: bool = False
     stream_options = None
     litellm_request_debug: bool = False
@@ -431,7 +441,9 @@ class Logging(LiteLLMLoggingBaseClass):
                 and callback in litellm._known_custom_logger_compatible_callbacks
             ):
                 callback_class = _init_custom_logger_compatible_class(
-                    callback, internal_usage_cache=None, llm_router=None  # type: ignore
+                    callback,
+                    internal_usage_cache=None,
+                    llm_router=None,  # type: ignore
                 )
                 if callback_class is not None:
                     processed_list.append(callback_class)
@@ -753,8 +765,11 @@ class Logging(LiteLLMLoggingBaseClass):
             self.model_call_details["prompt_integration"] = logger.__class__.__name__
             return logger
 
-        if anthropic_cache_control_logger := AnthropicCacheControlHook.get_custom_logger_for_anthropic_cache_control_hook(
-            non_default_params
+        if (
+            anthropic_cache_control_logger
+            := AnthropicCacheControlHook.get_custom_logger_for_anthropic_cache_control_hook(
+                non_default_params
+            )
         ):
             self.model_call_details["prompt_integration"] = (
                 anthropic_cache_control_logger.__class__.__name__
@@ -821,9 +836,7 @@ class Logging(LiteLLMLoggingBaseClass):
         self.model_call_details["api_key"] = api_key
         self.model_call_details["additional_args"] = additional_args
         self.model_call_details["log_event_type"] = "pre_api_call"
-        if (
-            model
-        ):  # if model name was changes pre-call, overwrite the initial model call name with the new one
+        if model:  # if model name was changes pre-call, overwrite the initial model call name with the new one
             self.model_call_details["model"] = model
         self.model_call_details["litellm_params"]["api_base"] = self._get_masked_api_base(
             additional_args.get("api_base", "")
@@ -1159,13 +1172,13 @@ class Logging(LiteLLMLoggingBaseClass):
         for callback in callbacks:
             try:
                 if isinstance(callback, CustomLogger):
-                    response: Optional[MCPPostCallResponseObject] = (
-                        await callback.async_post_mcp_tool_call_hook(
-                            kwargs=kwargs,
-                            response_obj=post_mcp_tool_call_response_obj,
-                            start_time=start_time,
-                            end_time=end_time,
-                        )
+                    response: Optional[
+                        MCPPostCallResponseObject
+                    ] = await callback.async_post_mcp_tool_call_hook(
+                        kwargs=kwargs,
+                        response_obj=post_mcp_tool_call_response_obj,
+                        start_time=start_time,
+                        end_time=end_time,
                     )
                     ######################################################################
                     # if any of the callbacks modify the response, use the modified response
@@ -1469,7 +1482,9 @@ class Logging(LiteLLMLoggingBaseClass):
                 self.model_call_details["litellm_params"].setdefault("metadata", {})
                 if self.model_call_details["litellm_params"]["metadata"] is None:
                     self.model_call_details["litellm_params"]["metadata"] = {}
-                self.model_call_details["litellm_params"]["metadata"]["hidden_params"] = getattr(logging_result, "_hidden_params", {})  # type: ignore
+                self.model_call_details["litellm_params"]["metadata"]["hidden_params"] = getattr(
+                    logging_result, "_hidden_params", {}
+                )  # type: ignore
 
         if "response_cost" in hidden_params:
             self.model_call_details["response_cost"] = hidden_params["response_cost"]
@@ -1515,7 +1530,11 @@ class Logging(LiteLLMLoggingBaseClass):
             )
 
             result = result.model_copy()
-            transformed_usage = TranscriptionUsageObjectTransformation.transform_transcription_usage_object(result.usage)  # type: ignore
+            transformed_usage = (
+                TranscriptionUsageObjectTransformation.transform_transcription_usage_object(
+                    result.usage
+                )
+            )  # type: ignore
             setattr(result, "usage", transformed_usage)
         return result
 
@@ -3113,8 +3132,8 @@ def _get_masked_values(
             v
             if ignore_sensitive_values
             or not any(sensitive_keyword in k.lower() for sensitive_keyword in sensitive_keywords)
+            # Apply masking to sensitive keys
             else (
-                # Apply masking to sensitive keys
                 (v[: unmasked_length // 2] + "*" * number_of_asterisks + v[-unmasked_length // 2 :])
                 if (
                     isinstance(v, str)
@@ -3140,7 +3159,29 @@ def set_callbacks(callback_list, function_id=None):  # noqa: PLR0915
     """
     Globally sets the callback client
     """
-    global sentry_sdk_instance, capture_exception, add_breadcrumb, slack_app, alerts_channel, traceloopLogger, athinaLogger, heliconeLogger, supabaseClient, lunaryLogger, promptLayerLogger, langFuseLogger, customLogger, weightsBiasesLogger, logfireLogger, dynamoLogger, s3Logger, dataDogLogger, prometheusLogger, greenscaleLogger, openMeterLogger, deepevalLogger
+    global \
+        sentry_sdk_instance, \
+        capture_exception, \
+        add_breadcrumb, \
+        slack_app, \
+        alerts_channel, \
+        traceloopLogger, \
+        athinaLogger, \
+        heliconeLogger, \
+        supabaseClient, \
+        lunaryLogger, \
+        promptLayerLogger, \
+        langFuseLogger, \
+        customLogger, \
+        weightsBiasesLogger, \
+        logfireLogger, \
+        dynamoLogger, \
+        s3Logger, \
+        dataDogLogger, \
+        prometheusLogger, \
+        greenscaleLogger, \
+        openMeterLogger, \
+        deepevalLogger
 
     try:
         for callback in callback_list:
@@ -3396,7 +3437,6 @@ def _init_custom_logger_compatible_class(  # noqa: PLR0915
             _in_memory_loggers.append(_arize_otel_logger)
             return _arize_otel_logger  # type: ignore
         elif logging_integration == "arize_phoenix":
-
             from litellm.integrations.opentelemetry import (
                 OpenTelemetry,
                 OpenTelemetryConfig,
@@ -4701,7 +4741,8 @@ def get_standard_logging_object_payload(
             id = f"{id}_cache_hit{time.time()}"  # do not duplicate the request id
             saved_cache_cost = (
                 logging_obj._response_cost_calculator(
-                    result=init_response_obj, cache_hit=False  # type: ignore
+                    result=init_response_obj,
+                    cache_hit=False,  # type: ignore
                 )
                 or 0.0
             )

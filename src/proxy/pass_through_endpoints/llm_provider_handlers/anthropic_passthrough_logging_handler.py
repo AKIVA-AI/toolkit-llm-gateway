@@ -471,7 +471,6 @@ class AnthropicPassthroughLoggingHandler:
         This will be picked up by the check_batch_cost polling mechanism.
         """
         try:
-
             # Get the managed files hook from the logging object
             # This is a bit of a hack, but we need access to the proxy logging system
             from litellm.proxy.proxy_server import proxy_logging_obj

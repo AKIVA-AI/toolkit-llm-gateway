@@ -92,7 +92,12 @@ class BedrockRerankHandler(BaseAWSLLM):
         )
 
         if _is_async:
-            return self.arerank(prepared_request, client=client if client is not None and isinstance(client, AsyncHTTPHandler) else None)  # type: ignore
+            return self.arerank(
+                prepared_request,
+                client=client
+                if client is not None and isinstance(client, AsyncHTTPHandler)
+                else None,
+            )  # type: ignore
 
         if client is None or not isinstance(client, HTTPHandler):
             client = _get_httpx_client()

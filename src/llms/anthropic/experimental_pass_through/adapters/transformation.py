@@ -502,7 +502,9 @@ class LiteLLMAnthropicMessagesAdapter:
 
         return None
 
-    def _translate_openai_content_to_anthropic(self, choices: List[Choices]) -> List[
+    def _translate_openai_content_to_anthropic(
+        self, choices: List[Choices]
+    ) -> List[
         Union[
             AnthropicResponseContentBlockText,
             AnthropicResponseContentBlockToolUse,

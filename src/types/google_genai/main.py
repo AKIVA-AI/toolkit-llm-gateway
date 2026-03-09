@@ -20,7 +20,9 @@ if TYPE_CHECKING:
         generationConfig: Optional[Any]
         tools: Optional[ToolConfigDict]  # type: ignore[assignment]
 
-    class GenerateContentResponse(GoogleGenAIGenerateContentResponse, BaseLiteLLMOpenAIResponseObject):  # type: ignore[misc]
+    class GenerateContentResponse(
+        GoogleGenAIGenerateContentResponse, BaseLiteLLMOpenAIResponseObject
+    ):  # type: ignore[misc]
         _hidden_params: dict = {}
         pass
 

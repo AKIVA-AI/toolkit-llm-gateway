@@ -613,7 +613,7 @@ async def user_info(
 
         ## REMOVE HASHED TOKEN INFO before returning ##
         returned_keys = _process_keys_for_user_info(keys=keys, all_teams=teams_1)
-        team_list.sort(key=lambda x: (getattr(x, "team_alias", "") or ""))
+        team_list.sort(key=lambda x: getattr(x, "team_alias", "") or "")
         _user_info = user_info.model_dump() if isinstance(user_info, BaseModel) else user_info
         response_data = UserInfoResponse(
             user_id=user_id, user_info=_user_info, keys=returned_keys, teams=team_list
@@ -665,7 +665,7 @@ async def _get_user_info_for_proxy_admin():
     # cast all teams to LiteLLM_TeamTable
     _teams_in_db: List = results[0]["teams"] or []
     _teams_in_db = [LiteLLM_TeamTable(**team) for team in _teams_in_db]
-    _teams_in_db.sort(key=lambda x: (getattr(x, "team_alias", "") or ""))
+    _teams_in_db.sort(key=lambda x: getattr(x, "team_alias", "") or "")
     returned_keys = _process_keys_for_user_info(keys=keys_in_db, all_teams=_teams_in_db)
     return UserInfoResponse(
         user_id=None,
@@ -1183,7 +1183,8 @@ async def bulk_user_update(
         try:
             # Perform bulk database update
             await prisma_client.db.litellm_usertable.update_many(
-                where={}, data=non_default_values  # Update all users
+                where={},
+                data=non_default_values,  # Update all users
             )
 
             # Create individual success results

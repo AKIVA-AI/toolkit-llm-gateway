@@ -1,4 +1,4 @@
-﻿"""
+"""
 Toolkit LLM Gateway - Security Module
 
 Provides security features including:

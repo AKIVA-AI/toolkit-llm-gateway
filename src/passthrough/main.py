@@ -323,7 +323,9 @@ def llm_passthrough_route(
             )
         else:
             # Sync path - client.client.send returns Response directly
-            response: httpx.Response = client.client.send(request=request, stream=is_streaming_request)  # type: ignore
+            response: httpx.Response = client.client.send(
+                request=request, stream=is_streaming_request
+            )  # type: ignore
             response.raise_for_status()
 
             if (
@@ -407,7 +409,6 @@ async def _async_streaming(
         raw_bytes: List[bytes] = []
 
         async for chunk in iter_response.aiter_bytes():  # type: ignore
-
             raw_bytes.append(chunk)
             yield chunk
 

@@ -302,5 +302,5 @@ def _lazy_import_litellm_logging(name: str) -> Any:
         return obj
     except Exception as e:
         raise AttributeError(
-            f"module 'litellm' has no attribute {name!r}. " f"Lazy import failed: {e}"
+            f"module 'litellm' has no attribute {name!r}. Lazy import failed: {e}"
         ) from e

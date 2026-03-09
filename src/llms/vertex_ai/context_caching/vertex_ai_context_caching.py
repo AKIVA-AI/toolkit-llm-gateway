@@ -336,7 +336,9 @@ class ContextCachingEndpoints(VertexBase):
 
         try:
             response = client.post(
-                url=url, headers=headers, json=cached_content_request_body  # type: ignore
+                url=url,
+                headers=headers,
+                json=cached_content_request_body,  # type: ignore
             )
             response.raise_for_status()
         except httpx.HTTPStatusError as err:
@@ -460,7 +462,9 @@ class ContextCachingEndpoints(VertexBase):
 
         try:
             response = await client.post(
-                url=url, headers=headers, json=cached_content_request_body  # type: ignore
+                url=url,
+                headers=headers,
+                json=cached_content_request_body,  # type: ignore
             )
             response.raise_for_status()
         except httpx.HTTPStatusError as err:

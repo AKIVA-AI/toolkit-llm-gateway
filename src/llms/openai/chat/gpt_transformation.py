@@ -387,7 +387,8 @@ class OpenAIGPTConfig(BaseLLMModelInfo, BaseConfig):
 
         for i, message in enumerate(messages):
             messages[i] = cast(
-                AllMessageValues, filter_value_from_dict(message, "cache_control")  # type: ignore
+                AllMessageValues,
+                filter_value_from_dict(message, "cache_control"),  # type: ignore
             )
         if tools is not None:
             for i, tool in enumerate(tools):

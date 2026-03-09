@@ -679,7 +679,7 @@ def _apply_cost_discount(
         final_cost = original_cost - discount_amount
 
         verbose_logger.debug(
-            f"Applied {discount_percent*100}% discount to {custom_llm_provider}: "
+            f"Applied {discount_percent * 100}% discount to {custom_llm_provider}: "
             f"${original_cost:.6f} -> ${final_cost:.6f} (saved ${discount_amount:.6f})"
         )
 

@@ -117,7 +117,6 @@ class GenericPromptManager(CustomPromptManagement):
         http_client = _get_httpx_client()
 
         try:
-
             response = http_client.get(
                 url,
                 params=params,

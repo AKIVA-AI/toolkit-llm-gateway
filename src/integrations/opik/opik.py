@@ -170,7 +170,9 @@ class OpikLogger(CustomBatchLogger):
     def _sync_send(self, url: str, headers: Dict[str, str], batch: Dict[str, Any]) -> None:
         try:
             response = self.sync_httpx_client.post(
-                url=url, headers=headers, json=batch  # type: ignore
+                url=url,
+                headers=headers,
+                json=batch,  # type: ignore
             )
             response.raise_for_status()
             if response.status_code != 204:
@@ -258,7 +260,9 @@ class OpikLogger(CustomBatchLogger):
     async def _submit_batch(self, url: str, headers: Dict[str, str], batch: Dict[str, Any]) -> None:
         try:
             response = await self.async_httpx_client.post(
-                url=url, headers=headers, json=batch  # type: ignore
+                url=url,
+                headers=headers,
+                json=batch,  # type: ignore
             )
             response.raise_for_status()
 

@@ -105,7 +105,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                             model_id,
                             deployment.get("model_name", ""),
                         ),
-                        request=httpx.Request(method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                        request=httpx.Request(
+                            method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"
+                        ),  # type: ignore
                     ),
                 )
             else:
@@ -128,7 +130,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                                 deployment_rpm,
                                 result,
                             ),
-                            request=httpx.Request(method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                            request=httpx.Request(
+                                method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"
+                            ),  # type: ignore
                         ),
                     )
             return deployment
@@ -189,7 +193,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                             local_result,
                         ),
                         headers={"retry-after": str(60)},  # type: ignore
-                        request=httpx.Request(method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                        request=httpx.Request(
+                            method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"
+                        ),  # type: ignore
                     ),
                     num_retries=deployment.get("num_retries"),
                 )
@@ -213,7 +219,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                                 result,
                             ),
                             headers={"retry-after": str(60)},  # type: ignore
-                            request=httpx.Request(method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                            request=httpx.Request(
+                                method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"
+                            ),  # type: ignore
                         ),
                         num_retries=deployment.get("num_retries"),
                     )
@@ -548,7 +556,9 @@ class LowestTPMLoggingHandler_v2(BaseRoutingStrategy, CustomLogger):
                     status_code=429,
                     content="",
                     headers={"retry-after": str(60)},  # type: ignore
-                    request=httpx.Request(method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="tpm_rpm_limits", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
 

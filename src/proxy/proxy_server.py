@@ -519,7 +519,19 @@ _description = (
 
 
 def cleanup_router_config_variables():
-    global master_key, user_config_file_path, otel_logging, user_custom_auth, user_custom_auth_path, user_custom_key_generate, user_custom_sso, user_custom_ui_sso_sign_in_handler, use_background_health_checks, use_shared_health_check, health_check_interval, prisma_client
+    global \
+        master_key, \
+        user_config_file_path, \
+        otel_logging, \
+        user_custom_auth, \
+        user_custom_auth_path, \
+        user_custom_key_generate, \
+        user_custom_sso, \
+        user_custom_ui_sso_sign_in_handler, \
+        use_background_health_checks, \
+        use_shared_health_check, \
+        health_check_interval, \
+        prisma_client
 
     # Set all variables to None
     master_key = None
@@ -599,7 +611,22 @@ async def _initialize_shared_aiohttp_session():
 
 @asynccontextmanager
 async def proxy_startup_event(app: FastAPI):
-    global prisma_client, master_key, use_background_health_checks, llm_router, llm_model_list, general_settings, proxy_budget_rescheduler_min_time, proxy_budget_rescheduler_max_time, litellm_proxy_admin_name, db_writer_client, store_model_in_db, premium_user, _license_check, proxy_batch_polling_interval, shared_aiohttp_session
+    global \
+        prisma_client, \
+        master_key, \
+        use_background_health_checks, \
+        llm_router, \
+        llm_model_list, \
+        general_settings, \
+        proxy_budget_rescheduler_min_time, \
+        proxy_budget_rescheduler_max_time, \
+        litellm_proxy_admin_name, \
+        db_writer_client, \
+        store_model_in_db, \
+        premium_user, \
+        _license_check, \
+        proxy_batch_polling_interval, \
+        shared_aiohttp_session
     import json
 
     init_verbose_loggers()
@@ -1221,7 +1248,9 @@ async def update_cache(  # noqa: PLR0915
         else:
             hashed_token = token
         verbose_proxy_logger.debug("_update_key_cache: hashed_token=%s", hashed_token)
-        existing_spend_obj: LiteLLM_VerificationTokenView = await user_api_key_cache.async_get_cache(key=hashed_token)  # type: ignore
+        existing_spend_obj: LiteLLM_VerificationTokenView = (
+            await user_api_key_cache.async_get_cache(key=hashed_token)
+        )  # type: ignore
         verbose_proxy_logger.debug(f"_update_key_cache: existing_spend_obj={existing_spend_obj}")
         if existing_spend_obj is None:
             return
@@ -1378,9 +1407,9 @@ async def update_cache(  # noqa: PLR0915
         _id = "team_id:{}".format(team_id)
         try:
             # Fetch the existing cost for the given user
-            existing_spend_obj: Optional[LiteLLM_TeamTable] = (
-                await user_api_key_cache.async_get_cache(key=_id)
-            )
+            existing_spend_obj: Optional[
+                LiteLLM_TeamTable
+            ] = await user_api_key_cache.async_get_cache(key=_id)
             if existing_spend_obj is None:
                 # do nothing if team not in api key cache
                 return
@@ -1495,7 +1524,14 @@ async def _run_background_health_check():
     Update health_check_results, based on this.
     Uses shared health check state when Redis is available to coordinate across pods.
     """
-    global health_check_results, llm_model_list, health_check_interval, health_check_details, use_shared_health_check, redis_usage_cache, prisma_client
+    global \
+        health_check_results, \
+        llm_model_list, \
+        health_check_interval, \
+        health_check_details, \
+        use_shared_health_check, \
+        redis_usage_cache, \
+        prisma_client
 
     if (
         health_check_interval is None
@@ -1719,7 +1755,6 @@ class ProxyConfig:
                 "environment_variables" in config_to_save
                 and config_to_save["environment_variables"]
             ):
-
                 # decrypt the environment_variables - in case a caller function has already encrypted the environment_variables
                 decrypted_env_vars = self._decrypt_and_set_db_env_variables(
                     environment_variables=config_to_save["environment_variables"],
@@ -2016,7 +2051,33 @@ class ProxyConfig:
         """
         Load config values into proxy global state
         """
-        global master_key, user_config_file_path, otel_logging, user_custom_auth, user_custom_auth_path, user_custom_key_generate, user_custom_sso, user_custom_ui_sso_sign_in_handler, use_background_health_checks, use_shared_health_check, health_check_interval, use_queue, proxy_budget_rescheduler_max_time, proxy_budget_rescheduler_min_time, ui_access_mode, litellm_master_key_hash, proxy_batch_write_at, disable_spend_logs, prompt_injection_detection_obj, redis_usage_cache, store_model_in_db, premium_user, open_telemetry_logger, health_check_details, proxy_batch_polling_interval, config_passthrough_endpoints
+        global \
+            master_key, \
+            user_config_file_path, \
+            otel_logging, \
+            user_custom_auth, \
+            user_custom_auth_path, \
+            user_custom_key_generate, \
+            user_custom_sso, \
+            user_custom_ui_sso_sign_in_handler, \
+            use_background_health_checks, \
+            use_shared_health_check, \
+            health_check_interval, \
+            use_queue, \
+            proxy_budget_rescheduler_max_time, \
+            proxy_budget_rescheduler_min_time, \
+            ui_access_mode, \
+            litellm_master_key_hash, \
+            proxy_batch_write_at, \
+            disable_spend_logs, \
+            prompt_injection_detection_obj, \
+            redis_usage_cache, \
+            store_model_in_db, \
+            premium_user, \
+            open_telemetry_logger, \
+            health_check_details, \
+            proxy_batch_polling_interval, \
+            config_passthrough_endpoints
 
         config: dict = await self.get_config(config_file_path=config_file_path)
 
@@ -3320,7 +3381,6 @@ class ProxyConfig:
             await self._init_vector_stores_in_db(prisma_client=prisma_client)
 
         if self._should_load_db_object(object_type="vector_store_indexes"):
-
             await self._init_vector_store_indexes_in_db(prisma_client=prisma_client)
 
         if self._should_load_db_object(object_type="mcp"):
@@ -3743,7 +3803,23 @@ async def initialize(  # noqa: PLR0915
     use_queue=False,
     config=None,
 ):
-    global user_model, user_api_base, user_debug, user_detailed_debug, user_user_max_tokens, user_request_timeout, user_temperature, user_telemetry, user_headers, experimental, llm_model_list, llm_router, general_settings, master_key, user_custom_auth, prisma_client
+    global \
+        user_model, \
+        user_api_base, \
+        user_debug, \
+        user_detailed_debug, \
+        user_user_max_tokens, \
+        user_request_timeout, \
+        user_temperature, \
+        user_telemetry, \
+        user_headers, \
+        experimental, \
+        llm_model_list, \
+        llm_router, \
+        general_settings, \
+        master_key, \
+        user_custom_auth, \
+        prisma_client
     from litellm.proxy.common_utils.banner import show_banner
 
     show_banner()
@@ -4100,7 +4176,8 @@ class ProxyStartupEvent:
 
             teams_pydantic_obj = [NewUserRequestTeam(**team) for team in _teams]
             await update_default_team_member_budget(
-                teams=teams_pydantic_obj, user_api_key_dict=UserAPIKeyAuth(token=hash_token(master_key))  # type: ignore
+                teams=teams_pydantic_obj,
+                user_api_key_dict=UserAPIKeyAuth(token=hash_token(master_key)),  # type: ignore
             )
 
     @classmethod
@@ -4429,7 +4506,9 @@ class ProxyStartupEvent:
                     id="prometheus_fallback_stats_job",
                     replace_existing=True,
                 )
-                await proxy_logging_obj.slack_alerting_instance.send_fallback_stats_from_prometheus()
+                await (
+                    proxy_logging_obj.slack_alerting_instance.send_fallback_stats_from_prometheus()
+                )
 
     @classmethod
     async def _setup_prisma_client(
@@ -4521,7 +4600,13 @@ async def model_list(
     - fallback_type: Type of fallbacks to include ("general", "context_window", "content_policy")
                     Defaults to "general" when include_metadata=true
     """
-    global llm_model_list, general_settings, llm_router, prisma_client, user_api_key_cache, proxy_logging_obj
+    global \
+        llm_model_list, \
+        general_settings, \
+        llm_router, \
+        prisma_client, \
+        user_api_key_cache, \
+        proxy_logging_obj
 
     from litellm.proxy.utils import (
         create_model_info_response,
@@ -4584,7 +4669,13 @@ async def model_info(
     Follows OpenAI API specification for individual model retrieval.
     https://platform.openai.com/docs/api-reference/models/retrieve
     """
-    global llm_model_list, general_settings, llm_router, prisma_client, user_api_key_cache, proxy_logging_obj
+    global \
+        llm_model_list, \
+        general_settings, \
+        llm_router, \
+        prisma_client, \
+        user_api_key_cache, \
+        proxy_logging_obj
 
     from litellm.proxy.utils import (
         create_model_info_response,
@@ -5034,9 +5125,12 @@ async def embeddings(  # noqa: PLR0915
                     litellm_params = deployment.get("litellm_params", {}) or {}
                     litellm_model = litellm_params.get("model", "")
                     # Check if this provider supports token arrays
-                    supports_token_arrays = litellm_model in litellm.open_ai_embedding_models or any(
-                        litellm_model.startswith(provider)
-                        for provider in LITELLM_EMBEDDING_PROVIDERS_SUPPORTING_INPUT_ARRAY_OF_TOKENS
+                    supports_token_arrays = (
+                        litellm_model in litellm.open_ai_embedding_models
+                        or any(
+                            litellm_model.startswith(provider)
+                            for provider in LITELLM_EMBEDDING_PROVIDERS_SUPPORTING_INPUT_ARRAY_OF_TOKENS
+                        )
                     )
                     if not supports_token_arrays:
                         # non-openai/azure embedding model called with token input - decode tokens
@@ -7506,7 +7600,13 @@ async def model_info_v1(  # noqa: PLR0915
 
     ```
     """
-    global llm_model_list, general_settings, user_config_file_path, proxy_config, llm_router, user_model
+    global \
+        llm_model_list, \
+        general_settings, \
+        user_config_file_path, \
+        proxy_config, \
+        llm_router, \
+        user_model
 
     if user_model is not None:
         # user is trying to get specific model from litellm router
@@ -8669,9 +8769,15 @@ async def update_config(config_info: ConfigYAML):  # noqa: PLR0915
 
     Currently supports modifying General Settings + LiteLLM settings
     """
-    global llm_router, llm_model_list, general_settings, proxy_config, proxy_logging_obj, master_key, prisma_client
+    global \
+        llm_router, \
+        llm_model_list, \
+        general_settings, \
+        proxy_config, \
+        proxy_logging_obj, \
+        master_key, \
+        prisma_client
     try:
-
         """
         - Update the ConfigTable DB
         - Run 'add_deployment'
@@ -8875,7 +8981,10 @@ async def update_config_general_settings(
     response = await prisma_client.db.litellm_config.upsert(
         where={"param_name": "general_settings"},
         data={
-            "create": {"param_name": "general_settings", "param_value": json.dumps(general_settings)},  # type: ignore
+            "create": {
+                "param_name": "general_settings",
+                "param_value": json.dumps(general_settings),
+            },  # type: ignore
             "update": {"param_value": json.dumps(general_settings)},  # type: ignore
         },
     )
@@ -9142,7 +9251,10 @@ async def delete_config_general_settings(
     response = await prisma_client.db.litellm_config.upsert(
         where={"param_name": "general_settings"},
         data={
-            "create": {"param_name": "general_settings", "param_value": json.dumps(general_settings)},  # type: ignore
+            "create": {
+                "param_name": "general_settings",
+                "param_value": json.dumps(general_settings),
+            },  # type: ignore
             "update": {"param_value": json.dumps(general_settings)},  # type: ignore
         },
     )
@@ -9251,7 +9363,6 @@ async def get_config():  # noqa: PLR0915
     """
     global llm_router, llm_model_list, general_settings, proxy_config, proxy_logging_obj, master_key
     try:
-
         all_available_callbacks = AllCallbacks()
 
         config_data = await proxy_config.get_config()

@@ -454,9 +454,7 @@ class Deployment(BaseModel):
         elif isinstance(model_info, dict):
             model_info = ModelInfo(**model_info)
 
-        for (
-            key
-        ) in (
+        for key in (
             SPECIAL_MODEL_INFO_PARAMS
         ):  # ensures custom pricing info is consistently in 'model_info'
             field = getattr(litellm_params, key, None)

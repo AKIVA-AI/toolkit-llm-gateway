@@ -247,7 +247,9 @@ async def route_create_file(
             _create_file_request.update(llm_provider_config)
         _create_file_request.pop("custom_llm_provider", None)  # type: ignore
         # for now use custom_llm_provider=="openai" -> this will change as LiteLLM adds more providers for acreate_batch
-        response = await litellm.acreate_file(**_create_file_request, custom_llm_provider=custom_llm_provider)  # type: ignore
+        response = await litellm.acreate_file(
+            **_create_file_request, custom_llm_provider=custom_llm_provider
+        )  # type: ignore
 
     return response
 
@@ -682,7 +684,8 @@ async def get_file_content(  # noqa: PLR0915
                 )
 
                 response = await litellm.afile_content(
-                    custom_llm_provider=credentials["custom_llm_provider"], **data  # type: ignore
+                    custom_llm_provider=credentials["custom_llm_provider"],
+                    **data,  # type: ignore
                 )  # type: ignore
 
                 verbose_proxy_logger.debug(
@@ -803,7 +806,6 @@ async def get_file(
 
     data: Dict = {}
     try:
-
         custom_llm_provider = (
             provider
             or get_custom_llm_provider_from_request_headers(request=request)
@@ -880,7 +882,9 @@ async def get_file(
             )
         else:
             response = await litellm.afile_retrieve(
-                custom_llm_provider=custom_llm_provider, file_id=file_id, **data  # type: ignore
+                custom_llm_provider=custom_llm_provider,
+                file_id=file_id,
+                **data,  # type: ignore
             )
 
         ### ALERTING ###
@@ -1054,7 +1058,9 @@ async def delete_file(
             )
         else:
             response = await litellm.afile_delete(
-                custom_llm_provider=custom_llm_provider, file_id=file_id, **data  # type: ignore
+                custom_llm_provider=custom_llm_provider,
+                file_id=file_id,
+                **data,  # type: ignore
             )
 
         ### ALERTING ###
@@ -1216,7 +1222,9 @@ async def list_files(
             )
 
             response = await litellm.afile_list(
-                custom_llm_provider=custom_llm_provider, purpose=purpose, **data  # type: ignore
+                custom_llm_provider=custom_llm_provider,
+                purpose=purpose,
+                **data,  # type: ignore
             )
 
         if response is None:

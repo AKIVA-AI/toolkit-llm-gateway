@@ -78,7 +78,6 @@ class VertexAIGemmaModels(VertexBase):
                 message="""Upgrade vertex ai. Run `pip install "google-cloud-aiplatform>=1.38"`""",
             )
         try:
-
             model = get_vertex_base_model_name(model=model)
             vertex_httpx_logic = VertexLLM()
 

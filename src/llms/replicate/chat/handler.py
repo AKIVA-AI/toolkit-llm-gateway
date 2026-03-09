@@ -198,7 +198,9 @@ def completion(
             headers=headers,
             http_client=httpx_client,
         )
-        return CustomStreamWrapper(_response, model, logging_obj=logging_obj, custom_llm_provider="replicate")  # type: ignore
+        return CustomStreamWrapper(
+            _response, model, logging_obj=logging_obj, custom_llm_provider="replicate"
+        )  # type: ignore
     else:
         for retry in range(litellm.DEFAULT_REPLICATE_POLLING_RETRIES):
             time.sleep(
@@ -266,7 +268,9 @@ async def async_completion(
             headers=headers,
             http_client=async_handler,
         )
-        return CustomStreamWrapper(_response, model, logging_obj=logging_obj, custom_llm_provider="replicate")  # type: ignore
+        return CustomStreamWrapper(
+            _response, model, logging_obj=logging_obj, custom_llm_provider="replicate"
+        )  # type: ignore
 
     for retry in range(litellm.DEFAULT_REPLICATE_POLLING_RETRIES):
         await asyncio.sleep(

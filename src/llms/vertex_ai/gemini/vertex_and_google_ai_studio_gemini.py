@@ -863,7 +863,8 @@ class VertexGeminiConfig(VertexAIBaseConfig, BaseConfig):
                 optional_params = self._add_tools_to_optional_params(optional_params, mapped_tools)
             elif param == "tool_choice" and (isinstance(value, str) or isinstance(value, dict)):
                 _tool_choice_value = self.map_tool_choice_values(
-                    model=model, tool_choice=value  # type: ignore
+                    model=model,
+                    tool_choice=value,  # type: ignore
                 )
                 if _tool_choice_value is not None:
                     optional_params["tool_choice"] = _tool_choice_value
@@ -1213,9 +1214,9 @@ class VertexGeminiConfig(VertexAIBaseConfig, BaseConfig):
                     if thought_signature:
                         if "provider_specific_fields" not in function_dict:
                             function_dict["provider_specific_fields"] = {}
-                        function_dict["provider_specific_fields"][
-                            "thought_signature"
-                        ] = thought_signature
+                        function_dict["provider_specific_fields"]["thought_signature"] = (
+                            thought_signature
+                        )
                     function = cast(ChatCompletionToolCallFunctionChunk, function_dict)
                 else:
                     _tool_response_chunk: ChatCompletionToolCallChunk = {

@@ -150,10 +150,10 @@ def _is_allowed_to_make_key_request(
         return True
 
     if user_id is not None:
-        assert (
-            user_id == user_api_key_dict.user_id
-        ), "User can only create keys for themselves. Got user_id={}, Your ID={}".format(
-            user_id, user_api_key_dict.user_id
+        assert user_id == user_api_key_dict.user_id, (
+            "User can only create keys for themselves. Got user_id={}, Your ID={}".format(
+                user_id, user_api_key_dict.user_id
+            )
         )
 
     if team_id is not None:
@@ -631,9 +631,7 @@ async def _common_key_generation_helper(  # noqa: PLR0915
 
     response = GenerateKeyResponse(**response)
 
-    response.token = (
-        response.token_id
-    )  # remap token to use the hash, and leave the key in the `key` field [TODO]: clean up generate_key_helper_fn to do this
+    response.token = response.token_id  # remap token to use the hash, and leave the key in the `key` field [TODO]: clean up generate_key_helper_fn to do this
 
     asyncio.create_task(
         KeyManagementEventHooks.async_key_generated_hook(
@@ -2287,10 +2285,10 @@ async def delete_verification_tokens(
     try:
         if prisma_client:
             tokens = [_hash_token_if_needed(token=key) for key in tokens]
-            _keys_being_deleted: List[LiteLLM_VerificationToken] = (
-                await prisma_client.db.litellm_verificationtoken.find_many(
-                    where={"token": {"in": tokens}}
-                )
+            _keys_being_deleted: List[
+                LiteLLM_VerificationToken
+            ] = await prisma_client.db.litellm_verificationtoken.find_many(
+                where={"token": {"in": tokens}}
             )
 
             if len(_keys_being_deleted) == 0:
@@ -2712,11 +2710,11 @@ async def validate_key_list_check(
             param="user_id",
             code=status.HTTP_403_FORBIDDEN,
         )
-    complete_user_info_db_obj: Optional[BaseModel] = (
-        await prisma_client.db.litellm_usertable.find_unique(
-            where={"user_id": user_api_key_dict.user_id},
-            include={"organization_memberships": True},
-        )
+    complete_user_info_db_obj: Optional[
+        BaseModel
+    ] = await prisma_client.db.litellm_usertable.find_unique(
+        where={"user_id": user_api_key_dict.user_id},
+        include={"organization_memberships": True},
     )
 
     if complete_user_info_db_obj is None:
@@ -3265,7 +3263,8 @@ async def block_key(
         )
 
     record = await prisma_client.db.litellm_verificationtoken.update(
-        where={"token": hashed_token}, data={"blocked": True}  # type: ignore
+        where={"token": hashed_token},
+        data={"blocked": True},  # type: ignore
     )
 
     ## UPDATE KEY CACHE
@@ -3377,7 +3376,8 @@ async def unblock_key(
         )
 
     record = await prisma_client.db.litellm_verificationtoken.update(
-        where={"token": hashed_token}, data={"blocked": False}  # type: ignore
+        where={"token": hashed_token},
+        data={"blocked": False},  # type: ignore
     )
 
     ## UPDATE KEY CACHE

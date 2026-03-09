@@ -75,8 +75,10 @@ def _generic_cost_per_character(
             assert (
                 "input_cost_per_character" in model_info
                 and model_info["input_cost_per_character"] is not None
-            ), "model info for model={} does not have 'input_cost_per_character'-pricing\nmodel_info={}".format(
-                model, model_info
+            ), (
+                "model info for model={} does not have 'input_cost_per_character'-pricing\nmodel_info={}".format(
+                    model, model_info
+                )
             )
             custom_prompt_cost = model_info["input_cost_per_character"]
 
@@ -96,8 +98,10 @@ def _generic_cost_per_character(
             assert (
                 "output_cost_per_character" in model_info
                 and model_info["output_cost_per_character"] is not None
-            ), "model info for model={} does not have 'output_cost_per_character'-pricing\nmodel_info={}".format(
-                model, model_info
+            ), (
+                "model info for model={} does not have 'output_cost_per_character'-pricing\nmodel_info={}".format(
+                    model, model_info
+                )
             )
             custom_completion_cost = model_info["output_cost_per_character"]
         completion_cost = completion_characters * custom_completion_cost
@@ -175,7 +179,6 @@ def _get_token_base_cost(
                     1000 if "k" in threshold_str else 1
                 )
                 if usage.prompt_tokens > threshold:
-
                     prompt_base_cost = cast(
                         float, _get_cost_per_unit(model_info, key, prompt_base_cost)
                     )

@@ -1,4 +1,4 @@
-﻿"""
+"""
 SQLAlchemy models for Toolkit LLM Gateway cost tracking
 """
 

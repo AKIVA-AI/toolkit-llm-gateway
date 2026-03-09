@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 
 class ArizeOTELAttributes(BaseLLMObsOTELAttributes):
-
     @staticmethod
     @override
     def set_messages(span: "Span", kwargs: Dict[str, Any]):

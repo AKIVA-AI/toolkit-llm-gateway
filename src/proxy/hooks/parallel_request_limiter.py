@@ -196,9 +196,9 @@ class _PROXY_MaxParallelRequestsHandler(CustomLogger):
         if rpm_limit is None:
             rpm_limit = sys.maxsize
 
-        values_to_update_in_cache: List[Tuple[Any, Any]] = (
-            []
-        )  # values that need to get updated in cache, will run a batch_set_cache after this function
+        values_to_update_in_cache: List[
+            Tuple[Any, Any]
+        ] = []  # values that need to get updated in cache, will run a batch_set_cache after this function
 
         # ------------
         # Setup values

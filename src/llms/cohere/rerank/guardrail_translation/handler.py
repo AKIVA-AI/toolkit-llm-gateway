@@ -59,7 +59,7 @@ class CohereRerankHandler(BaseTranslation):
             data["query"] = guardrailed_texts[0] if guardrailed_texts else query
 
             verbose_proxy_logger.debug(
-                "Rerank: Applied guardrail to query. " "Original length: %d, New length: %d",
+                "Rerank: Applied guardrail to query. Original length: %d, New length: %d",
                 len(query),
                 len(data["query"]),
             )
@@ -92,7 +92,6 @@ class CohereRerankHandler(BaseTranslation):
             Unmodified response (rankings don't need text guardrails)
         """
         verbose_proxy_logger.debug(
-            "Rerank: Output processing not applicable "
-            "(output contains relevance scores, not text)"
+            "Rerank: Output processing not applicable (output contains relevance scores, not text)"
         )
         return response

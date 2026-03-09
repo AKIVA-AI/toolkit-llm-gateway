@@ -344,7 +344,9 @@ def create_batch(
                 response=httpx.Response(
                     status_code=400,
                     content="Unsupported provider",
-                    request=httpx.Request(method="create_batch", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="create_batch", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
         return response
@@ -527,7 +529,9 @@ def _handle_retrieve_batch_providers_without_provider_config(
             response=httpx.Response(
                 status_code=400,
                 content="Unsupported provider",
-                request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                request=httpx.Request(
+                    method="create_thread", url="https://github.com/BerriAI/litellm"
+                ),  # type: ignore
             ),
         )
     return response
@@ -777,7 +781,9 @@ def list_batches(
                 max_retries=optional_params.max_retries,
             )
         elif custom_llm_provider == "azure":
-            api_base = optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")  # type: ignore
+            api_base = (
+                optional_params.api_base or litellm.api_base or get_secret_str("AZURE_API_BASE")
+            )  # type: ignore
             api_version = (
                 optional_params.api_version
                 or litellm.api_version
@@ -844,7 +850,9 @@ def list_batches(
                 response=httpx.Response(
                     status_code=400,
                     content="Unsupported provider",
-                    request=httpx.Request(method="create_thread", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="create_thread", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
         return response
@@ -911,7 +919,6 @@ def cancel_batch(
     LiteLLM Equivalent of POST https://api.openai.com/v1/batches/{batch_id}/cancel
     """
     try:
-
         try:
             if model is not None:
                 _, custom_llm_provider, _, _ = get_llm_provider(
@@ -1025,7 +1032,9 @@ def cancel_batch(
                 response=httpx.Response(
                     status_code=400,
                     content="Unsupported provider",
-                    request=httpx.Request(method="cancel_batch", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="cancel_batch", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
             )
         return response

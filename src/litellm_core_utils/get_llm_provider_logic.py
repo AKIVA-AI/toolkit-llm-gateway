@@ -122,9 +122,9 @@ def get_llm_provider(  # noqa: PLR0915
 
         ## IF LITELLM PARAMS GIVEN ##
         if litellm_params:
-            assert (
-                custom_llm_provider is None and api_base is None and api_key is None
-            ), "Either pass in litellm_params or the custom_llm_provider/api_base/api_key. Otherwise, these values will be overriden."
+            assert custom_llm_provider is None and api_base is None and api_key is None, (
+                "Either pass in litellm_params or the custom_llm_provider/api_base/api_key. Otherwise, these values will be overriden."
+            )
             custom_llm_provider = litellm_params.custom_llm_provider
             api_base = litellm_params.api_base
             api_key = litellm_params.api_key
@@ -340,9 +340,7 @@ def get_llm_provider(  # noqa: PLR0915
         ## ai21
         elif model in litellm.ai21_chat_models or model in litellm.ai21_models:
             custom_llm_provider = "ai21_chat"
-            api_base = (
-                api_base or get_secret("AI21_API_BASE") or "https://api.ai21.com/studio/v1"
-            )  # type: ignore
+            api_base = api_base or get_secret("AI21_API_BASE") or "https://api.ai21.com/studio/v1"  # type: ignore
             dynamic_api_key = api_key or get_secret("AI21_API_KEY")
         ## aleph_alpha
         elif model in litellm.aleph_alpha_models:
@@ -413,7 +411,9 @@ def get_llm_provider(  # noqa: PLR0915
                 response=httpx.Response(
                     status_code=400,
                     content=error_str,
-                    request=httpx.Request(method="completion", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="completion", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
                 llm_provider="",
             )
@@ -435,7 +435,9 @@ def get_llm_provider(  # noqa: PLR0915
                 response=httpx.Response(
                     status_code=400,
                     content=error_str,
-                    request=httpx.Request(method="completion", url="https://github.com/BerriAI/litellm"),  # type: ignore
+                    request=httpx.Request(
+                        method="completion", url="https://github.com/BerriAI/litellm"
+                    ),  # type: ignore
                 ),
                 llm_provider="",
             )
@@ -483,7 +485,11 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
         return model, "aiohttp_openai", api_key, api_base
     elif custom_llm_provider == "anyscale":
         # anyscale is openai compatible, we just need to set this to custom_openai and have the api_base be https://api.endpoints.anyscale.com/v1
-        api_base = api_base or get_secret_str("ANYSCALE_API_BASE") or "https://api.endpoints.anyscale.com/v1"  # type: ignore
+        api_base = (
+            api_base
+            or get_secret_str("ANYSCALE_API_BASE")
+            or "https://api.endpoints.anyscale.com/v1"
+        )  # type: ignore
         dynamic_api_key = api_key or get_secret_str("ANYSCALE_API_KEY")
     elif custom_llm_provider == "deepinfra":
         (
@@ -491,9 +497,7 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
             dynamic_api_key,
         ) = litellm.DeepInfraConfig()._get_openai_compatible_provider_info(api_base, api_key)
     elif custom_llm_provider == "empower":
-        api_base = (
-            api_base or get_secret("EMPOWER_API_BASE") or "https://app.empower.dev/api/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("EMPOWER_API_BASE") or "https://app.empower.dev/api/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("EMPOWER_API_KEY")
     elif custom_llm_provider == "groq":
         (
@@ -507,9 +511,7 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
         )  # type: ignore
         dynamic_api_key = api_key or get_secret_str("NVIDIA_NIM_API_KEY")
     elif custom_llm_provider == "cerebras":
-        api_base = (
-            api_base or get_secret("CEREBRAS_API_BASE") or "https://api.cerebras.ai/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("CEREBRAS_API_BASE") or "https://api.cerebras.ai/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("CEREBRAS_API_KEY")
     elif custom_llm_provider == "baseten":
         # Use BasetenConfig to determine the appropriate API base URL
@@ -521,31 +523,21 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
             )
         dynamic_api_key = api_key or get_secret_str("BASETEN_API_KEY")
     elif custom_llm_provider == "sambanova":
-        api_base = (
-            api_base or get_secret("SAMBANOVA_API_BASE") or "https://api.sambanova.ai/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("SAMBANOVA_API_BASE") or "https://api.sambanova.ai/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("SAMBANOVA_API_KEY")
     elif custom_llm_provider == "meta_llama":
-        api_base = (
-            api_base or get_secret("LLAMA_API_BASE") or "https://api.llama.com/compat/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("LLAMA_API_BASE") or "https://api.llama.com/compat/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("LLAMA_API_KEY")
     elif custom_llm_provider == "nebius":
-        api_base = (
-            api_base or get_secret("NEBIUS_API_BASE") or "https://api.studio.nebius.ai/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("NEBIUS_API_BASE") or "https://api.studio.nebius.ai/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("NEBIUS_API_KEY")
     elif custom_llm_provider == "ollama":
-        api_base = (
-            api_base or get_secret("OLLAMA_API_BASE") or "http://localhost:11434"
-        )  # type: ignore
+        api_base = api_base or get_secret("OLLAMA_API_BASE") or "http://localhost:11434"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("OLLAMA_API_KEY")
     elif (custom_llm_provider == "ai21_chat") or (
         custom_llm_provider == "ai21" and model in litellm.ai21_chat_models
     ):
-        api_base = (
-            api_base or get_secret("AI21_API_BASE") or "https://api.ai21.com/studio/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("AI21_API_BASE") or "https://api.ai21.com/studio/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("AI21_API_KEY")
         custom_llm_provider = "ai21_chat"
     elif custom_llm_provider == "volcengine":
@@ -558,9 +550,7 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
         dynamic_api_key = api_key or get_secret_str("VOLCENGINE_API_KEY")
     elif custom_llm_provider == "codestral":
         # codestral is openai compatible, we just need to set this to custom_openai and have the api_base be https://codestral.mistral.ai/v1
-        api_base = (
-            api_base or get_secret("CODESTRAL_API_BASE") or "https://codestral.mistral.ai/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("CODESTRAL_API_BASE") or "https://codestral.mistral.ai/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("CODESTRAL_API_KEY")
     elif custom_llm_provider == "hosted_vllm":
         # vllm is openai compatible, we just need to set this to custom_openai
@@ -588,9 +578,7 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
         ) = litellm.LMStudioChatConfig()._get_openai_compatible_provider_info(api_base, api_key)
     elif custom_llm_provider == "deepseek":
         # deepseek is openai compatible, we just need to set this to custom_openai and have the api_base be https://api.deepseek.com/v1
-        api_base = (
-            api_base or get_secret("DEEPSEEK_API_BASE") or "https://api.deepseek.com/beta"
-        )  # type: ignore
+        api_base = api_base or get_secret("DEEPSEEK_API_BASE") or "https://api.deepseek.com/beta"  # type: ignore
 
         dynamic_api_key = api_key or get_secret_str("DEEPSEEK_API_KEY")
     elif custom_llm_provider == "fireworks_ai":
@@ -663,9 +651,7 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
             api_key or get_secret_str("FRIENDLIAI_API_KEY") or get_secret_str("FRIENDLI_TOKEN")
         )
     elif custom_llm_provider == "galadriel":
-        api_base = (
-            api_base or get_secret("GALADRIEL_API_BASE") or "https://api.galadriel.com/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("GALADRIEL_API_BASE") or "https://api.galadriel.com/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("GALADRIEL_API_KEY")
     elif custom_llm_provider == "github_copilot":
         (
@@ -676,9 +662,7 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
             model, api_base, api_key, custom_llm_provider
         )
     elif custom_llm_provider == "novita":
-        api_base = (
-            api_base or get_secret("NOVITA_API_BASE") or "https://api.novita.ai/v3/openai"
-        )  # type: ignore
+        api_base = api_base or get_secret("NOVITA_API_BASE") or "https://api.novita.ai/v3/openai"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("NOVITA_API_KEY")
     elif custom_llm_provider == "snowflake":
         (
@@ -756,9 +740,7 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
             dynamic_api_key,
         ) = litellm.AIMLChatConfig()._get_openai_compatible_provider_info(api_base, api_key)
     elif custom_llm_provider == "wandb":
-        api_base = (
-            api_base or get_secret("WANDB_API_BASE") or "https://api.inference.wandb.ai/v1"
-        )  # type: ignore
+        api_base = api_base or get_secret("WANDB_API_BASE") or "https://api.inference.wandb.ai/v1"  # type: ignore
         dynamic_api_key = api_key or get_secret_str("WANDB_API_KEY")
     elif custom_llm_provider == "lemonade":
         (

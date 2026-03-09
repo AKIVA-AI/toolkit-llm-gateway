@@ -37,7 +37,6 @@ class SearXNGSearchRequest(_SearXNGSearchRequestRequired, total=False):
 
 
 class SearXNGSearchConfig(BaseSearchConfig):
-
     @staticmethod
     def ui_friendly_name() -> str:
         return "SearXNG"

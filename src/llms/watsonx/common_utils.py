@@ -155,9 +155,7 @@ async def _aconvert_watsonx_messages_core(
         if result:
             return result
         # Fallback to default
-        return ptf.prompt_factory(
-            model=model, messages=messages, custom_llm_provider="watsonx"
-        )  # type: ignore
+        return ptf.prompt_factory(model=model, messages=messages, custom_llm_provider="watsonx")  # type: ignore
 
 
 def _convert_watsonx_messages_core(
@@ -189,9 +187,7 @@ def _convert_watsonx_messages_core(
         if result:
             return result
         # Fallback to default
-        return ptf.prompt_factory(
-            model=model, messages=messages, custom_llm_provider="watsonx"
-        )  # type: ignore
+        return ptf.prompt_factory(model=model, messages=messages, custom_llm_provider="watsonx")  # type: ignore
 
 
 async def aconvert_watsonx_messages_to_prompt(
@@ -347,9 +343,7 @@ class IBMWatsonXMixin:
     def _prepare_payload(self, model: str, api_params: WatsonXAPIParams) -> dict:
         payload: dict = {}
         if model.startswith("deployment/"):
-            return (
-                {}
-            )  # Deployment models do not support 'space_id' or 'project_id' in their payload
+            return {}  # Deployment models do not support 'space_id' or 'project_id' in their payload
         payload["model_id"] = model
         payload["project_id"] = api_params["project_id"]
         return payload

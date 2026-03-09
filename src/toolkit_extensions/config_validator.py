@@ -1,4 +1,4 @@
-﻿"""
+"""
 Toolkit LLM Gateway - Configuration Validator
 
 Validates all required environment variables and configuration on startup.
@@ -150,8 +150,7 @@ class ConfigValidator:
                 )
             elif config_var.level == ConfigLevel.RECOMMENDED:
                 self.warnings.append(
-                    f"âš ï¸  {config_var.name} is recommended but not set. "
-                    f"{config_var.description}"
+                    f"âš ï¸  {config_var.name} is recommended but not set. {config_var.description}"
                 )
             else:
                 self.info.append(

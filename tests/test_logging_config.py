@@ -4,9 +4,6 @@ Tests for structured JSON logging configuration
 
 import json
 import logging
-import os
-
-import pytest
 
 from toolkit_extensions.logging_config import (
     StructuredJsonFormatter,

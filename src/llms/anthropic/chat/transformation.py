@@ -314,7 +314,9 @@ class AnthropicConfig(AnthropicModelInfo, BaseConfig):
                     additional_tool_params[k] = v
 
             returned_tool = AnthropicHostedTools(
-                type=tool["type"], name=function_name, **additional_tool_params  # type: ignore
+                type=tool["type"],
+                name=function_name,
+                **additional_tool_params,  # type: ignore
             )
         elif tool["type"] == "url":  # mcp server tool
             mcp_server = AnthropicMcpServerTool(**tool)  # type: ignore
@@ -1055,7 +1057,9 @@ class AnthropicConfig(AnthropicModelInfo, BaseConfig):
                 )
         return _message
 
-    def extract_response_content(self, completion_response: dict) -> Tuple[
+    def extract_response_content(
+        self, completion_response: dict
+    ) -> Tuple[
         str,
         Optional[List[Any]],
         Optional[List[Union[ChatCompletionThinkingBlock, ChatCompletionRedactedThinkingBlock]]],

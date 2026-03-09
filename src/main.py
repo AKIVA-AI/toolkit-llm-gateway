@@ -623,34 +623,26 @@ def _handle_mock_potential_exceptions(
         raise litellm.MockException(
             status_code=getattr(mock_response, "status_code", 500),  # type: ignore
             message=getattr(mock_response, "text", str(mock_response)),
-            llm_provider=getattr(
-                mock_response, "llm_provider", custom_llm_provider or "openai"
-            ),  # type: ignore
+            llm_provider=getattr(mock_response, "llm_provider", custom_llm_provider or "openai"),  # type: ignore
             model=model,  # type: ignore
             request=httpx.Request(method="POST", url="https://api.openai.com/v1/"),
         )
     elif isinstance(mock_response, str) and mock_response == "litellm.RateLimitError":
         raise litellm.RateLimitError(
             message="this is a mock rate limit error",
-            llm_provider=getattr(
-                mock_response, "llm_provider", custom_llm_provider or "openai"
-            ),  # type: ignore
+            llm_provider=getattr(mock_response, "llm_provider", custom_llm_provider or "openai"),  # type: ignore
             model=model,
         )
     elif isinstance(mock_response, str) and mock_response == "litellm.ContextWindowExceededError":
         raise litellm.ContextWindowExceededError(
             message="this is a mock context window exceeded error",
-            llm_provider=getattr(
-                mock_response, "llm_provider", custom_llm_provider or "openai"
-            ),  # type: ignore
+            llm_provider=getattr(mock_response, "llm_provider", custom_llm_provider or "openai"),  # type: ignore
             model=model,
         )
     elif isinstance(mock_response, str) and mock_response == "litellm.InternalServerError":
         raise litellm.InternalServerError(
             message="this is a mock internal server error",
-            llm_provider=getattr(
-                mock_response, "llm_provider", custom_llm_provider or "openai"
-            ),  # type: ignore
+            llm_provider=getattr(mock_response, "llm_provider", custom_llm_provider or "openai"),  # type: ignore
             model=model,
         )
     elif isinstance(mock_response, str) and mock_response.startswith(
@@ -5301,8 +5293,8 @@ def text_completion(  # noqa: PLR0915
 
     kwargs.pop("prompt", None)
 
-    if _model is not None and (
-        custom_llm_provider == "openai"
+    if (
+        _model is not None and (custom_llm_provider == "openai")
     ):  # for openai compatible endpoints - e.g. vllm, call the native /v1/completions endpoint for text completion calls
         if _model not in litellm.open_ai_chat_completion_models:
             model = "text-completion-openai/" + _model
@@ -6030,9 +6022,7 @@ def speech(  # noqa: PLR0915
 
             azure_ad_token: Optional[str] = optional_params.get("extra_body", {}).pop(  # type: ignore
                 "azure_ad_token", None
-            ) or get_secret(
-                "AZURE_AD_TOKEN"
-            )
+            ) or get_secret("AZURE_AD_TOKEN")
             azure_ad_token_provider = kwargs.get("azure_ad_token_provider", None)
 
             if extra_headers:

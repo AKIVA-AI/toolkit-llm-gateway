@@ -26,7 +26,6 @@ else:
 
 
 class BaseVectorStoreConfig:
-
     def get_supported_openai_params(self, model: str) -> List[VECTOR_STORE_OPENAI_PARAMS]:
         return []
 

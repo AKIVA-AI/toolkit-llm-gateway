@@ -404,7 +404,9 @@ class ProxyBaseLLMRequestProcessing:
         self.data["litellm_logging_obj"] = logging_obj
 
         self.data = await proxy_logging_obj.pre_call_hook(  # type: ignore
-            user_api_key_dict=user_api_key_dict, data=self.data, call_type=route_type  # type: ignore
+            user_api_key_dict=user_api_key_dict,
+            data=self.data,
+            call_type=route_type,  # type: ignore
         )
 
         if "messages" in self.data and self.data["messages"]:
@@ -560,9 +562,7 @@ class ProxyBaseLLMRequestProcessing:
         )
         if self._is_streaming_request(
             data=self.data, is_streaming_request=is_streaming_request
-        ) or self._is_streaming_response(
-            response
-        ):  # use generate_responses to stream responses
+        ) or self._is_streaming_response(response):  # use generate_responses to stream responses
             custom_headers = ProxyBaseLLMRequestProcessing.get_custom_headers(
                 user_api_key_dict=user_api_key_dict,
                 call_id=logging_obj.litellm_call_id,
