@@ -48,11 +48,10 @@ class APIKeyAuthMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         if DASHBOARD_API_KEY and request.url.path.startswith("/api/"):
-            api_key = (
-                request.headers.get("X-API-Key")
-                or request.query_params.get("api_key")
-            )
-            if api_key != DASHBOARD_API_KEY:
+            # Only accept API key via header to prevent credential leakage in
+            # access logs and browser history.
+            api_key = request.headers.get("X-API-Key")
+            if not api_key or api_key != DASHBOARD_API_KEY:
                 logger.warning("Rejected unauthenticated request to %s", request.url.path)
                 return JSONResponse(
                     {"success": False, "error": "Invalid or missing API key"},

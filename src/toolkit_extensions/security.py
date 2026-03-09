@@ -9,6 +9,7 @@ Provides security features including:
 """
 
 import hashlib
+import hmac
 import re
 import secrets
 import time
@@ -199,5 +200,6 @@ class APIKeyManager:
 
     @staticmethod
     def verify_api_key(api_key: str, key_hash: str) -> bool:
-        """Verify API key against hash"""
-        return APIKeyManager.hash_api_key(api_key) == key_hash
+        """Verify API key against stored hash using constant-time comparison."""
+        computed = APIKeyManager.hash_api_key(api_key)
+        return hmac.compare_digest(computed, key_hash)

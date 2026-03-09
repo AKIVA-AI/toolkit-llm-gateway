@@ -108,11 +108,9 @@ jobs:
     
     - name: Run Safety check
       run: safety check --json
-      continue-on-error: true
-    
+
     - name: Run Bandit
-      run: bandit -r src -f json -o bandit-report.json
-      continue-on-error: true
+      run: bandit -r src/toolkit_extensions -f json -o bandit-report.json
     
     - name: Upload Bandit report
       uses: actions/upload-artifact@v4

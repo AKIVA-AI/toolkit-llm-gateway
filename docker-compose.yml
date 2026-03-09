@@ -10,7 +10,7 @@ services:
     environment:
       POSTGRES_DB: gateway
       POSTGRES_USER: gateway_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env or environment}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -27,7 +27,7 @@ services:
     build: .
     container_name: toolkit-gateway-dashboard
     environment:
-      DATABASE_URL: postgresql://gateway_user:${POSTGRES_PASSWORD:-changeme}@postgres:5432/gateway
+      DATABASE_URL: postgresql://gateway_user:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/gateway
       HOST: 0.0.0.0
       PORT: 12000
     ports:
