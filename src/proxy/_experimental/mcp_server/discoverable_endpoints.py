@@ -379,7 +379,7 @@ async def oauth_protected_resource_mcp(request: Request, mcp_server_name: Option
     request_base_url = get_request_base_url(request)
     return {
         "authorization_servers": [
-            (f"{request_base_url}/{mcp_server_name}" if mcp_server_name else f"{request_base_url}")
+            f"{request_base_url}/{mcp_server_name}" if mcp_server_name else f"{request_base_url}"
         ],
         "resource": (
             f"{request_base_url}/{mcp_server_name}/mcp"

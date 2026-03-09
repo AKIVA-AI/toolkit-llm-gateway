@@ -1,7 +1,7 @@
 """
 Prebuilt regex patterns for content filtering.
 
-This module loads predefined regex patterns from patterns.json for detecting 
+This module loads predefined regex patterns from patterns.json for detecting
 sensitive information like SSNs, credit cards, API keys, etc.
 """
 

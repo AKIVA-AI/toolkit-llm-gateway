@@ -85,9 +85,7 @@ async def test_async_deliver_success(webhook_manager, budget_manager, cost_track
         mock_client.__aexit__ = AsyncMock(return_value=False)
         MockClient.return_value = mock_client
 
-        result = await webhook_manager._async_deliver_to_webhook(
-            webhooks[0], alerts[0]
-        )
+        result = await webhook_manager._async_deliver_to_webhook(webhooks[0], alerts[0])
 
     assert result is True
     mock_client.post.assert_called_once()
@@ -131,9 +129,7 @@ async def test_async_deliver_retry_on_failure(webhook_manager, budget_manager, c
 
         # Patch asyncio.sleep to avoid actual delays
         with patch("asyncio.sleep", new_callable=AsyncMock):
-            result = await webhook_manager._async_deliver_to_webhook(
-                webhooks[0], alerts[0]
-            )
+            result = await webhook_manager._async_deliver_to_webhook(webhooks[0], alerts[0])
 
     assert result is True
     assert call_count == 2
@@ -158,9 +154,7 @@ async def test_async_deliver_exception_retry(webhook_manager, budget_manager, co
         MockClient.return_value = mock_client
 
         with patch("asyncio.sleep", new_callable=AsyncMock):
-            result = await webhook_manager._async_deliver_to_webhook(
-                webhooks[0], alerts[0]
-            )
+            result = await webhook_manager._async_deliver_to_webhook(webhooks[0], alerts[0])
 
     assert result is False
 

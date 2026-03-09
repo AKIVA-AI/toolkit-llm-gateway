@@ -49,11 +49,9 @@ class ZscalerAIGuard(CustomGuardrail):
             "SEND_USER_API_KEY_TEAM_ID", "False"
         ).lower() in ("true", "1")
 
-        verbose_proxy_logger.debug(
-            f"""send_user_api_key_alias: {self.send_user_api_key_alias}, 
+        verbose_proxy_logger.debug(f"""send_user_api_key_alias: {self.send_user_api_key_alias}, 
             send_user_api_key_user_id:{self.send_user_api_key_user_id}, 
-            send_user_api_key_team_id:{self.send_user_api_key_team_id}"""
-        )
+            send_user_api_key_team_id:{self.send_user_api_key_team_id}""")
 
         super().__init__(default_on=True)
 

@@ -853,10 +853,8 @@ class Logging(LiteLLMLoggingBaseClass):
                 try:
                     # [Non-blocking Extra Debug Information in metadata]
                     if turn_off_message_logging is True:
-                        _metadata["raw_request"] = (
-                            "redacted by litellm. \
+                        _metadata["raw_request"] = "redacted by litellm. \
                             'litellm.turn_off_message_logging=True'"
-                        )
                     else:
                         curl_command = self._get_request_curl_command(
                             api_base=additional_args.get("api_base", ""),
@@ -882,12 +880,8 @@ class Logging(LiteLLMLoggingBaseClass):
                     self.model_call_details["raw_request_typed_dict"] = RawRequestTypedDict(
                         error=str(e),
                     )
-                    _metadata["raw_request"] = (
-                        "Unable to Log \
-                        raw request: {}".format(
-                            str(e)
-                        )
-                    )
+                    _metadata["raw_request"] = "Unable to Log \
+                        raw request: {}".format(str(e))
             if getattr(self, "logger_fn", None) and callable(self.logger_fn):
                 try:
                     self.logger_fn(
@@ -2779,9 +2773,7 @@ class Logging(LiteLLMLoggingBaseClass):
             except Exception as e:
                 verbose_logger.exception(
                     "LiteLLM.LoggingError: [Non-Blocking] Exception occurred while failure \
-                        logging {}\nCallback={}".format(
-                        str(e), callback
-                    )
+                        logging {}\nCallback={}".format(str(e), callback)
                 )
                 # Track callback logging failures in Prometheus
                 self._handle_callback_failure(callback=callback)

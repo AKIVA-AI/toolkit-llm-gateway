@@ -48,7 +48,7 @@ class ConfigValidator:
             name="HOST",
             level=ConfigLevel.RECOMMENDED,
             description="Server host address",
-            default="0.0.0.0",
+            default="0.0.0.0",  # nosec B104 - server binding, configurable via env
         ),
         ConfigVar(
             name="PORT",

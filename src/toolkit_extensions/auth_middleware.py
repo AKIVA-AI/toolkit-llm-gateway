@@ -89,15 +89,11 @@ class APIKeyAuthenticator:
 
         try:
             with get_session() as session:
-                db_key = (
-                    session.query(APIKey).filter_by(key_hash=key_hash).first()
-                )
+                db_key = session.query(APIKey).filter_by(key_hash=key_hash).first()
 
                 if not db_key:
                     logger.warning("Authentication failed: unknown API key")
-                    return AuthResult(
-                        authenticated=False, error="Invalid API key"
-                    )
+                    return AuthResult(authenticated=False, error="Invalid API key")
 
                 # Check status
                 if db_key.status != "active":
@@ -118,9 +114,7 @@ class APIKeyAuthenticator:
                         db_key.key_prefix,
                         db_key.expires_at,
                     )
-                    return AuthResult(
-                        authenticated=False, error="API key has expired"
-                    )
+                    return AuthResult(authenticated=False, error="API key has expired")
 
                 # Update last_used_at
                 db_key.last_used_at = datetime.utcnow()
@@ -138,9 +132,7 @@ class APIKeyAuthenticator:
 
         except Exception as e:
             logger.error("Authentication error: %s", e, exc_info=True)
-            return AuthResult(
-                authenticated=False, error="Authentication service error"
-            )
+            return AuthResult(authenticated=False, error="Authentication service error")
 
     def require_scope(self, auth_result: AuthResult, scope: str) -> bool:
         """

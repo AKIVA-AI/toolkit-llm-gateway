@@ -57,13 +57,9 @@ class CostAggregator:
                     hour=0, minute=0, second=0, microsecond=0
                 )
             else:
-                target_date = (now - timedelta(hours=1)).replace(
-                    minute=0, second=0, microsecond=0
-                )
+                target_date = (now - timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
 
-        period_start, period_end = self._get_period_bounds(
-            period_type, target_date
-        )
+        period_start, period_end = self._get_period_bounds(period_type, target_date)
 
         total_upserted = 0
 
@@ -97,22 +93,16 @@ class CostAggregator:
                 return 0
 
             # Query raw data grouped by dimension
-            cache_hit_sum = func.sum(
-                case((LLMRequest.cache_hit == True, 1), else_=0)  # noqa: E712
-            )
-            error_sum = func.sum(
-                case(
-                    (LLMRequest.error_message.isnot(None), 1), else_=0
-                )
-            )
+            cache_hit_sum = func.sum(case((LLMRequest.cache_hit == True, 1), else_=0))  # noqa: E712
+            error_sum = func.sum(case((LLMRequest.error_message.isnot(None), 1), else_=0))
 
             rows = (
                 session.query(
                     dim_column.label("dim_id"),
                     func.count(LLMRequest.id).label("total_requests"),
-                    func.sum(
-                        LLMRequest.prompt_tokens + LLMRequest.completion_tokens
-                    ).label("total_tokens"),
+                    func.sum(LLMRequest.prompt_tokens + LLMRequest.completion_tokens).label(
+                        "total_tokens"
+                    ),
                     func.sum(LLMRequest.total_cost).label("total_cost"),
                     func.avg(LLMRequest.latency_ms).label("avg_latency_ms"),
                     cache_hit_sum.label("cache_hits"),
@@ -163,9 +153,7 @@ class CostAggregator:
                     total_requests=total_requests,
                     total_tokens=int(row.total_tokens or 0),
                     total_cost=row.total_cost or Decimal("0"),
-                    avg_latency_ms=(
-                        int(row.avg_latency_ms) if row.avg_latency_ms else None
-                    ),
+                    avg_latency_ms=(int(row.avg_latency_ms) if row.avg_latency_ms else None),
                     cache_hit_rate=cache_hit_rate,
                     error_rate=error_rate,
                     computed_at=datetime.utcnow(),
@@ -195,9 +183,7 @@ class CostAggregator:
             start = target_date.replace(minute=0, second=0, microsecond=0)
             end = start + timedelta(hours=1)
         else:  # daily
-            start = target_date.replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
+            start = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
             end = start + timedelta(days=1)
         return start, end
 

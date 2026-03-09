@@ -334,9 +334,7 @@ class AlertWebhookManager:
                 )
                 return future.result()
         else:
-            return asyncio.run(
-                self._async_deliver_to_webhook(webhook, alert, attempt_number)
-            )
+            return asyncio.run(self._async_deliver_to_webhook(webhook, alert, attempt_number))
 
     async def _async_deliver_to_webhook(
         self,
@@ -395,10 +393,8 @@ class AlertWebhookManager:
 
             # Retry on failure with non-blocking sleep
             if not success and attempt_number < max_retries:
-                await asyncio.sleep(2 ** attempt_number)  # Exponential backoff
-                return await self._async_deliver_to_webhook(
-                    webhook, alert, attempt_number + 1
-                )
+                await asyncio.sleep(2**attempt_number)  # Exponential backoff
+                return await self._async_deliver_to_webhook(webhook, alert, attempt_number + 1)
 
             return success
 
@@ -420,10 +416,8 @@ class AlertWebhookManager:
 
             # Retry on exception with non-blocking sleep
             if attempt_number < max_retries:
-                await asyncio.sleep(2 ** attempt_number)
-                return await self._async_deliver_to_webhook(
-                    webhook, alert, attempt_number + 1
-                )
+                await asyncio.sleep(2**attempt_number)
+                return await self._async_deliver_to_webhook(webhook, alert, attempt_number + 1)
 
             return False
 
