@@ -20,10 +20,12 @@ logger = logging.getLogger(__name__)
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
+from toolkit_extensions import __version__
 from toolkit_extensions.cost_analytics import CostAnalytics, TimeGranularity
 from toolkit_extensions.budget_manager import BudgetManager
 from toolkit_extensions.alert_webhooks import AlertWebhookManager
 from toolkit_extensions.database.connection import init_database, DatabaseConfig
+from toolkit_extensions.health_check import create_health_checker
 
 # ---------------------------------------------------------------------------
 # API Key Authentication
@@ -260,13 +262,22 @@ async def get_webhooks():
         }, status_code=500)
 
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
+@app.get("/version")
+async def version():
+    """Return the toolkit-llm-gateway version"""
     return JSONResponse({
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
+        "version": __version__,
+        "name": "toolkit-llm-gateway",
     })
+
+
+@app.get("/health")
+async def health_check(detailed: bool = False):
+    """Health check endpoint with optional dependency status"""
+    checker = create_health_checker(db_manager=db_manager)
+    result = checker.check_health(detailed=detailed)
+    status_code = 200 if result["status"] == "healthy" else 503
+    return JSONResponse(result, status_code=status_code)
 
 
 if __name__ == "__main__":

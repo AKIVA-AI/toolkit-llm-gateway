@@ -8,4 +8,4 @@ This package contains Toolkit-specific enhancements:
 - Enhanced security features
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"

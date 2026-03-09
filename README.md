@@ -262,11 +262,120 @@ curl -X POST http://localhost:8000/key/delete \
 
 ---
 
+## Architecture
+
+The gateway is organized into three layers:
+
+```
++---------------------------------------------------------+
+|  LiteLLM Proxy (src/)                                   |
+|  Unified API for 100+ LLM providers, routing, caching   |
++---------------------------------------------------------+
+|  toolkit_extensions/                                     |
+|  +-----------+  +-----------+  +------------------+     |
+|  | cost_     |  | budget_   |  | alert_webhooks   |     |
+|  | tracker   |  | manager   |  | (async delivery) |     |
+|  +-----------+  +-----------+  +------------------+     |
+|  +-----------+  +-----------+  +------------------+     |
+|  | cost_     |  | auth_     |  | security         |     |
+|  | analytics |  | middleware|  | (keys, rate lim.) |     |
+|  +-----------+  +-----------+  +------------------+     |
+|  +-----------+  +-----------+  +------------------+     |
+|  | cost_     |  | health_   |  | metrics          |     |
+|  | aggregator|  | check     |  | (Prometheus)     |     |
+|  +-----------+  +-----------+  +------------------+     |
+|  +-----------+  +-----------+                           |
+|  | config_   |  | logging_  |                           |
+|  | validator |  | config    |                           |
+|  +-----------+  +-----------+                           |
++---------------------------------------------------------+
+|  Database Layer (SQLAlchemy)                             |
+|  Models: Team, User, Project, LLMRequest, Budget,       |
+|          BudgetAlert, APIKey, CostAggregate              |
+|  Backends: PostgreSQL (production), SQLite (development) |
++---------------------------------------------------------+
+```
+
+**Key design decisions:**
+- `toolkit_extensions/` is cleanly separated from the forked LiteLLM code in `src/`
+- Platform-independent types (JSONType, UUIDType) allow SQLite for dev, PostgreSQL for prod
+- Global singletons for managers (cost tracker, budget manager, etc.) with lazy initialization
+- Webhook delivery uses `httpx.AsyncClient` with non-blocking `asyncio.sleep` retries
+- Cost aggregation materializes pre-computed data from raw requests for fast dashboard queries
+
+---
+
+## Deployment Guide
+
+### Docker (Recommended)
+
+```bash
+# Build the image
+docker build -t toolkit-llm-gateway .
+
+# Run with docker-compose
+docker-compose up -d
+```
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `OPENAI_API_KEY` | Recommended | OpenAI API key |
+| `ANTHROPIC_API_KEY` | Recommended | Anthropic API key |
+| `DASHBOARD_API_KEY` | Recommended | API key for dashboard auth |
+| `SECRET_KEY` | Recommended | Secret for webhook HMAC signing |
+| `REDIS_URL` | Optional | Redis connection for caching |
+| `LOG_LEVEL` | Optional | DEBUG, INFO, WARNING, ERROR (default: INFO) |
+| `LOG_FORMAT` | Optional | Set to `json` for structured JSON logging |
+| `HOST` | Optional | Server host (default: 0.0.0.0) |
+| `PORT` | Optional | Server port (default: 12000) |
+
+### Health Checks
+
+```bash
+# Basic health check
+curl http://localhost:12000/health
+
+# Detailed health check with dependency status
+curl http://localhost:12000/health?detailed=true
+
+# Version
+curl http://localhost:12000/version
+```
+
+### Running Tests
+
+```bash
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run tests with coverage
+pytest
+
+# Coverage threshold is enforced at 70%
+```
+
+---
+
+## Version
+
+Check the installed version:
+
+```bash
+toolkit-gateway-version
+# or
+python -c "from toolkit_extensions import __version__; print(__version__)"
+```
+
+---
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-**Based on LiteLLM** by BerriAI (MIT License)  
+**Based on LiteLLM** by BerriAI (MIT License)
 **Enhanced by Toolkit** with enterprise features
 
 ---

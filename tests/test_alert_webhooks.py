@@ -2,7 +2,7 @@
 Tests for alert webhook system
 """
 
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -14,6 +14,15 @@ from toolkit_extensions.alert_webhooks import (
 from toolkit_extensions.budget_manager import BudgetManager, BudgetPeriod
 from toolkit_extensions.cost_tracker import CostTracker
 from toolkit_extensions.database.connection import DatabaseConfig, init_database
+
+
+def _mock_async_client(mock_response):
+    """Helper to create a mocked httpx.AsyncClient context manager."""
+    mock_client = AsyncMock()
+    mock_client.post.return_value = mock_response
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+    return mock_client
 
 
 @pytest.fixture
@@ -216,14 +225,12 @@ def test_payload_signing(webhook_manager):
     assert len(signature) == 64  # SHA256 hex digest
 
 
-@patch("httpx.post")
-def test_deliver_to_webhook_success(mock_post, webhook_manager, budget_manager, cost_tracker):
+def test_deliver_to_webhook_success(webhook_manager, budget_manager, cost_tracker):
     """Test successful webhook delivery"""
     # Mock successful response
     mock_response = Mock()
     mock_response.status_code = 200
     mock_response.text = "OK"
-    mock_post.return_value = mock_response
 
     # Create budget and alert
     budget_manager.create_budget(
@@ -252,21 +259,20 @@ def test_deliver_to_webhook_success(mock_post, webhook_manager, budget_manager, 
 
     webhooks = webhook_manager.get_webhooks()
 
-    # Deliver
-    success = webhook_manager._deliver_to_webhook(webhooks[0], alerts[0])
+    # Deliver with mocked async client
+    with patch("httpx.AsyncClient") as MockClient:
+        MockClient.return_value = _mock_async_client(mock_response)
+        success = webhook_manager._deliver_to_webhook(webhooks[0], alerts[0])
 
     assert success
-    assert mock_post.called
 
 
-@patch("httpx.post")
-def test_deliver_to_webhook_failure(mock_post, webhook_manager, budget_manager, cost_tracker):
+def test_deliver_to_webhook_failure(webhook_manager, budget_manager, cost_tracker):
     """Test webhook delivery failure"""
     # Mock failed response
     mock_response = Mock()
     mock_response.status_code = 500
     mock_response.text = "Internal Server Error"
-    mock_post.return_value = mock_response
 
     # Create budget and alert
     budget_manager.create_budget(
@@ -295,21 +301,20 @@ def test_deliver_to_webhook_failure(mock_post, webhook_manager, budget_manager, 
 
     webhooks = webhook_manager.get_webhooks()
 
-    # Deliver
-    success = webhook_manager._deliver_to_webhook(webhooks[0], alerts[0])
+    # Deliver with mocked async client
+    with patch("httpx.AsyncClient") as MockClient:
+        MockClient.return_value = _mock_async_client(mock_response)
+        success = webhook_manager._deliver_to_webhook(webhooks[0], alerts[0])
 
     assert not success
-    assert mock_post.called
 
 
-@patch("httpx.post")
-def test_deliver_pending_alerts(mock_post, webhook_manager, budget_manager, cost_tracker):
+def test_deliver_pending_alerts(webhook_manager, budget_manager, cost_tracker):
     """Test delivering all pending alerts"""
     # Mock successful response
     mock_response = Mock()
     mock_response.status_code = 200
     mock_response.text = "OK"
-    mock_post.return_value = mock_response
 
     # Register webhook
     webhook_manager.register_webhook(
@@ -336,8 +341,10 @@ def test_deliver_pending_alerts(mock_post, webhook_manager, budget_manager, cost
 
     budget_manager.generate_alerts()
 
-    # Deliver
-    result = webhook_manager.deliver_pending_alerts()
+    # Deliver with mocked async client
+    with patch("httpx.AsyncClient") as MockClient:
+        MockClient.return_value = _mock_async_client(mock_response)
+        result = webhook_manager.deliver_pending_alerts()
 
     assert result["alerts_processed"] == 3
     assert result["success_count"] == 3

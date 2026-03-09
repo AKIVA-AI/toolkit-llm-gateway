@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "toolkit-llm-gateway"
-version = "1.0.0"
+version = "1.1.0"
 description = "Toolkit LLM Gateway - LLM proxy with cost tracking and analytics (fork of LiteLLM)"
 authors = [{name = "Toolkit Contributors"}]
 license = {text = "MIT"}
@@ -87,6 +87,7 @@ Documentation = "https://github.com/AKIVA-AI/toolkit-llm-gateway#readme"
 [project.scripts]
 toolkit-gateway = "litellm.proxy.proxy_cli:run_server"
 toolkit-llm-proxy = "litellm.proxy.proxy_cli:run_server"
+toolkit-gateway-version = "toolkit_extensions.cli:print_version"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -99,7 +100,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-v --cov=toolkit_extensions --cov-report=term-missing --cov-report=html"
+addopts = "-v --cov=toolkit_extensions --cov-report=term-missing --cov-report=html --cov-fail-under=70"
 
 [tool.black]
 line-length = 100

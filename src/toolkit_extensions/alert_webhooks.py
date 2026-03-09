@@ -4,6 +4,7 @@ Alert webhook system for Toolkit LLM Gateway
 Sends budget alerts to external systems via webhooks.
 """
 
+import asyncio
 import hashlib
 import hmac
 import json
@@ -312,12 +313,46 @@ class AlertWebhookManager:
         attempt_number: int = 1,
     ) -> bool:
         """
-        Deliver alert to webhook with retry logic.
+        Deliver alert to webhook with retry logic (sync wrapper).
+
+        Returns:
+            True if delivery succeeded, False otherwise
+        """
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            # Already in an async context -- schedule and return synchronously
+            import concurrent.futures
+
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(
+                    asyncio.run,
+                    self._async_deliver_to_webhook(webhook, alert, attempt_number),
+                )
+                return future.result()
+        else:
+            return asyncio.run(
+                self._async_deliver_to_webhook(webhook, alert, attempt_number)
+            )
+
+    async def _async_deliver_to_webhook(
+        self,
+        webhook: Dict,
+        alert: Dict,
+        attempt_number: int = 1,
+    ) -> bool:
+        """
+        Deliver alert to webhook with async non-blocking retries.
 
         Returns:
             True if delivery succeeded, False otherwise
         """
         import uuid
+
+        max_retries = webhook.get("max_retries", 3) or 3
 
         # Build payload based on provider
         payload = self._build_payload(webhook["provider"], alert)
@@ -332,13 +367,14 @@ class AlertWebhookManager:
         delivery_id = str(uuid.uuid4())
 
         try:
-            # Send webhook
-            response = httpx.post(
-                webhook["url"],
-                json=payload,
-                headers=headers,
-                timeout=30.0,
-            )
+            # Send webhook using async client (non-blocking)
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    webhook["url"],
+                    json=payload,
+                    headers=headers,
+                    timeout=30.0,
+                )
 
             success = response.status_code < 400
 
@@ -349,7 +385,7 @@ class AlertWebhookManager:
                 alert_id=alert["id"],
                 request_payload=json.dumps(payload),
                 response_status=response.status_code,
-                response_body=response.text[:1000],  # First 1000 chars
+                response_body=response.text[:1000],
                 success=success,
                 attempt_number=attempt_number,
             )
@@ -357,10 +393,12 @@ class AlertWebhookManager:
             # Update webhook stats
             self._update_webhook_stats(webhook["id"], success)
 
-            # Retry on failure
-            if not success and attempt_number < 3:  # TODO: Use webhook.max_retries
-                time.sleep(5 * attempt_number)  # Exponential backoff
-                return self._deliver_to_webhook(webhook, alert, attempt_number + 1)
+            # Retry on failure with non-blocking sleep
+            if not success and attempt_number < max_retries:
+                await asyncio.sleep(2 ** attempt_number)  # Exponential backoff
+                return await self._async_deliver_to_webhook(
+                    webhook, alert, attempt_number + 1
+                )
 
             return success
 
@@ -380,10 +418,12 @@ class AlertWebhookManager:
             # Update webhook stats
             self._update_webhook_stats(webhook["id"], False)
 
-            # Retry on exception
-            if attempt_number < 3:
-                time.sleep(5 * attempt_number)
-                return self._deliver_to_webhook(webhook, alert, attempt_number + 1)
+            # Retry on exception with non-blocking sleep
+            if attempt_number < max_retries:
+                await asyncio.sleep(2 ** attempt_number)
+                return await self._async_deliver_to_webhook(
+                    webhook, alert, attempt_number + 1
+                )
 
             return False
 

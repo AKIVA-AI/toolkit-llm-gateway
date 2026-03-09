@@ -1,4 +1,4 @@
-﻿"""
+"""
 Toolkit LLM Gateway - Health Check Module
 
 Provides health check endpoints for monitoring and orchestration.
@@ -8,10 +8,12 @@ Checks database connectivity, Redis (if configured), and LLM provider availabili
 import os
 import time
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+
+from toolkit_extensions import __version__
 
 
 class HealthChecker:
@@ -39,15 +41,15 @@ class HealthChecker:
         Returns:
             Health check result dictionary
         """
-        health = {
+        health: Dict[str, Any] = {
             "status": "healthy",
             "timestamp": datetime.utcnow().isoformat(),
             "uptime_seconds": int(time.time() - self.start_time),
-            "version": "1.0.0",
+            "version": __version__,
         }
 
         if detailed:
-            checks = {}
+            checks: Dict[str, Any] = {}
 
             # Check database
             db_check = self._check_database()
@@ -66,7 +68,8 @@ class HealthChecker:
             provider_checks = self._check_providers()
             checks["providers"] = provider_checks
             if not any(p["available"] for p in provider_checks.values()):
-                health["status"] = "degraded"
+                if health["status"] != "unhealthy":
+                    health["status"] = "degraded"
 
             health["checks"] = checks
 
@@ -79,7 +82,7 @@ class HealthChecker:
         Returns:
             Readiness check result
         """
-        ready = {
+        ready: Dict[str, Any] = {
             "ready": True,
             "timestamp": datetime.utcnow().isoformat(),
         }
@@ -102,7 +105,7 @@ class HealthChecker:
 
     def _check_database(self) -> Dict[str, Any]:
         """Check database connectivity"""
-        check = {
+        check: Dict[str, Any] = {
             "healthy": False,
             "response_time_ms": None,
             "error": None,
@@ -115,8 +118,8 @@ class HealthChecker:
         try:
             start = time.time()
 
-            # Try to execute a simple query
-            with self.db_manager.get_session() as session:
+            # Use the context-manager session() method (not get_session())
+            with self.db_manager.session() as session:
                 session.execute(text("SELECT 1"))
 
             check["healthy"] = True
@@ -130,7 +133,7 @@ class HealthChecker:
 
     def _check_redis(self) -> Dict[str, Any]:
         """Check Redis connectivity"""
-        check = {
+        check: Dict[str, Any] = {
             "healthy": False,
             "response_time_ms": None,
             "error": None,

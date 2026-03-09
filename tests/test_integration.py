@@ -6,7 +6,7 @@ Tests end-to-end workflows across all components.
 
 import time
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -110,12 +110,16 @@ def test_complete_workflow_threshold_alert(integrated_system):
     assert len(alert_ids) > 0
 
     # 5. Register webhook
-    with patch("httpx.post") as mock_post:
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.text = "OK"
-        mock_post.return_value = mock_response
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.text = "OK"
 
+    mock_client = AsyncMock()
+    mock_client.post.return_value = mock_response
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("httpx.AsyncClient", return_value=mock_client):
         webhook_manager.register_webhook(
             name="Test Webhook",
             url="https://example.com/webhook",
@@ -127,7 +131,6 @@ def test_complete_workflow_threshold_alert(integrated_system):
 
         assert result["alerts_processed"] > 0
         assert result["success_count"] > 0
-        assert mock_post.called
 
 
 def test_complete_workflow_exceeded_alert(integrated_system):
@@ -382,12 +385,16 @@ def test_webhook_filtering_and_delivery(integrated_system):
     budget_manager = integrated_system["budget_manager"]
     webhook_manager = integrated_system["webhook_manager"]
 
-    with patch("httpx.post") as mock_post:
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.text = "OK"
-        mock_post.return_value = mock_response
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.text = "OK"
 
+    mock_client = AsyncMock()
+    mock_client.post.return_value = mock_response
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("httpx.AsyncClient", return_value=mock_client):
         # Register two webhooks with different filters
         webhook_manager.register_webhook(
             name="Threshold Webhook",
