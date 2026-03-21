@@ -244,6 +244,7 @@ class APIKeyManager:
 # PII Redaction
 # ---------------------------------------------------------------------------
 
+
 class PIIRedactor:
     """Redacts personally identifiable information from log messages and payloads."""
 
@@ -257,11 +258,23 @@ class PIIRedactor:
     )
 
     # Keys in dicts that likely contain sensitive data
-    SENSITIVE_KEYS: Set[str] = frozenset({
-        "password", "secret", "token", "api_key", "apikey",
-        "authorization", "auth", "credential", "private_key",
-        "access_token", "refresh_token", "ssn", "credit_card",
-    })
+    SENSITIVE_KEYS: Set[str] = frozenset(
+        {
+            "password",
+            "secret",
+            "token",
+            "api_key",
+            "apikey",
+            "authorization",
+            "auth",
+            "credential",
+            "private_key",
+            "access_token",
+            "refresh_token",
+            "ssn",
+            "credit_card",
+        }
+    )
 
     @classmethod
     def redact_text(cls, text: str) -> str:
@@ -296,9 +309,11 @@ class PIIRedactor:
                 redacted[key] = cls.redact_text(value)
             elif isinstance(value, list):
                 redacted[key] = [
-                    cls.redact_dict(item, depth + 1) if isinstance(item, dict)
-                    else cls.redact_text(item) if isinstance(item, str)
-                    else item
+                    (
+                        cls.redact_dict(item, depth + 1)
+                        if isinstance(item, dict)
+                        else cls.redact_text(item) if isinstance(item, str) else item
+                    )
                     for item in value
                 ]
             else:
@@ -309,6 +324,7 @@ class PIIRedactor:
 # ---------------------------------------------------------------------------
 # Secrets Management
 # ---------------------------------------------------------------------------
+
 
 class SecretsManager:
     """
@@ -359,9 +375,7 @@ class SecretsManager:
 
             # Check for hardcoded defaults
             if cls._is_hardcoded(value):
-                errors.append(
-                    f"{var_name} appears to use a hardcoded default value"
-                )
+                errors.append(f"{var_name} appears to use a hardcoded default value")
 
             # Check minimum length for secret-like vars
             secret_indicators = {"key", "secret", "token", "password"}
@@ -440,6 +454,7 @@ def get_security_headers(
 # CORS Configuration
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CORSConfig:
     """CORS configuration loaded from environment variables."""
@@ -489,6 +504,7 @@ class CORSConfig:
 # Request Payload Validator (LLM-specific)
 # ---------------------------------------------------------------------------
 
+
 class RequestPayloadValidator:
     """
     Validates LLM completion request payloads.
@@ -500,11 +516,13 @@ class RequestPayloadValidator:
     DEFAULT_MAX_PROMPT_LENGTH = 100_000  # characters
     DEFAULT_MAX_MESSAGES = 200
     DEFAULT_MAX_TOKENS_LIMIT = 128_000
-    VALID_CONTENT_TYPES = frozenset({
-        "application/json",
-        "application/json; charset=utf-8",
-        "application/json;charset=utf-8",
-    })
+    VALID_CONTENT_TYPES = frozenset(
+        {
+            "application/json",
+            "application/json; charset=utf-8",
+            "application/json;charset=utf-8",
+        }
+    )
 
     @classmethod
     def validate_completion_request(
@@ -533,9 +551,7 @@ class RequestPayloadValidator:
             if not isinstance(messages, list):
                 errors.append("'messages' must be a list")
             elif len(messages) > max_messages:
-                errors.append(
-                    f"'messages' count ({len(messages)}) exceeds limit ({max_messages})"
-                )
+                errors.append(f"'messages' count ({len(messages)}) exceeds limit ({max_messages})")
             else:
                 total_length = 0
                 for i, msg in enumerate(messages):

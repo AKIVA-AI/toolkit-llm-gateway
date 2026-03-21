@@ -443,9 +443,7 @@ class TestRequestPayloadValidator:
         assert RequestPayloadValidator.validate_content_type("application/json")
 
     def test_validate_content_type_json_charset(self) -> None:
-        assert RequestPayloadValidator.validate_content_type(
-            "application/json; charset=utf-8"
-        )
+        assert RequestPayloadValidator.validate_content_type("application/json; charset=utf-8")
 
     def test_validate_content_type_text_plain(self) -> None:
         assert not RequestPayloadValidator.validate_content_type("text/plain")
