@@ -312,7 +312,9 @@ class PIIRedactor:
                     (
                         cls.redact_dict(item, depth + 1)
                         if isinstance(item, dict)
-                        else cls.redact_text(item) if isinstance(item, str) else item
+                        else cls.redact_text(item)
+                        if isinstance(item, str)
+                        else item
                     )
                     for item in value
                 ]
@@ -567,8 +569,7 @@ class RequestPayloadValidator:
 
                 if total_length > max_prompt_length:
                     errors.append(
-                        f"Total prompt length ({total_length}) exceeds "
-                        f"limit ({max_prompt_length})"
+                        f"Total prompt length ({total_length}) exceeds limit ({max_prompt_length})"
                     )
 
         # Temperature range
@@ -584,8 +585,7 @@ class RequestPayloadValidator:
                 errors.append("'max_tokens' must be a positive integer")
             elif max_tokens > cls.DEFAULT_MAX_TOKENS_LIMIT:
                 errors.append(
-                    f"'max_tokens' ({max_tokens}) exceeds limit "
-                    f"({cls.DEFAULT_MAX_TOKENS_LIMIT})"
+                    f"'max_tokens' ({max_tokens}) exceeds limit ({cls.DEFAULT_MAX_TOKENS_LIMIT})"
                 )
 
         # top_p range

@@ -9,6 +9,7 @@ server that binds a port and proxies external API calls).
 Read-only / diagnostic commands (validate-config, health-check, version) are
 READ_ONLY + AUTO.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -85,9 +86,7 @@ TOOLKIT_TOOL_SPECS: dict[str, ToolkitCommandSpec] = {
         command="validate-config",
         spec=_make_spec(
             name="validate_config",
-            description=(
-                "Validate a gateway config file. Read-only; reports errors to stdout."
-            ),
+            description=("Validate a gateway config file. Read-only; reports errors to stdout."),
             input_schema={
                 "type": "object",
                 "properties": {
@@ -103,9 +102,7 @@ TOOLKIT_TOOL_SPECS: dict[str, ToolkitCommandSpec] = {
         command="health-check",
         spec=_make_spec(
             name="health_check",
-            description=(
-                "Check the health of a running gateway instance. Read-only."
-            ),
+            description=("Check the health of a running gateway instance. Read-only."),
             input_schema={
                 "type": "object",
                 "properties": {

@@ -15,17 +15,19 @@ contract here covers:
 """
 
 from .config import ToolkitConfigContract, build_config_hierarchy
-from .tool_specs import (
-    TOOLKIT_TOOL_SPECS,
-    get_tool_spec,
-    ToolkitCommandSpec,
-)
 from .contracts import (
-    PermissionScope,
+    _HAS_EXECUTION_CONTRACTS,
     ApprovalPolicy,
     AuthorityBoundary,
+    PermissionScope,
+)
+from .contracts import (
     ToolSpec as CPToolSpec,
-    _HAS_EXECUTION_CONTRACTS,
+)
+from .tool_specs import (
+    TOOLKIT_TOOL_SPECS,
+    ToolkitCommandSpec,
+    get_tool_spec,
 )
 
 __all__ = [

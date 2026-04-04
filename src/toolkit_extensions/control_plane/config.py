@@ -6,6 +6,7 @@ Three-tier hierarchy (mirrors Akiva platform pattern):
   Level 1 -- Toolkit config (pyproject.toml / config file)
   Level 2 -- CLI overrides (argv flags)
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -27,9 +28,9 @@ class ToolkitConfigContract:
     version: str = "1.1.0"
 
     # -- Runtime behaviour -----------------------------------------------------
-    log_format: str = "json"          # 'json' | 'text'
+    log_format: str = "json"  # 'json' | 'text'
     structured_logging: bool = True
-    output_format: str = "json"       # 'json' | 'text'
+    output_format: str = "json"  # 'json' | 'text'
 
     # -- Proxy / gateway -------------------------------------------------------
     host: str = "0.0.0.0"
@@ -38,7 +39,7 @@ class ToolkitConfigContract:
 
     # -- Cost / budget ---------------------------------------------------------
     cost_tracking_enabled: bool = True
-    default_budget_limit: float = 100.0   # USD
+    default_budget_limit: float = 100.0  # USD
 
     # -- Extension -------------------------------------------------------------
     extra: dict[str, Any] = field(default_factory=dict)

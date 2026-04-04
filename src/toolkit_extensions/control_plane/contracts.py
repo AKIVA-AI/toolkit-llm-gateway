@@ -7,6 +7,7 @@ so CI never fails on toolkit repos that don't have the framework installed.
 
 This module is intentionally dependency-free in the fallback path.
 """
+
 from __future__ import annotations
 
 from enum import Enum
@@ -19,11 +20,12 @@ _HAS_POLICY_RUNTIME = False
 
 try:
     from akiva_execution_contracts import (  # type: ignore[import]
-        PermissionScope,
         ApprovalPolicy,
         AuthorityBoundary,
+        PermissionScope,
         ToolSpec,
     )
+
     _HAS_EXECUTION_CONTRACTS = True
 except ImportError:
     # Framework not installed -- define minimal equivalents inline.
@@ -105,12 +107,12 @@ except ImportError:
             self.aliases = aliases
 
         def __repr__(self) -> str:
-            return (
-                f"ToolSpec(name={self.name!r}, scope={self.permission_scope.value!r})"
-            )
+            return f"ToolSpec(name={self.name!r}, scope={self.permission_scope.value!r})"
+
 
 try:
     from akiva_policy_runtime import PolicyRuntime  # type: ignore[import]
+
     _HAS_POLICY_RUNTIME = True
 except ImportError:
     PolicyRuntime = None  # type: ignore[assignment,misc]
