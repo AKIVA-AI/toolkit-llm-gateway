@@ -47,9 +47,9 @@ class TestDockerComposeNoDefaultPassword:
 
         compose_path = Path(__file__).resolve().parents[1] / "docker-compose.yml"
         content = compose_path.read_text(encoding="utf-8")
-        assert "changeme" not in content, (
-            "docker-compose.yml still contains insecure default 'changeme'"
-        )
+        assert (
+            "changeme" not in content
+        ), "docker-compose.yml still contains insecure default 'changeme'"
         # Verify it requires explicit env var
         assert "POSTGRES_PASSWORD:?" in content or "POSTGRES_PASSWORD:-" not in content
 
@@ -62,9 +62,9 @@ class TestDashboardNoQueryParamAuth:
 
         app_path = Path(__file__).resolve().parents[1] / "dashboard" / "app.py"
         content = app_path.read_text(encoding="utf-8")
-        assert "query_params.get" not in content, (
-            "Dashboard still accepts API key via query parameter"
-        )
+        assert (
+            "query_params.get" not in content
+        ), "Dashboard still accepts API key via query parameter"
 
 
 class TestDependabotConfig:
@@ -102,6 +102,6 @@ class TestCISecurityBlocking:
                 # Check next few lines for continue-on-error
                 idx = lines.index(line)
                 for check_line in lines[idx : idx + 3]:
-                    assert "continue-on-error: true" not in check_line, (
-                        f"Security scan still has continue-on-error: {check_line.strip()}"
-                    )
+                    assert (
+                        "continue-on-error: true" not in check_line
+                    ), f"Security scan still has continue-on-error: {check_line.strip()}"

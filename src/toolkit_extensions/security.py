@@ -312,9 +312,7 @@ class PIIRedactor:
                     (
                         cls.redact_dict(item, depth + 1)
                         if isinstance(item, dict)
-                        else cls.redact_text(item)
-                        if isinstance(item, str)
-                        else item
+                        else cls.redact_text(item) if isinstance(item, str) else item
                     )
                     for item in value
                 ]
