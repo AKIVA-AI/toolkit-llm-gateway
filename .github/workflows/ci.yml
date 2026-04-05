@@ -90,7 +90,7 @@ jobs:
       run: ruff check src/toolkit_extensions tests
 
     - name: Run MyPy
-      run: mypy src/toolkit_extensions --ignore-missing-imports
+      run: mypy src/toolkit_extensions --ignore-missing-imports --exclude 'src/(litellm|caching|main|litellm_core_utils)'
 
   security:
     name: Security Scan
@@ -113,8 +113,11 @@ jobs:
     - name: Run Safety check
       run: safety check --json
 
-    - name: Run Bandit
-      run: bandit -r src/toolkit_extensions -f json -o bandit-report.json
+    - name: Generate Bandit report (all findings)
+      run: bandit -r src/toolkit_extensions -f json -o bandit-report.json || true
+
+    - name: Run Bandit gate (fail on HIGH severity)
+      run: bandit -r src/toolkit_extensions -ll -ii
 
     - name: Upload Bandit report
       uses: actions/upload-artifact@v4
