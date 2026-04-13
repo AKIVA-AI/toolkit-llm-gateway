@@ -65,7 +65,7 @@ analytics = [
 ]
 
 dev = [
-    "pytest>=7.0.0",
+    "pytest>=8.4.2",
     "pytest-asyncio",
     "pytest-cov",
     "black",
