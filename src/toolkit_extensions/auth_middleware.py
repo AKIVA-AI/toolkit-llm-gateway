@@ -2,15 +2,16 @@
 Toolkit LLM Gateway - API Key Authentication Middleware
 
 Enforces API key authentication with scope-based access control
-on protected endpoints.
+and per-key token-bucket rate limiting on protected endpoints.
 """
 
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from toolkit_extensions.database.connection import get_session
 from toolkit_extensions.database.models import APIKey
+from toolkit_extensions.rate_limiter import TokenBucketRateLimiter
 from toolkit_extensions.security import APIKeyManager
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class AuthResult:
         scopes: Optional[List[str]] = None,
         key_name: Optional[str] = None,
         error: Optional[str] = None,
+        rate_limit_status: Optional[Dict[str, any]] = None,
     ):
         self.authenticated = authenticated
         self.user_id = user_id
@@ -34,6 +36,7 @@ class AuthResult:
         self.scopes = scopes or []
         self.key_name = key_name
         self.error = error
+        self.rate_limit_status = rate_limit_status
 
     def has_scope(self, scope: str) -> bool:
         """Check if the authenticated key has a specific scope."""
@@ -69,15 +72,37 @@ class APIKeyAuthenticator:
     """
     Authenticates requests using API keys stored in the database.
 
-    Checks the key hash, expiration, status, and scopes.
+    Checks the key hash, expiration, status, scopes, and enforces
+    per-key token-bucket rate limits (RPM / TPM).
     """
 
-    def authenticate(self, api_key: str) -> AuthResult:
+    def __init__(
+        self,
+        default_rpm: int = 60,
+        default_tpm: int = 100_000,
+        rate_limit_enabled: bool = True,
+    ):
+        """
+        Initialize authenticator with optional rate limiting.
+
+        Args:
+            default_rpm: Default requests-per-minute limit for keys without a custom limit.
+            default_tpm: Default tokens-per-minute limit for keys without a custom limit.
+            rate_limit_enabled: Whether to enforce rate limits at all.
+        """
+        self.rate_limit_enabled = rate_limit_enabled
+        self.rate_limiter = TokenBucketRateLimiter(
+            default_rpm=default_rpm,
+            default_tpm=default_tpm,
+        )
+
+    def authenticate(self, api_key: str, tokens: int = 0) -> AuthResult:
         """
         Authenticate an API key and return the result.
 
         Args:
             api_key: The raw API key string from the request header.
+            tokens: Number of tokens this request consumes (for TPM tracking).
 
         Returns:
             AuthResult with authentication status and metadata.
@@ -116,6 +141,35 @@ class APIKeyAuthenticator:
                     )
                     return AuthResult(authenticated=False, error="API key has expired")
 
+                # Rate limit check
+                rate_status = None
+                if self.rate_limit_enabled:
+                    key_id = str(db_key.id)
+                    rpm_limit = db_key.rate_limit_rpm
+                    tpm_limit = db_key.rate_limit_tpm
+
+                    result = self.rate_limiter.check_and_consume(
+                        key_id=key_id,
+                        tokens=tokens,
+                        rpm_limit=rpm_limit,
+                        tpm_limit=tpm_limit,
+                    )
+
+                    if not result["allowed"]:
+                        logger.warning(
+                            "Rate limit exceeded for key %s: %s (retry_after=%.1fs)",
+                            db_key.key_prefix,
+                            result["reason"],
+                            result["retry_after"],
+                        )
+                        return AuthResult(
+                            authenticated=False,
+                            error=f"Rate limit exceeded: {result['reason']}. Retry after {result['retry_after']:.1f}s",
+                            rate_limit_status=result,
+                        )
+
+                    rate_status = result
+
                 # Update last_used_at
                 db_key.last_used_at = datetime.utcnow()
                 session.commit()
@@ -128,6 +182,7 @@ class APIKeyAuthenticator:
                     team_id=str(db_key.team_id) if db_key.team_id else None,
                     scopes=scopes,
                     key_name=db_key.name,
+                    rate_limit_status=rate_status,
                 )
 
         except Exception as e:
