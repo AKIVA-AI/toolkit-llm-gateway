@@ -16,6 +16,8 @@
 - **Advanced Cost Tracking** per user, team, project, and model
 - **Real-time Analytics Dashboard** with usage insights
 - **Rate Limiting and Budgets** to control spending
+  - Per-API-key token-bucket rate limiting (RPM/TPM) with automatic refill
+  - Proactive budget monitor with background checks and configurable thresholds
 - **Intelligent Caching** to reduce costs by 30-70%
 - **Load Balancing and Fallbacks** for high availability
 - **Enterprise Security** with SSO, RBAC, and audit logs
@@ -266,7 +268,7 @@ curl -X POST http://localhost:8000/key/delete \
 
 The gateway is organized into three layers:
 
-```
+```text
 +---------------------------------------------------------+
 |  LiteLLM Proxy (src/)                                   |
 |  Unified API for 100+ LLM providers, routing, caching   |
@@ -278,16 +280,16 @@ The gateway is organized into three layers:
 |  +-----------+  +-----------+  +------------------+     |
 |  +-----------+  +-----------+  +------------------+     |
 |  | cost_     |  | auth_     |  | security         |     |
-|  | analytics |  | middleware|  | (keys, rate lim.) |     |
+|  | analytics |  | middleware|  | (keys, rate lim.)|     |
 |  +-----------+  +-----------+  +------------------+     |
 |  +-----------+  +-----------+  +------------------+     |
 |  | cost_     |  | health_   |  | metrics          |     |
 |  | aggregator|  | check     |  | (Prometheus)     |     |
 |  +-----------+  +-----------+  +------------------+     |
-|  +-----------+  +-----------+                           |
-|  | config_   |  | logging_  |                           |
-|  | validator |  | config    |                           |
-|  +-----------+  +-----------+                           |
+|  +-----------+  +-----------+  +------------------+     |
+|  | config_   |  | logging_  |  | rate_limiter     |     |
+|  | validator |  | config    |  | budget_monitor   |     |
+|  +-----------+  +-----------+  +------------------+     |
 +---------------------------------------------------------+
 |  Database Layer (SQLAlchemy)                             |
 |  Models: Team, User, Project, LLMRequest, Budget,       |
