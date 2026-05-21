@@ -7,7 +7,7 @@ and per-key token-bucket rate limiting on protected endpoints.
 
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from toolkit_extensions.database.connection import get_session
 from toolkit_extensions.database.models import APIKey
@@ -28,7 +28,7 @@ class AuthResult:
         scopes: Optional[List[str]] = None,
         key_name: Optional[str] = None,
         error: Optional[str] = None,
-        rate_limit_status: Optional[Dict[str, any]] = None,
+        rate_limit_status: Optional[Dict[str, Any]] = None,
     ):
         self.authenticated = authenticated
         self.user_id = user_id
@@ -207,11 +207,22 @@ class APIKeyAuthenticator:
 
 # Global authenticator instance
 _authenticator: Optional[APIKeyAuthenticator] = None
+_authenticator_params: Optional[Dict[str, Any]] = None
 
 
-def get_authenticator() -> APIKeyAuthenticator:
-    """Get global authenticator instance."""
-    global _authenticator
+def get_authenticator(
+    default_rpm: int = 60,
+    default_tpm: int = 100_000,
+    rate_limit_enabled: bool = True,
+) -> APIKeyAuthenticator:
+    """Get global authenticator instance.
+
+    First call's parameters are cached and reused for the singleton lifetime.
+    Subsequent calls with different parameters are ignored (singleton behavior).
+    """
+    global _authenticator, _authenticator_params
+    params = {"default_rpm": default_rpm, "default_tpm": default_tpm, "rate_limit_enabled": rate_limit_enabled}
     if _authenticator is None:
-        _authenticator = APIKeyAuthenticator()
+        _authenticator = APIKeyAuthenticator(**params)
+        _authenticator_params = params
     return _authenticator

@@ -12,7 +12,7 @@ import logging
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,8 @@ class TokenBucket:
     tpm_limit: int
     rpm_tokens: float = field(default=0.0)
     tpm_tokens: float = field(default=0.0)
-    last_refill: float = field(default_factory=time.time)
+    last_refill: float = field(default_factory=time.monotonic)
+    last_access: float = field(default_factory=time.monotonic)
     lock: threading.Lock = field(default_factory=threading.Lock)
 
     def __post_init__(self):
@@ -55,8 +56,7 @@ class TokenBucketRateLimiter:
         self,
         default_rpm: int = 60,
         default_tpm: int = 100_000,
-        default_burst_rpm: Optional[int] = None,
-        default_burst_tpm: Optional[int] = None,
+        bucket_ttl_seconds: float = 3600.0,
     ):
         """
         Initialize rate limiter.
@@ -64,13 +64,11 @@ class TokenBucketRateLimiter:
         Args:
             default_rpm: Default requests-per-minute limit
             default_tpm: Default tokens-per-minute limit
-            default_burst_rpm: Default burst capacity for RPM (defaults to rpm)
-            default_burst_tpm: Default burst capacity for TPM (defaults to tpm)
+            bucket_ttl_seconds: TTL for stale buckets before eviction (default 1 hour)
         """
         self.default_rpm = max(1, default_rpm)
         self.default_tpm = max(1, default_tpm)
-        self.default_burst_rpm = default_burst_rpm or self.default_rpm
-        self.default_burst_tpm = default_burst_tpm or self.default_tpm
+        self.bucket_ttl_seconds = max(60.0, bucket_ttl_seconds)
         self._buckets: Dict[str, TokenBucket] = {}
         self._global_lock = threading.Lock()
 
@@ -82,6 +80,8 @@ class TokenBucketRateLimiter:
     ) -> TokenBucket:
         """Get existing bucket or create a new one with given limits."""
         with self._global_lock:
+            # Evict stale buckets to prevent unbounded growth
+            self._cleanup_stale_buckets()
             bucket = self._buckets.get(key_id)
             if bucket is None:
                 rpm = max(1, rpm_limit) if rpm_limit else self.default_rpm
@@ -90,11 +90,25 @@ class TokenBucketRateLimiter:
                 self._buckets[key_id] = bucket
             return bucket
 
+    def _cleanup_stale_buckets(self) -> None:
+        """Remove buckets that haven't been accessed within TTL."""
+        now = time.monotonic()
+        stale = [
+            key_id
+            for key_id, bucket in self._buckets.items()
+            if now - bucket.last_access > self.bucket_ttl_seconds
+        ]
+        for key_id in stale:
+            del self._buckets[key_id]
+        if stale:
+            logger.debug("Evicted %d stale rate-limit bucket(s)", len(stale))
+
     def _refill(self, bucket: TokenBucket) -> None:
         """Refill tokens based on elapsed time."""
-        now = time.time()
+        now = time.monotonic()
         elapsed = now - bucket.last_refill
         bucket.last_refill = now
+        bucket.last_access = now
 
         # Refill RPM: 1 token per (60 / limit) seconds
         if bucket.rpm_limit > 0:
@@ -112,7 +126,7 @@ class TokenBucketRateLimiter:
         tokens: int = 0,
         rpm_limit: Optional[int] = None,
         tpm_limit: Optional[int] = None,
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Check rate limit and consume tokens if allowed.
 
@@ -133,6 +147,9 @@ class TokenBucketRateLimiter:
         Raises:
             RateLimitExceeded: If the limit is exceeded (optional, caller decides)
         """
+        # Defensive: negative tokens would add capacity instead of consuming
+        tokens = max(0, tokens)
+
         bucket = self._get_or_create_bucket(key_id, rpm_limit, tpm_limit)
 
         with bucket.lock:
