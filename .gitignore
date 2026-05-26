@@ -23,6 +23,7 @@ MANIFEST
 
 # Testing
 .pytest_cache/
+.mypy_cache/
 .coverage
 htmlcov/
 .tox/
@@ -30,6 +31,9 @@ htmlcov/
 coverage.xml
 *.cover
 *.log
+
+# Playwright
+playwright-report/
 
 # Virtual environments
 venv/
