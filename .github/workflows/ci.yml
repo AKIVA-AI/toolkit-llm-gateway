@@ -121,7 +121,7 @@ jobs:
       run: bandit -r src/toolkit_extensions --severity-level high --confidence-level high
 
     - name: Upload Bandit report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: bandit-report
@@ -158,7 +158,7 @@ jobs:
       run: grype sbom:sbom.cdx.json --fail-on critical
 
     - name: Upload SBOM artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: sbom
