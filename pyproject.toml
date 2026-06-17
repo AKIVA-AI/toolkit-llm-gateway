@@ -40,7 +40,7 @@ dependencies = [
     "jsonschema>=4.22.0",
     "sqlalchemy>=2.0.0",
     "psycopg2-binary>=2.9.0",  # PostgreSQL adapter
-    "alembic>=1.13.0",  # Database migrations
+    "alembic>=1.16.5",  # Database migrations
 ]
 
 [project.optional-dependencies]
