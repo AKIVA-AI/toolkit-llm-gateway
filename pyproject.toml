@@ -53,7 +53,7 @@ proxy = [
     "orjson>=3.9.7",
     "apscheduler>=3.10.4",
     "fastapi-sso>=0.16.0",
-    "PyJWT>=2.10.1",
+    "PyJWT>=2.12.1",
     "python-multipart>=0.0.18",
     "cryptography",
 ]
